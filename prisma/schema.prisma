@@ -14,10 +14,11 @@ generator client {
 }
 
 model User {
-  id    Int     @id @default(autoincrement())
-  name  String
-  email String  @unique
-  posts Post[]
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  posts     Post[]
+  createdAt DateTime @default(now())
 }
 
 model Post {
