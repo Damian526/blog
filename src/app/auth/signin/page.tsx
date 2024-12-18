@@ -16,7 +16,7 @@ export default function SignInPage() {
     });
 
     if (result?.ok) {
-      window.location.href = '/dashboard'; // Redirect to home
+      window.location.href = '/dashboard';
     } else {
       alert('Invalid credentials');
     }
