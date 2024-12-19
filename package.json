@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "next dev -p 4005",
+    "dev": "next dev -p 4007",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
