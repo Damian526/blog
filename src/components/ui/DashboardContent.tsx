@@ -1,17 +1,7 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import styled from 'styled-components';
-
-const Container = styled.div`
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 20px;
-`;
-
-const Title = styled.h1`
-  text-align: center;
-  margin-bottom: 20px;
-`;
 
 const Button = styled.button`
   background-color: #0070f3;
@@ -28,11 +18,15 @@ const Button = styled.button`
 `;
 
 export default function DashboardContent({ session }: { session: any }) {
+  const router = useRouter();
+
   return (
-    <Container>
-      <Title>Dashboard</Title>
+    <div>
+      <h1>Dashboard</h1>
       <p>Welcome, {session.user?.email}! Manage your blog posts here.</p>
-      <Button>Create New Post</Button>
-    </Container>
+      <Button onClick={() => router.push('/dashboard/new')}>
+        Create New Post
+      </Button>
+    </div>
   );
 }
