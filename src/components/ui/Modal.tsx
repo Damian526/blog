@@ -1,5 +1,3 @@
-'use client';
-
 import { ReactNode } from 'react';
 import ReactDOM from 'react-dom';
 import styled from 'styled-components';
@@ -25,11 +23,16 @@ const Overlay = styled.div`
 
 const ModalContent = styled.div`
   background: white;
-  padding: 20px;
+  padding: 40px; /* Increase padding for a roomier feel */
   border-radius: 8px;
-  max-width: 400px;
-  width: 100%;
+  max-width: 500px; /* Increase the maximum width for a larger modal */
+  width: 90%;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 `;
 
 export default function Modal({ isOpen, onClose, children }: ModalProps) {

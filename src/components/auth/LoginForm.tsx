@@ -8,25 +8,20 @@ interface LoginFormProps {
   onClose: () => void;
 }
 
-const FormContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 20px;
-  width: 100%;
-`;
-
 const Title = styled.h1`
   font-size: 1.8rem;
   margin-bottom: 20px;
   text-align: center;
+  color: #333;
 `;
 
 const Form = styled.form`
   display: flex;
   flex-direction: column;
-  width: 100%;
   gap: 15px;
+  max-width: 400px;
+  width: 100%;
+  margin: 0 auto; /* center the form inside its parent */
 `;
 
 const Input = styled.input`
@@ -35,6 +30,7 @@ const Input = styled.input`
   border: 1px solid #ccc;
   border-radius: 5px;
   width: 100%;
+  box-sizing: border-box;
 
   &:focus {
     border-color: #0070f3;
@@ -51,6 +47,7 @@ const SubmitButton = styled.button`
   border: none;
   border-radius: 5px;
   cursor: pointer;
+  width: 100%;
 
   &:hover {
     background-color: #005bb5;
@@ -61,21 +58,6 @@ const ErrorMessage = styled.p`
   color: red;
   font-size: 0.9rem;
   text-align: center;
-`;
-
-const CloseButton = styled.button`
-  margin-top: 10px;
-  padding: 10px;
-  font-size: 1rem;
-  background-color: #ccc;
-  color: #333;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-
-  &:hover {
-    background-color: #999;
-  }
 `;
 
 export default function LoginForm({ onClose }: LoginFormProps) {
@@ -101,7 +83,7 @@ export default function LoginForm({ onClose }: LoginFormProps) {
   }
 
   return (
-    <FormContainer>
+    <>
       <Title>Sign In</Title>
       <Form onSubmit={handleSubmit}>
         <Input
@@ -121,7 +103,6 @@ export default function LoginForm({ onClose }: LoginFormProps) {
         <SubmitButton type="submit">Sign In</SubmitButton>
       </Form>
       {error && <ErrorMessage>{error}</ErrorMessage>}
-      <CloseButton onClick={onClose}>Close</CloseButton>
-    </FormContainer>
+    </>
   );
 }
