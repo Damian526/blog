@@ -23,9 +23,9 @@ const Overlay = styled.div`
 
 const ModalContent = styled.div`
   background: white;
-  padding: 40px; /* Increase padding for a roomier feel */
+  padding: 60px; /* Increase padding for a roomier feel */
   border-radius: 8px;
-  max-width: 500px; /* Increase the maximum width for a larger modal */
+  max-width: 300px; /* Increase the maximum width for a larger modal */
   width: 90%;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   position: relative;
