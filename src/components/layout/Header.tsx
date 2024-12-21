@@ -1,8 +1,10 @@
 'use client';
 
 import styled from 'styled-components';
+import { useSession } from 'next-auth/react';
 import LoginButton from '@/components/auth/LoginButton';
-import RegisterButton from '@/components/auth/ReigsterButton'; // Import Register Button
+import RegisterButton from '@/components/auth/ReigsterButton';
+import LogoutButton from '@/components/auth/LogoutButton';
 
 const HeaderContainer = styled.header`
   display: flex;
@@ -14,16 +16,28 @@ const HeaderContainer = styled.header`
 
 const ButtonContainer = styled.div`
   display: flex;
-  gap: 15px; // Space between buttons
+  gap: 15px;
 `;
 
 export default function Header() {
+  const { data: session, status } = useSession();
+  console.log(session);
+  if (status === 'loading') {
+    return <HeaderContainer>Loading...</HeaderContainer>;
+  }
+
   return (
     <HeaderContainer>
       <h1>My Blog</h1>
       <ButtonContainer>
-        <LoginButton />
-        <RegisterButton />
+        {session ? (
+          <LogoutButton />
+        ) : (
+          <>
+            <LoginButton />
+            <RegisterButton />
+          </>
+        )}
       </ButtonContainer>
     </HeaderContainer>
   );
