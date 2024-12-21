@@ -1,6 +1,7 @@
 import NextAuth, { SessionStrategy } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcrypt';
 
 // Initialize Prisma once. In a production app, consider using a global instance.
 const prisma = new PrismaClient();
@@ -24,11 +25,18 @@ export const authOptions = {
           where: { email: credentials.email },
         });
 
-        // In a real app, you must hash & compare passwords using bcrypt.
-        if (!user || user.password !== credentials.password) {
+        if (!user) {
           return null;
         }
 
+        // Compare the provided password with the hashed password
+        const isPasswordValid = await bcrypt.compare(
+          credentials.password,
+          user.password,
+        );
+        if (!isPasswordValid) {
+          return null;
+        }
         // Return the user object
         return {
           id: user.id.toString(),

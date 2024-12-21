@@ -23,7 +23,7 @@ export default function Header() {
       <h1>My Blog</h1>
       <ButtonContainer>
         <LoginButton />
-        <RegisterButton /> 
+        <RegisterButton />
       </ButtonContainer>
     </HeaderContainer>
   );
