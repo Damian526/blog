@@ -1,8 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
+import Modal from '@/components/ui/Modal';
+import LoginForm from '@/components/auth/LoginForm';
 
 const Container = styled.div`
   max-width: 800px;
@@ -61,10 +64,19 @@ const Error = styled.p`
 `;
 
 export default function NewPostPage() {
+  const { data: session, status } = useSession();
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [error, setError] = useState('');
+  const [showLoginModal, setShowLoginModal] = useState(false);
   const router = useRouter();
+
+  // Show the login modal if unauthenticated
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      setShowLoginModal(true);
+    }
+  }, [status]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -92,6 +104,23 @@ export default function NewPostPage() {
     } catch (err) {
       setError(err.message || 'Something went wrong.');
     }
+  }
+
+  if (status === 'loading') {
+    return <p>Loading session...</p>;
+  }
+
+  if (!session) {
+    return (
+      <>
+        <p style={{ textAlign: 'center', marginTop: '40px' }}>
+          Please login to create a post.
+        </p>
+        <Modal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)}>
+          <LoginForm onClose={() => setShowLoginModal(false)} />
+        </Modal>
+      </>
+    );
   }
 
   return (

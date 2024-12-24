@@ -1,24 +1,42 @@
-import { getServerSession } from 'next-auth';
-import { authOptions } from '../api/auth/[...nextauth]/route';
+'use client';
+
+import { useSession } from 'next-auth/react';
+import { useState, useEffect } from 'react';
 import DashboardContent from '@/components/ui/DashboardContent';
+import LoginForm from '@/components/auth/LoginForm';
+import Modal from '@/components/ui/Modal';
 
-export default async function Dashboard() {
-  const session = await getServerSession(authOptions);
+export default function Dashboard() {
+  const { data: session, status } = useSession();
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
-  if (!session) {
-    // Redirect unauthenticated users to the sign-in page
-    return (
-      <div style={{ textAlign: 'center', marginTop: '50px' }}>
-        <h1>Access Denied</h1>
-        <a
-          href="/auth/signin"
-          style={{ color: '#0070f3', textDecoration: 'underline' }}
-        >
-          Sign In
-        </a>
-      </div>
-    );
+  // Automatically show login modal if unauthenticated
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      setShowLoginModal(true);
+    }
+  }, [status]);
+
+  // Show loading indicator while session is being fetched
+  if (status === 'loading') {
+    return <p>Loading session...</p>;
   }
 
-  return <DashboardContent session={session} />;
+  // Show dashboard content if user is authenticated
+  if (session) {
+    return <DashboardContent session={session} />;
+  }
+
+  // If not authenticated, show login modal and fallback message
+  return (
+    <>
+      <p style={{ textAlign: 'center', marginTop: '40px' }}>
+        Please login to access the dashboard.
+      </p>
+
+      <Modal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)}>
+        <LoginForm onClose={() => setShowLoginModal(false)} />
+      </Modal>
+    </>
+  );
 }
