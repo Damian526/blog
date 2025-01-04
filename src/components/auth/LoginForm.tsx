@@ -4,10 +4,6 @@ import { signIn } from 'next-auth/react';
 import { useState } from 'react';
 import styled from 'styled-components';
 
-interface LoginFormProps {
-  onClose: () => void;
-}
-
 const Title = styled.h1`
   font-size: 1.8rem;
   margin-bottom: 20px;
@@ -60,7 +56,7 @@ const ErrorMessage = styled.p`
   text-align: center;
 `;
 
-export default function LoginForm({ onClose }: LoginFormProps) {
+export default function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');

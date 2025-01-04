@@ -1,7 +1,8 @@
-import NextAuth, { SessionStrategy } from 'next-auth';
+import NextAuth, { SessionStrategy, User, Session } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcrypt';
+import { JWT } from 'next-auth/jwt';
 
 // Initialize Prisma once. In a production app, consider using a global instance.
 const prisma = new PrismaClient();
@@ -29,7 +30,6 @@ export const authOptions = {
           return null;
         }
 
-        // Compare the provided password with the hashed password
         const isPasswordValid = await bcrypt.compare(
           credentials.password,
           user.password,
@@ -37,7 +37,6 @@ export const authOptions = {
         if (!isPasswordValid) {
           return null;
         }
-        // Return the user object
         return {
           id: user.id.toString(),
           name: user.name,
@@ -51,15 +50,15 @@ export const authOptions = {
     strategy: 'jwt' as SessionStrategy,
   },
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user }: { token: JWT; user?: User }) {
       if (user) {
         token.user = user;
       }
       return token;
     },
-    async session({ session, token }) {
+    async session({ session, token }: { session: Session; token: JWT }) {
       if (token?.user) {
-        session.user = token.user as any;
+        session.user = token.user as User;
       }
       return session;
     },

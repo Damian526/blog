@@ -1,6 +1,7 @@
 import PostContent from '@/components/blog/PostContent';
 
 export default async function PostPage({
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   params,
 }: {
   params: { slug: string };

@@ -28,7 +28,7 @@ export default function LoginButton() {
         Login
       </LoginButtonStyled>
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
-        <LoginForm onClose={() => setIsModalOpen(false)} />
+        <LoginForm />
       </Modal>
     </>
   );

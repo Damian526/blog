@@ -117,7 +117,7 @@ export default function NewPostPage() {
           Please login to create a post.
         </p>
         <Modal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)}>
-          <LoginForm onClose={() => setShowLoginModal(false)} />
+          <LoginForm />
         </Modal>
       </>
     );

@@ -35,7 +35,7 @@ export default function Dashboard() {
       </p>
 
       <Modal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)}>
-        <LoginForm onClose={() => setShowLoginModal(false)} />
+        <LoginForm />
       </Modal>
     </>
   );
