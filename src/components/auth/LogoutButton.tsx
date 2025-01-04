@@ -4,7 +4,7 @@ import { signOut } from 'next-auth/react';
 import styled from 'styled-components';
 
 const Button = styled.button`
-  padding: 12px 20px;
+  padding: 10px 18px;
   background-color: #f44336;
   color: white;
   font-size: 1rem;
