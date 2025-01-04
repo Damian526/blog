@@ -67,7 +67,7 @@ export default function NewPostPage() {
   const { data: session, status } = useSession();
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
-  const [error, setError] = useState('');
+  const [error, setError] = useState<string | null>(null);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const router = useRouter();
 
@@ -95,14 +95,14 @@ export default function NewPostPage() {
         body: JSON.stringify({ title, content }),
       });
 
-      // if (!res.ok) {
-      //   throw new Error('Failed to create post.');
-      // }
+      if (!res.ok) {
+        throw new globalThis.Error('Failed to create post.');
+      }
 
       // Redirect to dashboard after successful creation
       router.push('/dashboard');
     } catch (err) {
-      setError(err.message || 'Something went wrong.');
+      setError((err as Error).message || 'Something went wrong.');
     }
   }
 

@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import styled from 'styled-components';
+import { Session } from 'next-auth';
 
 const Button = styled.button`
   background-color: #0070f3;
@@ -17,13 +18,19 @@ const Button = styled.button`
   }
 `;
 
-export default function DashboardContent({ session }: { session: any }) {
+interface DashboardContentProps {
+  session: Session | null;
+}
+
+export default function DashboardContent({ session }: DashboardContentProps) {
   const router = useRouter();
 
   return (
     <div>
       <h1>Dashboard</h1>
-      <p>Welcome, {session.user?.email}! Manage your blog posts here.</p>
+      <p>
+        Welcome, {session?.user?.email || 'Guest'}! Manage your blog posts here.
+      </p>
       <Button onClick={() => router.push('/dashboard/new')}>
         Create New Post
       </Button>

@@ -1,6 +1,7 @@
 import GlobalStyle from '@/styles/GlobalStyle';
 import Header from '@/components/layout/Header';
 import SessionProviderWrapper from '@/components/providers/SessionProviderWrapper';
+import { Session } from 'next-auth';
 
 export const metadata = {
   title: 'My App',
@@ -9,7 +10,7 @@ export const metadata = {
 
 interface RootLayoutProps {
   children: React.ReactNode;
-  session: any;
+  session: Session | null;
 }
 
 export default function RootLayout({ children, session }: RootLayoutProps) {
