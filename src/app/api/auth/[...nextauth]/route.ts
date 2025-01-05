@@ -7,7 +7,7 @@ import { JWT } from 'next-auth/jwt';
 // Initialize Prisma once. In a production app, consider using a global instance.
 const prisma = new PrismaClient();
 
-export const authOptions = {
+const authOptions = {
   providers: [
     CredentialsProvider({
       name: 'Credentials',
@@ -68,4 +68,5 @@ export const authOptions = {
 const handler = NextAuth(authOptions);
 
 // For App Router, we need to export GET and POST
-export { handler as GET, handler as POST };
+export const GET = handler.handlers.GET;
+export const POST = handler.handlers.POST;
