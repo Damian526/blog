@@ -56,7 +56,6 @@ export default function RegisterForm({ isOpen, onClose }: RegisterFormProps) {
     e.preventDefault();
     setError('');
 
-    console.log(process.env.NEXT_PUBLIC_API_URL)
     const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
     const res = await fetch(`${API_BASE_URL}/api/auth/register`, {
       method: 'POST',
