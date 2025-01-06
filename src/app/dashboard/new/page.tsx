@@ -87,7 +87,8 @@ export default function NewPostPage() {
     }
 
     try {
-      const res = await fetch('/api/posts', {
+      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+      const res = await fetch(`${API_BASE_URL}/api/posts`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
