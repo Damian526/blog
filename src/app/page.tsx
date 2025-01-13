@@ -3,7 +3,7 @@ import PostList from '@/components/blog/PostList';
 export default async function Home() {
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
   const res = await fetch(`${API_BASE_URL}/api/posts`, {
-    cache: 'no-store', // Ensure fresh data on each request
+    next: { revalidate: 60 }, // Enable ISR with revalidation every minute
   });
 
   if (!res.ok) {

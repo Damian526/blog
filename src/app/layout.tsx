@@ -1,6 +1,7 @@
 import GlobalStyle from '@/styles/GlobalStyle';
 import Header from '@/components/layout/Header';
 import SessionProviderWrapper from '@/components/providers/SessionProviderWrapper';
+import SWRProvider from '@/components/providers/SWRProvider';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 
@@ -21,8 +22,10 @@ export default async function RootLayout({ children }: RootLayoutProps) {
       <body>
         <GlobalStyle />
         <SessionProviderWrapper session={session}>
-          <Header />
-          <main>{children}</main>
+          <SWRProvider>
+            <Header />
+            <main>{children}</main>
+          </SWRProvider>
         </SessionProviderWrapper>
       </body>
     </html>
