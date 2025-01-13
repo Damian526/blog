@@ -1,51 +1,45 @@
-'use client';
-
 import Link from 'next/link';
 import styled from 'styled-components';
 
+// Styled Components
 const Card = styled.div`
   border: 1px solid #ddd;
   padding: 20px;
+  border-radius: 8px;
   margin-bottom: 20px;
-  border-radius: 5px;
-  transition: box-shadow 0.3s;
-
-  &:hover {
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  }
 `;
 
 const Title = styled.h2`
-  margin: 0 0 10px;
   font-size: 1.5rem;
+  margin-bottom: 10px;
 `;
 
-const Excerpt = styled.p`
-  color: #666;
-  margin: 0;
-`;
+// Interfaces
+interface Author {
+  name: string;
+  email: string;
+}
 
-const StyledLink = styled(Link)`
-  text-decoration: none;
-  color: #0070f3;
-  font-weight: bold;
+interface Post {
+  id: number;
+  title: string;
+  content?: string;
+  published: boolean;
+  createdAt: string; // ISO string
+  author: Author;
+}
 
-  &:hover {
-    text-decoration: underline;
-    color: #005bb5;
-  }
-`;
+interface PostCardProps {
+  post: Post; // Accept a `post` object as a prop
+}
 
-export default function PostCard({
-  post,
-}: {
-  post: { id: number; title: string; excerpt: string; slug: string };
-}) {
+export default function PostCard({ post }: PostCardProps) {
+  // Use the `post` object
   return (
     <Card>
       <Title>{post.title}</Title>
-      <Excerpt>{post.excerpt}</Excerpt>
-      <StyledLink href={`/posts/${post.slug}`}>Read More</StyledLink>
+      <p>{post.content || 'No content available'}...</p>
+      <Link href={`/posts/${post.id}`}>Read More</Link>
     </Card>
   );
 }

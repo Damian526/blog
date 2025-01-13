@@ -2,30 +2,45 @@
 
 import styled from 'styled-components';
 
-const Container = styled.div`
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 20px;
+const PostContainer = styled.div`
+  margin-bottom: 20px;
 `;
 
 const Title = styled.h1`
-  font-size: 2.5rem;
+  font-size: 2rem;
+  margin-bottom: 10px;
+`;
+
+const Author = styled.p`
+  font-size: 0.9rem;
+  color: #555;
   margin-bottom: 20px;
 `;
 
 const Content = styled.div`
+  font-size: 1rem;
   line-height: 1.6;
 `;
 
-export default function PostContent({
-  post,
-}: {
-  post: { title: string; content: string };
-}) {
+interface PostContentProps {
+  post: {
+    title: string;
+    content: string;
+    author: {
+      name: string;
+    };
+    createdAt: string;
+  };
+}
+
+export default function PostContent({ post }: PostContentProps) {
   return (
-    <Container>
+    <PostContainer>
       <Title>{post.title}</Title>
-      <Content dangerouslySetInnerHTML={{ __html: post.content }} />
-    </Container>
+      <Author>
+        By {post.author.name} on {new Date(post.createdAt).toLocaleDateString()}
+      </Author>
+      <Content>{post.content}</Content>
+    </PostContainer>
   );
 }
