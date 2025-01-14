@@ -7,7 +7,7 @@ export default async function SinglePostPage({
 }) {
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
-  // Fetch the single post data
+  // Fetch the single post data using a query parameter
   const res = await fetch(`${API_BASE_URL}/api/posts/${params.id}`, {
     cache: 'no-store',
   });
