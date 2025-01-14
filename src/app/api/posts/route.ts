@@ -21,7 +21,6 @@ export async function GET() {
       ...post,
       createdAt: post.createdAt.toISOString(),
     }));
-    console.log(formattedPosts);
     return NextResponse.json(formattedPosts);
   } catch (error) {
     console.error('Error fetching posts:', error);

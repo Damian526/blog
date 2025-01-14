@@ -3,13 +3,15 @@ import PostContent from '@/components/blog/PostContent';
 export default async function SinglePostPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
+  // Await the params object to resolve its value
+  const { id } = await params;
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
   // Fetch the single post data
-  const res = await fetch(`${API_BASE_URL}/api/posts/${params.id}`, {
-    cache: 'no-store', // Fetch fresh data on every request
+  const res = await fetch(`${API_BASE_URL}/api/posts/${id}`, {
+    cache: 'no-store',
   });
 
   if (!res.ok) {
