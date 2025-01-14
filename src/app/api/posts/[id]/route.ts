@@ -4,10 +4,15 @@ import { prisma } from '@/lib/prisma';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  context: { params: { id: string } },
 ) {
-  // Convert the ID to a number, or handle it however you need
-  const postId = Number(params.id);
+  const { id } = context.params;
+
+  const postId = parseInt(id, 10);
+
+  if (isNaN(postId)) {
+    return NextResponse.json({ error: 'Invalid post ID' }, { status: 400 });
+  }
 
   try {
     const post = await prisma.post.findUnique({
