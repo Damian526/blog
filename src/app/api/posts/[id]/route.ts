@@ -3,11 +3,10 @@ import { prisma } from '@/lib/prisma';
 
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ id: string }> },
+  { params }: { params: { id: number } },
 ) {
-  // Await the `params` object
-  const { id } = await params;
-  const postId = parseInt(id, 10);
+  // Extract the `id` parameter
+  const postId = params.id;
 
   if (isNaN(postId)) {
     return NextResponse.json({ error: 'Invalid post ID' }, { status: 400 });
