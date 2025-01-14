@@ -1,21 +1,18 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
-export async function GET(request: Request) {
+export async function GET(
+  request: Request,
+  { params }: { params: { id: string } },
+) {
+  // Extract the `id` parameter
+  const postId = parseInt(params.id, 10);
+
+  if (isNaN(postId)) {
+    return NextResponse.json({ error: 'Invalid post ID' }, { status: 400 });
+  }
+
   try {
-    const url = new URL(request.url);
-    const pathSegments = url.pathname.split('/'); // Split the path by "/"
-    const id = pathSegments[pathSegments.length - 1]; // Get the last segment, which is the `id`
-
-    if (!id || isNaN(parseInt(id, 10))) {
-      return NextResponse.json(
-        { error: 'Invalid or missing post ID' },
-        { status: 400 },
-      );
-    }
-
-    const postId = parseInt(id, 10);
-
     // Fetch the post from the database
     const post = await prisma.post.findUnique({
       where: { id: postId },
