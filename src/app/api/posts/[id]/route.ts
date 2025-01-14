@@ -4,9 +4,9 @@ import { prisma } from '@/lib/prisma';
 
 export async function GET(
   request: NextRequest,
-  context: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
-  const { id } = context.params;
+  const { id } = await params;
 
   const postId = parseInt(id, 10);
 
