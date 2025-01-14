@@ -2,13 +2,10 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
-interface ContextParams {
-  params: {
-    id: string;
-  };
-}
-
-export async function GET(request: NextRequest, { params }: ContextParams) {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { id: string } },
+) {
   // Convert the ID to a number, or handle it however you need
   const postId = Number(params.id);
 
