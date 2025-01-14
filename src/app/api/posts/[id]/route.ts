@@ -1,13 +1,21 @@
-import { prisma } from '@/lib/prisma';
 import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { prisma } from '@/lib/prisma';
 
-export async function GET(req: Request, context: { params: { id: string } }) {
-  const postId = Number(context.params.id);
+interface ContextParams {
+  params: {
+    id: string;
+  };
+}
+
+export async function GET(request: NextRequest, { params }: ContextParams) {
+  // Convert the ID to a number, or handle it however you need
+  const postId = Number(params.id);
 
   try {
     const post = await prisma.post.findUnique({
       where: { id: postId },
-      include: { author: { select: { name: true } } }, // Include author details
+      include: { author: { select: { name: true } } },
     });
 
     if (!post) {

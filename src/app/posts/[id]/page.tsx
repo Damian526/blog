@@ -9,7 +9,7 @@ export default async function SinglePostPage({
 
   // Fetch the single post data
   const res = await fetch(`${API_BASE_URL}/api/posts/${params.id}`, {
-    cache: 'no-store', // Fetch fresh data on every request
+    cache: 'no-store',
   });
 
   if (!res.ok) {
