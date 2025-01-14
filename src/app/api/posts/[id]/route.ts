@@ -1,11 +1,10 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
-type Context = {
-  params: { id: string };
-};
-
-export async function GET(request: Request, { params }: Context) {
+export async function GET(
+  request: Request,
+  { params }: { params: { id: string } },
+) {
   // Extract the `id` parameter
   const postId = parseInt(params.id, 10);
 
