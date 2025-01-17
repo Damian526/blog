@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
 export async function GET() {
   try {
     const posts = await prisma.post.findMany({
@@ -33,6 +35,10 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
+    const session = await getServerSession(authOptions);
+    if (!session || !session.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     const { title, content } = await request.json();
 
     if (!title || !content) {
@@ -41,6 +47,13 @@ export async function POST(request: Request) {
         { status: 400 },
       );
     }
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email as string },
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
 
     const post = await prisma.post.create({
       data: {
@@ -48,7 +61,7 @@ export async function POST(request: Request) {
         content,
         published: false,
         createdAt: new Date(),
-        authorId: 1, // Replace with the authenticated user's ID
+        authorId: user.id, // Replace with the authenticated user's ID
       },
     });
 
