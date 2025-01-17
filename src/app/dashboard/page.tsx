@@ -72,7 +72,7 @@ export default function Dashboard() {
           ) : error ? (
             <p>Error fetching posts: {error.message}</p>
           ) : posts?.length === 0 ? (
-            <p>You don't have any posts yet.</p>
+            <p>You don&apos;t have any posts yet.</p>
           ) : (
             posts.map((post: any) => (
               <PostItem key={post.id}>
