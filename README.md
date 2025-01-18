@@ -1,8 +1,17 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
+First, install dependencies:
+```bash
+npm install
+# or
+yarn install
+# or
+pnpm install
+# or
+bun install
+```
 
-First, run the development server:
+Secondly, run the development server:
 
 ```bash
 npm run dev
@@ -14,23 +23,34 @@ pnpm dev
 bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:4006](http://localhost:4006) with your browser to see the result or see deployed version - [https://vercel.com/damians-projects-d2f33c16/blog](https://vercel.com/damians-projects-d2f33c16/blog).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Features
 
-## Learn More
+### Authentication
+🔒 User authentication using next-auth with session management.
+🛡️ Secure login and registration forms with modal-based UI.
+### Blog Post Management
+📝 Create new blog posts dynamically, linked to the authenticated user.
+📖 View all posts with detailed content and author information.
+✅ Published and unpublished posts differentiation.
+🔄 Real-time updates for posts using SWR.
+### User Dashboard
+👤 Personalized dashboard for authenticated users.
+📜 Displays a list of user-specific blog posts.
+🛠️ Interactive interface to manage posts.
+### API Integration
+🌐 RESTful APIs powered by Prisma and Next.js App Router.
+🛡️ Authentication-protected APIs ensuring secure access.
+🔍 Fetch and manage blog posts with efficient querying.
+### Real-Time Updates
+⚡ Dynamic data fetching and caching using SWR.
+🔁 Automatic revalidation of data on focus and reconnect.
+### Backend
+🗄️ Powered by Prisma ORM with PostgreSQL.
+🧩 Models for User and Post with relational mappings.
+🔐 Secure backend implementation for CRUD operations.
 
-To learn more about Next.js, take a look at the following resources:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
