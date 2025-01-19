@@ -7,6 +7,7 @@ import DashboardContent from '@/components/ui/DashboardContent';
 import LoginForm from '@/components/auth/LoginForm';
 import Modal from '@/components/ui/Modal';
 import styled from 'styled-components';
+import Link from 'next/link';
 
 // Styled Components
 const PostsContainer = styled.div`
@@ -85,6 +86,9 @@ export default function Dashboard() {
                   <strong>Created At:</strong>{' '}
                   {new Date(post.createdAt).toLocaleDateString()}
                 </p>
+                <Link href={`/posts/${post.id}/edit`}>
+                  <button>Edit</button>
+                </Link>
               </PostItem>
             ))
           )}

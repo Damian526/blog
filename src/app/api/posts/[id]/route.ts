@@ -37,12 +37,14 @@ export async function GET(request: Request) {
   }
 }
 
-export async function PUT(request: Request) {
+export async function PATCH(request: Request) {
   try {
+    // Extract the post ID from the URL path
     const url = new URL(request.url);
-    const pathSegments = url.pathname.split('/'); // Split the path by "/"
-    const id = pathSegments[pathSegments.length - 1]; // Get the last segment, which is the `id`
+    const pathSegments = url.pathname.split('/');
+    const id = pathSegments[pathSegments.length - 1];
 
+    // Validate the post ID
     if (!id || isNaN(parseInt(id, 10))) {
       return NextResponse.json(
         { error: 'Invalid or missing post ID' },
@@ -52,13 +54,13 @@ export async function PUT(request: Request) {
 
     const postId = parseInt(id, 10);
 
-    // Parse the request body
-    const { title, content, published } = await request.json();
+    // Parse the request body for fields to update
+    const { title, content } = await request.json();
 
-    // Validate the input
-    if (!title || !content) {
+    // If no fields were provided, return an error
+    if (title === undefined && content === undefined) {
       return NextResponse.json(
-        { error: 'Title and Content are required.' },
+        { error: 'No fields provided for update.' },
         { status: 400 },
       );
     }
@@ -72,18 +74,15 @@ export async function PUT(request: Request) {
       return NextResponse.json({ error: 'Post not found' }, { status: 404 });
     }
 
-    // Update the post
+    // Perform a partial update: update only provided fields
     const updatedPost = await prisma.post.update({
       where: { id: postId },
       data: {
-        title,
-        content,
-        published:
-          typeof published === 'boolean' ? published : existingPost.published,
+        ...(title && { title }),
+        ...(content && { content }),
       },
     });
 
-    // Return the updated post
     return NextResponse.json(updatedPost);
   } catch (error) {
     console.error('Error updating post:', error);
