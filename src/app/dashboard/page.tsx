@@ -8,6 +8,7 @@ import LoginForm from '@/components/auth/LoginForm';
 import Modal from '@/components/ui/Modal';
 import styled from 'styled-components';
 import Link from 'next/link';
+import PostList from '@/components/blog/PostList';
 
 // Styled Components
 const PostsContainer = styled.div`
@@ -75,22 +76,7 @@ export default function Dashboard() {
           ) : posts?.length === 0 ? (
             <p>You don&apos;t have any posts yet.</p>
           ) : (
-            posts.map((post: any) => (
-              <PostItem key={post.id}>
-                <Title>{post.title}</Title>
-                <Content>{post.content || 'No content available'}</Content>
-                <p>
-                  <strong>Published:</strong> {post.published ? 'Yes' : 'No'}
-                </p>
-                <p>
-                  <strong>Created At:</strong>{' '}
-                  {new Date(post.createdAt).toLocaleDateString()}
-                </p>
-                <Link href={`/posts/${post.id}/edit`}>
-                  <button>Edit</button>
-                </Link>
-              </PostItem>
-            ))
+            <PostList posts={posts} editable={true} />
           )}
         </PostsContainer>
       </div>

@@ -20,6 +20,7 @@ interface Post {
 
 interface PostListProps {
   posts: Post[];
+  editable: boolean;
 }
 
 // Styled Components
@@ -29,11 +30,11 @@ const Container = styled.div`
   padding: 20px;
 `;
 
-export default function PostList({ posts }: PostListProps) {
+export default function PostList({ posts, editable }: PostListProps) {
   return (
     <Container>
       {posts.map((post) => (
-        <PostCard key={post.id} post={post} />
+        <PostCard key={post.id} post={post} editable={editable} />
       ))}
     </Container>
   );
