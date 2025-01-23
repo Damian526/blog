@@ -20,7 +20,8 @@ interface Post {
 
 interface PostListProps {
   posts: Post[];
-  editable: boolean;
+  showActions?: boolean;
+  onDelete?: (postId: number) => Promise<void>;
 }
 
 // Styled Components
@@ -30,11 +31,20 @@ const Container = styled.div`
   padding: 20px;
 `;
 
-export default function PostList({ posts, editable }: PostListProps) {
+export default function PostList({
+  posts,
+  showActions,
+  onDelete,
+}: PostListProps) {
   return (
     <Container>
       {posts.map((post) => (
-        <PostCard key={post.id} post={post} editable={editable} />
+        <PostCard
+          key={post.id}
+          post={post}
+          showActions={showActions}
+          onDelete={onDelete}
+        />
       ))}
     </Container>
   );

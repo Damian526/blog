@@ -14,6 +14,29 @@ const Title = styled.h2`
   margin-bottom: 10px;
 `;
 
+const ButtonContainer = styled.div`
+  margin-top: 15px;
+`;
+
+const ActionButton = styled.button`
+  background-color: #0070f3;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+  margin-right: 10px;
+
+  &:hover {
+    background-color: #005bb5;
+  }
+
+  &:last-child {
+    margin-right: 0;
+  }
+`;
+
 // Interfaces
 interface Author {
   name: string;
@@ -31,19 +54,36 @@ interface Post {
 
 interface PostCardProps {
   post: Post; // Accept a `post` object as a prop
-  editable?: boolean; // Optional prop to show the "Edit" button
+  showActions?: boolean; // Optional prop to show edit and delete buttons
+  onDelete?: (postId: number) => void; // Optional delete handler
 }
 
-export default function PostCard({ post, editable = false }: PostCardProps) {
+export default function PostCard({
+  post,
+  showActions = false,
+  onDelete,
+}: PostCardProps) {
+  const handleDelete = () => {
+    if (
+      onDelete &&
+      window.confirm('Are you sure you want to delete this post?')
+    ) {
+      onDelete(post.id);
+    }
+  };
+
   return (
     <Card>
       <Title>{post.title}</Title>
       <p>{post.content || 'No content available'}...</p>
       <Link href={`/posts/${post.id}`}>Read More</Link>
-      {editable && (
-        <Link href={`/posts/${post.id}/edit`}>
-          <button style={{ marginLeft: '10px' }}>Edit</button>
-        </Link>
+      {showActions && (
+        <ButtonContainer>
+          <Link href={`/posts/${post.id}/edit`}>
+            <ActionButton>Edit</ActionButton>
+          </Link>
+          <ActionButton onClick={handleDelete}>Delete</ActionButton>
+        </ButtonContainer>
       )}
     </Card>
   );

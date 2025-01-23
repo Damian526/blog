@@ -7,7 +7,6 @@ import DashboardContent from '@/components/ui/DashboardContent';
 import LoginForm from '@/components/auth/LoginForm';
 import Modal from '@/components/ui/Modal';
 import styled from 'styled-components';
-import Link from 'next/link';
 import PostList from '@/components/blog/PostList';
 
 // Styled Components
@@ -15,23 +14,6 @@ const PostsContainer = styled.div`
   margin-top: 20px;
   max-width: 800px;
   margin: 0 auto;
-`;
-
-const PostItem = styled.div`
-  border: 1px solid #ddd;
-  padding: 15px;
-  border-radius: 8px;
-  margin-bottom: 10px;
-`;
-
-const Title = styled.h2`
-  font-size: 1.5rem;
-  margin-bottom: 10px;
-`;
-
-const Content = styled.p`
-  font-size: 1rem;
-  line-height: 1.6;
 `;
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
@@ -52,11 +34,29 @@ export default function Dashboard() {
     data: posts,
     error,
     isLoading,
+    mutate,
   } = useSWR(
     session ? `${API_BASE_URL}/api/user/posts` : null, // Only fetch if session exists
     fetcher,
   );
+  const handleDelete = async (postId: number) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/posts/${postId}`, {
+        method: 'DELETE',
+      });
 
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to delete the post.');
+      }
+
+      // Optimistically update the UI by revalidating SWR cache
+      mutate();
+    } catch (error) {
+      console.error('Error deleting post:', error);
+      alert('Failed to delete the post. Please try again.');
+    }
+  };
   // Show loading indicator while session is being fetched
   if (status === 'loading') {
     return <p>Loading session...</p>;
@@ -76,7 +76,11 @@ export default function Dashboard() {
           ) : posts?.length === 0 ? (
             <p>You don&apos;t have any posts yet.</p>
           ) : (
-            <PostList posts={posts} editable={true} />
+            <PostList
+              posts={posts}
+              showActions={true}
+              onDelete={handleDelete}
+            />
           )}
         </PostsContainer>
       </div>
