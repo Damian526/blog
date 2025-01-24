@@ -80,7 +80,10 @@ export default function PostCard({
   return (
     <Card>
       <Title>{post.title}</Title>
-      <Author>By {post?.author?.name || <span>Loading author...</span>}</Author>
+      <Author>
+        By{' '}
+        {`${post?.author?.name} on ${new Date(post.createdAt).toLocaleDateString()}`}
+      </Author>
       <p>{post.content || 'No content available'}...</p>
       <Link href={`/posts/${post.id}`}>Read More</Link>
       {showActions && (

@@ -55,7 +55,8 @@ const Button = styled.button`
   }
 `;
 
-const Error = styled.p`
+// Renamed styled component from `Error` to `ErrorMessage`
+const ErrorMessage = styled.p`
   color: red;
   font-size: 0.9rem;
 `;
@@ -118,7 +119,7 @@ export default function PostForm({
   return (
     <Container>
       <TitleHeading>{post ? 'Edit Post' : 'Create New Post'}</TitleHeading>
-      {error && <Error>{error}</Error>}
+      {error && <ErrorMessage>{error}</ErrorMessage>}
       <Form onSubmit={handleSubmit}>
         <Label htmlFor="title">Title</Label>
         <Input
