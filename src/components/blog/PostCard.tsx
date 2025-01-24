@@ -18,6 +18,11 @@ const ButtonContainer = styled.div`
   margin-top: 15px;
 `;
 
+const Author = styled.p`
+  font-size: 0.9rem;
+  color: #555;
+  margin-bottom: 20px;
+`;
 const ActionButton = styled.button`
   background-color: #0070f3;
   color: white;
@@ -75,6 +80,7 @@ export default function PostCard({
   return (
     <Card>
       <Title>{post.title}</Title>
+      <Author>By {post?.author?.name || <span>Loading author...</span>}</Author>
       <p>{post.content || 'No content available'}...</p>
       <Link href={`/posts/${post.id}`}>Read More</Link>
       {showActions && (

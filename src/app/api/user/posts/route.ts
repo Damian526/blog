@@ -1,6 +1,6 @@
-import { prisma } from '@/lib/prisma'; 
+import { prisma } from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth'; 
+import { authOptions } from '@/lib/auth';
 import { NextResponse } from 'next/server';
 
 export async function GET(req: Request) {
@@ -21,6 +21,12 @@ export async function GET(req: Request) {
         title: true,
         content: true,
         createdAt: true,
+        author: {
+          select: {
+            name: true,
+            email: true,
+          },
+        },
       },
     });
 

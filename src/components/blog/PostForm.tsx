@@ -60,8 +60,14 @@ const Error = styled.p`
   font-size: 0.9rem;
 `;
 
+interface Post {
+  id?: string;
+  title: string;
+  content: string;
+}
+
 interface PostFormProps {
-  post?: { id: number; title: string; content?: string }; // Optional for editing
+  post?: Post; // Optional for editing
   onSuccessRedirect?: string;
 }
 
