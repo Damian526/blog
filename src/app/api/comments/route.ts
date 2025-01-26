@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'; // Ensure you have your Prisma client set
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth'; // Ensure your NextAuth config is set up
 
+// Create a comment
 export async function POST(request: Request) {
   try {
     // Parse the request body
@@ -49,6 +50,39 @@ export async function POST(request: Request) {
     console.error('Error creating comment:', error);
     return NextResponse.json(
       { error: 'Failed to create comment' },
+      { status: 500 },
+    );
+  }
+}
+
+// Get comments for a specific post
+export async function GET(request: Request) {
+  try {
+    // Parse the query parameter from the request URL
+    const url = new URL(request.url);
+    const postId = url.searchParams.get('postId');
+
+    if (!postId || isNaN(parseInt(postId, 10))) {
+      return NextResponse.json(
+        { error: 'Invalid or missing postId' },
+        { status: 400 },
+      );
+    }
+
+    // Fetch comments for the specified post
+    const comments = await prisma.comment.findMany({
+      where: { postId: parseInt(postId, 10) },
+      include: {
+        author: { select: { name: true, email: true } }, // Include author details
+      },
+      orderBy: { createdAt: 'asc' }, // Order comments by creation time
+    });
+
+    return NextResponse.json(comments, { status: 200 });
+  } catch (error) {
+    console.error('Error fetching comments:', error);
+    return NextResponse.json(
+      { error: 'Failed to fetch comments' },
       { status: 500 },
     );
   }
