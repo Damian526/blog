@@ -24,6 +24,7 @@ const Content = styled.div`
 
 interface PostContentProps {
   post: {
+    id: number;
     title: string;
     content: string;
     author: {

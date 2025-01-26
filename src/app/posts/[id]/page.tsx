@@ -1,33 +1,56 @@
+'use client';
+
 import PostContent from '@/components/blog/PostContent';
+import CommentsSection from '@/components/comments/CommentsSection';
+import { useEffect, useState } from 'react';
+import { useParams } from 'next/navigation';
 
-export default async function SinglePostPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  // Await the params object to resolve its value
-  const { id } = await params;
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+interface Post {
+  id: number;
+  title: string;
+  content: string;
+  createdAt: string;
+  author: {
+    name: string;
+  };
+}
 
-  // Fetch the single post data
-  const res = await fetch(`${API_BASE_URL}/api/posts/${id}`, {
-    cache: 'no-store',
-  });
+export default function SinglePostPage() {
+  const { id } = useParams();
+  const [post, setPost] = useState<Post | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  if (!res.ok) {
-    return (
-      <div>
-        <h1>Post Not Found</h1>
-        <p>The requested post does not exist or has been deleted.</p>
-      </div>
-    );
-  }
+  useEffect(() => {
+    async function fetchPost() {
+      try {
+        const res = await fetch(`/api/posts/${id}`, { cache: 'no-store' });
+        if (!res.ok) {
+          const data = await res.json();
+          throw new Error(data.error || 'Failed to fetch post');
+        }
+        const postData = await res.json();
+        setPost(postData);
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    }
 
-  const post = await res.json();
+    if (id) {
+      fetchPost();
+    }
+  }, [id]);
+
+  if (loading) return <p>Loading post...</p>;
+  if (error) return <p style={{ color: 'red' }}>{error}</p>;
+  if (!post) return <p>Post not found.</p>;
 
   return (
-    <div style={{ maxWidth: '800px', margin: '0 auto', padding: '20px' }}>
+    <div style={{ maxWidth: '800px', margin: '0 auto' }}>
       <PostContent post={post} />
+      <CommentsSection postId={post.id} />
     </div>
   );
 }
