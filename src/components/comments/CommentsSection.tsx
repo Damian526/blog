@@ -15,8 +15,13 @@ const CommentItem = styled.div`
   border: 1px solid #ddd;
   border-radius: 5px;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
+`;
+
+const CommentActions = styled.div`
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
 `;
 
 const Author = styled.p`
@@ -100,24 +105,38 @@ export default function CommentsSection({ postId }: CommentsSectionProps) {
     }
   }
 
+  async function handleEdit(commentId: number, updatedContent: string) {
+    try {
+      const res = await fetch('/api/comments', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ commentId, content: updatedContent }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || 'Failed to update comment');
+      }
+
+      // Refresh comments after editing
+      mutate();
+    } catch (err: any) {
+      alert(err.message);
+    }
+  }
+
   return (
     <CommentsContainer>
       <h2>Comments</h2>
       {comments && comments.length > 0 ? (
         comments.map((comment) => (
-          <CommentItem key={comment.id}>
-            <div>
-              <Author>
-                {comment.author.name} —{' '}
-                {new Date(comment.createdAt).toLocaleDateString()}
-              </Author>
-              <Content>{comment.content}</Content>
-            </div>
-            {/* Render the delete button only if the current user created the comment */}
-            {currentUserEmail === comment.author.email && (
-              <button onClick={() => handleDelete(comment.id)}>Delete</button>
-            )}
-          </CommentItem>
+          <EditableComment
+            key={comment.id}
+            comment={comment}
+            currentUserEmail={currentUserEmail}
+            onDelete={handleDelete}
+            onEdit={handleEdit}
+          />
         ))
       ) : (
         <p>No comments yet.</p>
@@ -125,6 +144,62 @@ export default function CommentsSection({ postId }: CommentsSectionProps) {
 
       <AddCommentForm postId={postId} onCommentAdded={() => mutate()} />
     </CommentsContainer>
+  );
+}
+
+function EditableComment({
+  comment,
+  currentUserEmail,
+  onDelete,
+  onEdit,
+}: {
+  comment: Comment;
+  currentUserEmail: string | null;
+  onDelete: (commentId: number) => void;
+  onEdit: (commentId: number, updatedContent: string) => void;
+}) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editContent, setEditContent] = useState(comment.content);
+
+  const handleSave = () => {
+    onEdit(comment.id, editContent);
+    setIsEditing(false);
+  };
+
+  return (
+    <CommentItem>
+      <div>
+        <Author>
+          {comment.author.name} —{' '}
+          {new Date(comment.createdAt).toLocaleDateString()}
+        </Author>
+        {isEditing ? (
+          <textarea
+            value={editContent}
+            onChange={(e) => setEditContent(e.target.value)}
+            rows={3}
+            style={{ width: '100%', marginTop: '10px' }}
+          />
+        ) : (
+          <Content>{comment.content}</Content>
+        )}
+      </div>
+      {currentUserEmail === comment.author.email && (
+        <CommentActions>
+          {isEditing ? (
+            <>
+              <button onClick={handleSave}>Save</button>
+              <button onClick={() => setIsEditing(false)}>Cancel</button>
+            </>
+          ) : (
+            <>
+              <button onClick={() => setIsEditing(true)}>Edit</button>
+              <button onClick={() => onDelete(comment.id)}>Delete</button>
+            </>
+          )}
+        </CommentActions>
+      )}
+    </CommentItem>
   );
 }
 
