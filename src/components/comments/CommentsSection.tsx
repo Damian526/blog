@@ -2,7 +2,7 @@
 
 import useSWR from 'swr';
 import styled from 'styled-components';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 // Styled components
 const CommentsContainer = styled.div`
@@ -59,6 +59,24 @@ export default function CommentsSection({ postId }: CommentsSectionProps) {
     fetcher,
   );
 
+  const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null);
+
+  // Fetch the current user's email
+  useEffect(() => {
+    async function fetchCurrentUser() {
+      try {
+        const res = await fetch('/api/auth/session');
+        const data = await res.json();
+        setCurrentUserEmail(data?.user?.email || null);
+      } catch (err) {
+        console.error('Failed to fetch current user:', err);
+        setCurrentUserEmail(null);
+      }
+    }
+
+    fetchCurrentUser();
+  }, []);
+
   if (isLoading) return <p>Loading comments...</p>;
   if (error) return <p>Failed to load comments</p>;
 
@@ -95,7 +113,10 @@ export default function CommentsSection({ postId }: CommentsSectionProps) {
               </Author>
               <Content>{comment.content}</Content>
             </div>
-            <button onClick={() => handleDelete(comment.id)}>Delete</button>
+            {/* Render the delete button only if the current user created the comment */}
+            {currentUserEmail === comment.author.email && (
+              <button onClick={() => handleDelete(comment.id)}>Delete</button>
+            )}
           </CommentItem>
         ))
       ) : (
