@@ -14,6 +14,9 @@ const CommentItem = styled.div`
   padding: 10px;
   border: 1px solid #ddd;
   border-radius: 5px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 `;
 
 const Author = styled.p`
@@ -25,6 +28,8 @@ const Author = styled.p`
 const Content = styled.p`
   font-size: 1rem;
   line-height: 1.4;
+  flex-grow: 1;
+  margin-right: 10px;
 `;
 
 interface Comment {
@@ -53,35 +58,56 @@ export default function CommentsSection({ postId }: CommentsSectionProps) {
     postId ? `/api/comments?postId=${postId}` : null,
     fetcher,
   );
-  console.log(postId);
+
   if (isLoading) return <p>Loading comments...</p>;
   if (error) return <p>Failed to load comments</p>;
+
+  async function handleDelete(commentId: number) {
+    if (confirm('Are you sure you want to delete this comment?')) {
+      try {
+        const res = await fetch(`/api/comments?commentId=${commentId}`, {
+          method: 'DELETE',
+        });
+
+        if (!res.ok) {
+          const data = await res.json();
+          throw new Error(data.error || 'Failed to delete comment');
+        }
+
+        // Refresh comments after deletion
+        mutate();
+      } catch (err: any) {
+        alert(err.message);
+      }
+    }
+  }
 
   return (
     <CommentsContainer>
       <h2>Comments</h2>
-      {/* Render each comment */}
       {comments && comments.length > 0 ? (
         comments.map((comment) => (
           <CommentItem key={comment.id}>
-            <Author>
-              {comment.author.name} —{' '}
-              {new Date(comment.createdAt).toLocaleDateString()}
-            </Author>
-            <Content>{comment.content}</Content>
+            <div>
+              <Author>
+                {comment.author.name} —{' '}
+                {new Date(comment.createdAt).toLocaleDateString()}
+              </Author>
+              <Content>{comment.content}</Content>
+            </div>
+            <button onClick={() => handleDelete(comment.id)}>Delete</button>
           </CommentItem>
         ))
       ) : (
         <p>No comments yet.</p>
       )}
 
-      {/* Add comment form below */}
       <AddCommentForm postId={postId} onCommentAdded={() => mutate()} />
     </CommentsContainer>
   );
 }
 
-// We'll define the AddCommentForm here (or in a separate file).
+// AddCommentForm component remains unchanged
 function AddCommentForm({
   postId,
   onCommentAdded,

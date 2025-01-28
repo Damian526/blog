@@ -75,3 +75,64 @@ export async function GET(request: Request) {
     );
   }
 }
+export async function DELETE(request: Request) {
+  try {
+    const url = new URL(request.url);
+    const commentId = url.searchParams.get('commentId');
+
+    if (!commentId || isNaN(parseInt(commentId, 10))) {
+      return NextResponse.json(
+        { error: 'Invalid or missing commentId' },
+        { status: 400 },
+      );
+    }
+
+    const session = await getServerSession(authOptions);
+
+    if (!session || !session.user?.email) {
+      return NextResponse.json(
+        { error: 'You must be logged in to delete a comment' },
+        { status: 401 },
+      );
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email },
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    const comment = await prisma.comment.findUnique({
+      where: { id: parseInt(commentId, 10) },
+    });
+
+    if (!comment) {
+      return NextResponse.json({ error: 'Comment not found' }, { status: 404 });
+    }
+
+    // Ensure the user is the author of the comment or has admin privileges
+    if (comment.authorId !== user.id) {
+      return NextResponse.json(
+        { error: 'You are not authorized to delete this comment' },
+        { status: 403 },
+      );
+    }
+
+    await prisma.comment.delete({
+      where: { id: parseInt(commentId, 10) },
+    });
+
+    return NextResponse.json(
+      { message: 'Comment deleted successfully' },
+      { status: 200 },
+    );
+  } catch (error) {
+    console.error('Error deleting comment:', error);
+    return NextResponse.json(
+      { error: 'Failed to delete comment' },
+      { status: 500 },
+    );
+  }
+}
