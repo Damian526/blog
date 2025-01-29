@@ -16,8 +16,6 @@ const PostsContainer = styled.div`
   margin: 0 auto;
 `;
 
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
-
 export default function Dashboard() {
   const { data: session, status } = useSession();
   const [showLoginModal, setShowLoginModal] = useState(false);
@@ -37,7 +35,6 @@ export default function Dashboard() {
     mutate,
   } = useSWR(
     session ? `${API_BASE_URL}/api/user/posts` : null, // Only fetch if session exists
-    fetcher,
   );
   const handleDelete = async (postId: number) => {
     try {

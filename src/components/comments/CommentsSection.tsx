@@ -24,18 +24,13 @@ interface CommentsSectionProps {
   postId: number;
 }
 
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
-
 export default function CommentsSection({ postId }: CommentsSectionProps) {
   const {
     data: comments,
     error,
     isLoading,
     mutate,
-  } = useSWR<Comment[]>(
-    postId ? `/api/comments?postId=${postId}` : null,
-    fetcher,
-  );
+  } = useSWR<Comment[]>(postId ? `/api/comments?postId=${postId}` : null);
 
   const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null);
 
