@@ -62,8 +62,13 @@ export async function GET(request: Request) {
     }
 
     const comments = await prisma.comment.findMany({
-      where: { postId: parseInt(postId, 10) },
-      include: { author: { select: { name: true, email: true } } },
+      where: { postId: parseInt(postId, 10), parentId: null }, // Fetch only top-level comments
+      include: {
+        author: { select: { name: true, email: true } },
+        replies: {
+          include: { author: { select: { name: true, email: true } } }, // Include replies
+        },
+      },
     });
 
     return NextResponse.json(comments, { status: 200 });
@@ -75,6 +80,7 @@ export async function GET(request: Request) {
     );
   }
 }
+
 export async function DELETE(request: Request) {
   try {
     const url = new URL(request.url);
