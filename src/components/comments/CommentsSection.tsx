@@ -5,6 +5,7 @@ import styled from 'styled-components';
 import { useState, useEffect } from 'react';
 import EditableComment from '@/components/comments/EditableComment';
 import AddCommentForm from '@/components/comments/AddCommentForm';
+import ReplyForm from '@/components/comments/ReplyForm';
 
 const CommentsContainer = styled.div`
   margin-top: 30px;
@@ -14,10 +15,12 @@ interface Comment {
   id: number;
   content: string;
   createdAt: string;
+  parentId?: number | null;
   author: {
     name: string;
     email: string;
   };
+  replies?: Comment[]; // Allow nested replies
 }
 
 interface CommentsSectionProps {
@@ -45,7 +48,6 @@ export default function CommentsSection({ postId }: CommentsSectionProps) {
         setCurrentUserEmail(null);
       }
     }
-
     fetchCurrentUser();
   }, []);
 
@@ -94,15 +96,37 @@ export default function CommentsSection({ postId }: CommentsSectionProps) {
     <CommentsContainer>
       <h2>Comments</h2>
       {comments && comments.length > 0 ? (
-        comments.map((comment) => (
-          <EditableComment
-            key={comment.id}
-            comment={comment}
-            currentUserEmail={currentUserEmail}
-            onDelete={handleDelete}
-            onEdit={handleEdit}
-          />
-        ))
+        comments
+          .filter((comment) => !comment.parentId) // Show only top-level comments
+          .map((comment) => (
+            <div key={comment.id}>
+              <EditableComment
+                comment={comment}
+                currentUserEmail={currentUserEmail}
+                onDelete={handleDelete}
+                onEdit={handleEdit}
+              />
+              <ReplyForm
+                postId={postId}
+                parentId={comment.id}
+                onReplyAdded={mutate}
+              />
+              {/* Display replies */}
+              {comment.replies && comment.replies.length > 0 && (
+                <div style={{ marginLeft: '20px' }}>
+                  {comment.replies.map((reply) => (
+                    <EditableComment
+                      key={reply.id}
+                      comment={reply}
+                      currentUserEmail={currentUserEmail}
+                      onDelete={handleDelete}
+                      onEdit={handleEdit}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          ))
       ) : (
         <p>No comments yet.</p>
       )}
