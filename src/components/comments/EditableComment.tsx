@@ -1,49 +1,91 @@
-import { useState } from 'react';
-import styled from 'styled-components';
+'use client';
 
-const CommentItem = styled.div`
-  margin-bottom: 10px;
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 5px;
+import styled from 'styled-components';
+import { useState } from 'react';
+
+const CommentItem = styled.div<{ $isReply?: boolean }>`
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 10px;
+  background-color: ${({ $isReply }) =>
+    $isReply ? '#f9f9f9' : '#fff'}; /* Light gray for replies */
+  margin-top: 10px;
+  margin-left: ${({ $isReply }) =>
+    $isReply ? '30px' : '0'}; /* Indent replies */
+  border: ${({ $isReply }) => ($isReply ? '1px solid #ddd' : 'none')};
+  box-shadow: ${({ $isReply }) =>
+    $isReply ? 'none' : '0px 4px 8px rgba(0, 0, 0, 0.1)'};
+`;
+
+const Avatar = styled.div`
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #ccc; /* Placeholder avatar */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  color: #fff;
+`;
+
+const CommentContent = styled.div`
+  flex: 1;
   display: flex;
   flex-direction: column;
 `;
 
+const Author = styled.div`
+  font-size: 0.9rem;
+  font-weight: bold;
+  color: #333;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+`;
+
+const Timestamp = styled.span`
+  font-size: 0.8rem;
+  color: #666;
+`;
+
+const Content = styled.div`
+  font-size: 1rem;
+  color: #333;
+  line-height: 1.5;
+  margin-top: 8px;
+`;
+
 const CommentActions = styled.div`
   display: flex;
-  gap: 10px;
-  margin-top: 10px;
-`;
-
-const Author = styled.p`
+  gap: 15px;
+  margin-top: 8px;
   font-size: 0.9rem;
-  margin-bottom: 5px;
-  font-weight: bold;
-`;
+  color: #1877f2;
+  cursor: pointer;
 
-const Content = styled.p`
-  font-size: 1rem;
-  line-height: 1.4;
-  flex-grow: 1;
-  margin-right: 10px;
+  & > span:hover {
+    text-decoration: underline;
+  }
 `;
-
-interface Comment {
-  id: number;
-  content: string;
-  createdAt: string;
-  author: {
-    name: string;
-    email: string;
-  };
-}
 
 interface EditableCommentProps {
-  comment: Comment;
+  comment: {
+    id: number;
+    content: string;
+    createdAt: string;
+    parentId?: number | null;
+    author: {
+      name: string;
+      email: string;
+    };
+  };
   currentUserEmail: string | null;
   onDelete: (commentId: number) => void;
   onEdit: (commentId: number, updatedContent: string) => void;
+  onReplyClick: () => void;
 }
 
 export default function EditableComment({
@@ -51,6 +93,7 @@ export default function EditableComment({
   currentUserEmail,
   onDelete,
   onEdit,
+  onReplyClick,
 }: EditableCommentProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(comment.content);
@@ -61,38 +104,49 @@ export default function EditableComment({
   };
 
   return (
-    <CommentItem>
-      <div>
+    <CommentItem $isReply={!!comment.parentId}>
+      <Avatar>{comment.author.name[0]}</Avatar>
+      <CommentContent>
         <Author>
-          {comment.author.name} —{' '}
-          {new Date(comment.createdAt).toLocaleDateString()}
+          {comment.author.name}{' '}
+          <Timestamp>
+            {new Date(comment.createdAt).toLocaleDateString()}
+          </Timestamp>
         </Author>
         {isEditing ? (
           <textarea
             value={editContent}
             onChange={(e) => setEditContent(e.target.value)}
             rows={3}
-            style={{ width: '100%', marginTop: '10px' }}
+            style={{
+              width: '100%',
+              marginTop: '10px',
+              padding: '8px',
+              borderRadius: '5px',
+            }}
           />
         ) : (
           <Content>{comment.content}</Content>
         )}
-      </div>
-      {currentUserEmail === comment.author.email && (
         <CommentActions>
-          {isEditing ? (
+          {currentUserEmail === comment.author.email && (
             <>
-              <button onClick={handleSave}>Save</button>
-              <button onClick={() => setIsEditing(false)}>Cancel</button>
-            </>
-          ) : (
-            <>
-              <button onClick={() => setIsEditing(true)}>Edit</button>
-              <button onClick={() => onDelete(comment.id)}>Delete</button>
+              {isEditing ? (
+                <>
+                  <span onClick={handleSave}>Save</span>
+                  <span onClick={() => setIsEditing(false)}>Cancel</span>
+                </>
+              ) : (
+                <>
+                  <span onClick={() => setIsEditing(true)}>Edit</span>
+                  <span onClick={() => onDelete(comment.id)}>Delete</span>
+                </>
+              )}
             </>
           )}
+          <span onClick={onReplyClick}>Reply</span>
         </CommentActions>
-      )}
+      </CommentContent>
     </CommentItem>
   );
 }

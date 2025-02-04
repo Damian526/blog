@@ -9,6 +9,11 @@ import ReplyForm from '@/components/comments/ReplyForm';
 
 const CommentsContainer = styled.div`
   margin-top: 30px;
+  max-width: 600px;
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
 `;
 
 interface Comment {
@@ -20,7 +25,7 @@ interface Comment {
     name: string;
     email: string;
   };
-  replies?: Comment[]; // Allow nested replies
+  replies?: Comment[];
 }
 
 interface CommentsSectionProps {
@@ -34,8 +39,8 @@ export default function CommentsSection({ postId }: CommentsSectionProps) {
     isLoading,
     mutate,
   } = useSWR<Comment[]>(postId ? `/api/comments?postId=${postId}` : null);
-
   const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null);
+  const [replyingTo, setReplyingTo] = useState<number | null>(null);
 
   useEffect(() => {
     async function fetchCurrentUser() {
@@ -97,7 +102,7 @@ export default function CommentsSection({ postId }: CommentsSectionProps) {
       <h2>Comments</h2>
       {comments && comments.length > 0 ? (
         comments
-          .filter((comment) => !comment.parentId) // Show only top-level comments
+          .filter((comment) => !comment.parentId)
           .map((comment) => (
             <div key={comment.id}>
               <EditableComment
@@ -105,15 +110,10 @@ export default function CommentsSection({ postId }: CommentsSectionProps) {
                 currentUserEmail={currentUserEmail}
                 onDelete={handleDelete}
                 onEdit={handleEdit}
+                onReplyClick={() => setReplyingTo(comment.id)}
               />
-              <ReplyForm
-                postId={postId}
-                parentId={comment.id}
-                onReplyAdded={mutate}
-              />
-              {/* Display replies */}
               {comment.replies && comment.replies.length > 0 && (
-                <div style={{ marginLeft: '20px' }}>
+                <div style={{ marginLeft: '20px', marginTop: '5px' }}>
                   {comment.replies.map((reply) => (
                     <EditableComment
                       key={reply.id}
@@ -121,9 +121,17 @@ export default function CommentsSection({ postId }: CommentsSectionProps) {
                       currentUserEmail={currentUserEmail}
                       onDelete={handleDelete}
                       onEdit={handleEdit}
+                      onReplyClick={() => setReplyingTo(reply.id)}
                     />
                   ))}
                 </div>
+              )}
+              {replyingTo === comment.id && (
+                <ReplyForm
+                  postId={postId}
+                  parentId={comment.id}
+                  onReplyAdded={mutate}
+                />
               )}
             </div>
           ))

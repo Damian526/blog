@@ -29,7 +29,7 @@ export default function ReplyForm({
     }
 
     try {
-      const res = await fetch('/api/comments', {
+      const res = await fetch('/api/comments/reply', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ content: replyContent, postId, parentId }),
