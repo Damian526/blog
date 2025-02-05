@@ -1,75 +1,15 @@
 'use client';
 
-import styled from 'styled-components';
 import { useState } from 'react';
-
-const CommentItem = styled.div<{ $isReply?: boolean }>`
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 12px;
-  border-radius: 10px;
-  background-color: ${({ $isReply }) =>
-    $isReply ? '#f9f9f9' : '#fff'}; /* Light gray for replies */
-  margin-top: 10px;
-  margin-left: ${({ $isReply }) =>
-    $isReply ? '30px' : '0'}; /* Indent replies */
-  border: ${({ $isReply }) => ($isReply ? '1px solid #ddd' : 'none')};
-  box-shadow: ${({ $isReply }) =>
-    $isReply ? 'none' : '0px 4px 8px rgba(0, 0, 0, 0.1)'};
-`;
-
-const Avatar = styled.div`
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background-color: #ccc; /* Placeholder avatar */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-  color: #fff;
-`;
-
-const CommentContent = styled.div`
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-`;
-
-const Author = styled.div`
-  font-size: 0.9rem;
-  font-weight: bold;
-  color: #333;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-`;
-
-const Timestamp = styled.span`
-  font-size: 0.8rem;
-  color: #666;
-`;
-
-const Content = styled.div`
-  font-size: 1rem;
-  color: #333;
-  line-height: 1.5;
-  margin-top: 8px;
-`;
-
-const CommentActions = styled.div`
-  display: flex;
-  gap: 15px;
-  margin-top: 8px;
-  font-size: 0.9rem;
-  color: #1877f2;
-  cursor: pointer;
-
-  & > span:hover {
-    text-decoration: underline;
-  }
-`;
+import {
+  CommentItem,
+  Avatar,
+  CommentContent,
+  Author,
+  Timestamp,
+  Content,
+  CommentActions,
+} from '@/styles/components/comments/EditableComment.styles'; // Import styles
 
 interface EditableCommentProps {
   comment: {

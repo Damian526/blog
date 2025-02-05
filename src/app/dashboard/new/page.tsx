@@ -1,6 +1,6 @@
 'use client';
 
-import PostForm from '@/components/blog/PostForm';
+import PostForm from '@/components/posts/PostForm';
 
 export default function CreatePostPage() {
   return <PostForm />;

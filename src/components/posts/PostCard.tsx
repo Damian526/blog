@@ -1,46 +1,13 @@
+'use client';
+
 import Link from 'next/link';
-import styled from 'styled-components';
-
-// Styled Components
-const Card = styled.div`
-  border: 1px solid #ddd;
-  padding: 20px;
-  border-radius: 8px;
-  margin-bottom: 20px;
-`;
-
-const Title = styled.h2`
-  font-size: 1.5rem;
-  margin-bottom: 10px;
-`;
-
-const ButtonContainer = styled.div`
-  margin-top: 15px;
-`;
-
-const Author = styled.p`
-  font-size: 0.9rem;
-  color: #555;
-  margin-bottom: 20px;
-`;
-const ActionButton = styled.button`
-  background-color: #0070f3;
-  color: white;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 1rem;
-  margin-right: 10px;
-
-  &:hover {
-    background-color: #005bb5;
-  }
-
-  &:last-child {
-    margin-right: 0;
-  }
-`;
+import {
+  Card,
+  Title,
+  ButtonContainer,
+  Author,
+  ActionButton
+} from '@/styles/components/posts/PostCard.styles'; // Import styles
 
 // Interfaces
 interface Author {
@@ -58,7 +25,7 @@ interface Post {
 }
 
 interface PostCardProps {
-  post: Post; // Accept a `post` object as a prop
+  post: Post;
   showActions?: boolean; // Optional prop to show edit and delete buttons
   onDelete?: (postId: number) => void; // Optional delete handler
 }

@@ -3,6 +3,13 @@
 import styled from 'styled-components';
 import PostCard from './PostCard';
 
+// Styled Components
+const Container = styled.div`
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+`;
+
 // Interfaces
 interface Author {
   name: string;
@@ -23,13 +30,6 @@ interface PostListProps {
   showActions?: boolean;
   onDelete?: (postId: number) => Promise<void>;
 }
-
-// Styled Components
-const Container = styled.div`
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 20px;
-`;
 
 export default function PostList({
   posts,

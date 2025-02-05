@@ -1,4 +1,4 @@
-import PostList from '@/components/blog/PostList';
+import PostList from '@/components/posts/PostList';
 
 export default async function Home() {
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import PostForm from '@/components/blog/PostForm';
+import PostForm from '@/components/posts/PostForm';
 
 export default function EditPostPage() {
   const params = useParams();

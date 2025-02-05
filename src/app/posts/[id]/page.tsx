@@ -1,6 +1,6 @@
 'use client';
 
-import PostContent from '@/components/blog/PostContent';
+import PostContent from '@/components/posts/PostContent';
 import CommentsSection from '@/components/comments/CommentsSection';
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';

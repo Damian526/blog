@@ -7,7 +7,7 @@ import DashboardContent from '@/components/ui/DashboardContent';
 import LoginForm from '@/components/auth/LoginForm';
 import Modal from '@/components/ui/Modal';
 import styled from 'styled-components';
-import PostList from '@/components/blog/PostList';
+import PostList from '@/components/posts/PostList';
 
 // Styled Components
 const PostsContainer = styled.div`

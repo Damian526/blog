@@ -2,64 +2,16 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import styled from 'styled-components';
-
-const Container = styled.div`
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 20px;
-`;
-
-const TitleHeading = styled.h1`
-  text-align: center;
-  margin-bottom: 20px;
-`;
-
-const Form = styled.form`
-  display: flex;
-  flex-direction: column;
-`;
-
-const Label = styled.label`
-  margin-bottom: 10px;
-  font-weight: bold;
-`;
-
-const Input = styled.input`
-  margin-bottom: 20px;
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  font-size: 1rem;
-`;
-
-const TextArea = styled.textarea`
-  margin-bottom: 20px;
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  font-size: 1rem;
-`;
-
-const Button = styled.button`
-  background-color: #0070f3;
-  color: white;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 1rem;
-
-  &:hover {
-    background-color: #005bb5;
-  }
-`;
-
-// Renamed styled component from `Error` to `ErrorMessage`
-const ErrorMessage = styled.p`
-  color: red;
-  font-size: 0.9rem;
-`;
+import {
+  Container,
+  TitleHeading,
+  Form,
+  Label,
+  Input,
+  TextArea,
+  Button,
+  ErrorMessage,
+} from '@/styles/components/posts/PostForm.styles'; // Import styles
 
 interface Post {
   id?: string;
@@ -109,7 +61,6 @@ export default function PostForm({
         throw new Error(data.error || 'Failed to save post.');
       }
 
-      // Redirect after successful save
       router.push(onSuccessRedirect);
     } catch (err) {
       setError((err as Error).message || 'Something went wrong.');
