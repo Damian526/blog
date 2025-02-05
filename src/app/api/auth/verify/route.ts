@@ -35,10 +35,8 @@ export async function GET(req: Request) {
       },
     });
 
-    // Could redirect to a verified success page
-    // e.g. /email-verified?status=success
     return NextResponse.redirect(
-      `${process.env.NEXT_PUBLIC_APP_URL}/email-verified`,
+      `${process.env.NEXT_PUBLIC_API_URL}/email-verified`,
     );
   } catch (error) {
     console.error(error);

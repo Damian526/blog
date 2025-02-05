@@ -29,6 +29,9 @@ export const authOptions = {
         if (!user) {
           return null;
         }
+        if (!user.verified) {
+          throw new Error('EMAIL_NOT_VERIFIED');
+        }
 
         const isPasswordValid = await bcrypt.compare(
           credentials.password,

@@ -6,8 +6,6 @@ interface SendVerificationEmailParams {
   name: string;
 }
 
-// Make sure to set environment variables for your SMTP transport details:
-// For example: process.env.SMTP_HOST, process.env.SMTP_PORT, etc.
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
   port: Number(process.env.SMTP_PORT),
@@ -22,9 +20,7 @@ export default async function sendVerificationEmail({
   token,
   name,
 }: SendVerificationEmailParams) {
-  // Construct the verification URL
-  // e.g. https://yourdomain.com/api/auth/verify?token=<token>
-  const verificationUrl = `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/verify?token=${token}`;
+  const verificationUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/auth/verify?token=${token}`;
 
   const mailOptions = {
     from: process.env.SMTP_FROM_EMAIL, // e.g. "no-reply@yourdomain.com"
@@ -34,6 +30,7 @@ export default async function sendVerificationEmail({
     html: `
       <p>Hello <strong>${name}</strong>,</p>
       <p>Please verify your email by clicking the link below:</p>
+      <p>${process.env.NEXT_PUBLIC_API_URL}/api/auth/verify?token=${token}</p>
       <a href="${verificationUrl}">Verify Email</a>
     `,
   };

@@ -29,7 +29,6 @@ const Button = styled.button`
   border-radius: 5px;
   cursor: pointer;
   width: 100%;
-
   &:hover {
     background-color: #005bb5;
   }
@@ -37,6 +36,12 @@ const Button = styled.button`
 
 const ErrorMessage = styled.p`
   color: red;
+  margin-top: 10px;
+  font-size: 0.9rem;
+`;
+
+const SuccessMessage = styled.p`
+  color: green;
   margin-top: 10px;
   font-size: 0.9rem;
 `;
@@ -51,26 +56,35 @@ export default function RegisterForm({ isOpen, onClose }: RegisterFormProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError('');
+    setSuccess('');
 
-    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
-    const res = await fetch(`${API_BASE_URL}/api/auth/register`, {
-      method: 'POST',
-      body: JSON.stringify({ name, email, password }),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
+    try {
+      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+      const res = await fetch(`${API_BASE_URL}/api/auth/register`, {
+        method: 'POST',
+        body: JSON.stringify({ name, email, password }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      const data = await res.json();
 
-    const data = await res.json();
-    if (!res.ok) {
-      setError(data.error || 'Failed to register.');
-    } else {
-      onClose();
-      window.location.href = '/dashboard';
+      if (!res.ok) {
+        setError(data.error || 'Failed to register.');
+      } else {
+        setSuccess(
+          'Registration successful! Please check your email to verify your account.',
+        );
+        // You can optionally close the modal or leave it open.
+        // onClose();
+      }
+    } catch (err) {
+      setError('An error occurred while registering.');
     }
   }
 
@@ -103,6 +117,7 @@ export default function RegisterForm({ isOpen, onClose }: RegisterFormProps) {
           <Button type="submit">Register</Button>
         </form>
         {error && <ErrorMessage>{error}</ErrorMessage>}
+        {success && <SuccessMessage>{success}</SuccessMessage>}
       </FormContainer>
     </Modal>
   );
