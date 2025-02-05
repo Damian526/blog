@@ -23,7 +23,7 @@ export default async function sendVerificationEmail({
   const verificationUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/auth/verify?token=${token}`;
 
   const mailOptions = {
-    from: process.env.SMTP_FROM_EMAIL, // e.g. "no-reply@yourdomain.com"
+    from: process.env.SMTP_FROM_EMAIL,
     to,
     subject: 'Verify your email',
     text: `Hello ${name}, please verify your email by clicking the link: ${verificationUrl}`,
