@@ -23,7 +23,7 @@ pnpm dev
 bun dev
 ```
 
-Open [http://localhost:4006](http://localhost:4006) with your browser to see the result or see deployed version - [https://vercel.com/damians-projects-d2f33c16/blog](https://vercel.com/damians-projects-d2f33c16/blog).
+Open [http://localhost:4006](http://localhost:4006) with your browser to see the result or see deployed version - [blog-six-omega-22.vercel.app](blog-six-omega-22.vercel.app).
 
 
 ## Features
@@ -31,6 +31,7 @@ Open [http://localhost:4006](http://localhost:4006) with your browser to see the
 ### Authentication
 🔒 User authentication using next-auth with session management.
 🛡️ Secure login and registration forms with modal-based UI.
+📩 Email-based activation for new user registrations.
 ### Blog Post Management
 📝 Create new blog posts dynamically, linked to the authenticated user.
 📖 View all posts with detailed content and author information.
@@ -40,6 +41,10 @@ Open [http://localhost:4006](http://localhost:4006) with your browser to see the
 👤 Personalized dashboard for authenticated users.
 📜 Displays a list of user-specific blog posts.
 🛠️ Interactive interface to manage posts.
+### Comment System 
+💬 Add, edit, delete, and view comments on blog posts.
+🏷️ Comments linked to authenticated users.
+⏳ Real-time updates for comments without page refresh.
 ### API Integration
 🌐 RESTful APIs powered by Prisma and Next.js App Router.
 🛡️ Authentication-protected APIs ensuring secure access.
@@ -51,6 +56,9 @@ Open [http://localhost:4006](http://localhost:4006) with your browser to see the
 🗄️ Powered by Prisma ORM with PostgreSQL.
 🧩 Models for User and Post with relational mappings.
 🔐 Secure backend implementation for CRUD operations.
+### Testing (Jest)
+✅ Unit and integration testing using Jest.
+📌 Basic test coverage for authentication, blog posts, and comment system.
 
 
 
