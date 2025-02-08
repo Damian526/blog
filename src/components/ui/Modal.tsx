@@ -1,3 +1,5 @@
+'use client';
+
 import { ReactNode } from 'react';
 import ReactDOM from 'react-dom';
 import styled from 'styled-components';
@@ -18,21 +20,27 @@ const Overlay = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1000;
+  z-index: 9999;
 `;
 
-const ModalContent = styled.div`
-  background: white;
-  padding: 60px; /* Increase padding for a roomier feel */
+const ModalContainer = styled.div`
+  background: #fff;
+  padding: 2rem;
   border-radius: 8px;
-  max-width: 300px; /* Increase the maximum width for a larger modal */
+  max-width: 400px;
   width: 90%;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+`;
+
+const CloseButton = styled.button`
+  background: transparent;
+  border: none;
+  font-size: 1.25rem;
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  cursor: pointer;
 `;
 
 export default function Modal({ isOpen, onClose, children }: ModalProps) {
@@ -40,9 +48,12 @@ export default function Modal({ isOpen, onClose, children }: ModalProps) {
 
   return ReactDOM.createPortal(
     <Overlay onClick={onClose}>
-      <ModalContent onClick={(e) => e.stopPropagation()}>
+      <ModalContainer onClick={(e) => e.stopPropagation()}>
+        <CloseButton onClick={onClose} aria-label="Close Modal">
+          &times;
+        </CloseButton>
         {children}
-      </ModalContent>
+      </ModalContainer>
     </Overlay>,
     document.body,
   );

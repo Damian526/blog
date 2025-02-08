@@ -1,50 +1,16 @@
 'use client';
 
 import { useState } from 'react';
-import styled from 'styled-components';
 import Modal from '@/components/ui/Modal';
 
-const FormContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 100%;
-`;
-
-const Input = styled.input`
-  padding: 12px;
-  margin-bottom: 15px;
-  font-size: 1rem;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  width: 100%;
-`;
-
-const Button = styled.button`
-  padding: 12px 20px;
-  background-color: #0070f3;
-  color: white;
-  font-size: 1rem;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  width: 100%;
-  &:hover {
-    background-color: #005bb5;
-  }
-`;
-
-const ErrorMessage = styled.p`
-  color: red;
-  margin-top: 10px;
-  font-size: 0.9rem;
-`;
-
-const SuccessMessage = styled.p`
-  color: green;
-  margin-top: 10px;
-  font-size: 0.9rem;
-`;
+import {
+  Title,
+  FormContainer,
+  Input,
+  Button,
+  ErrorMessage,
+  SuccessMessage,
+} from '@/styles/components/auth/authFormStyles';
 
 interface RegisterFormProps {
   isOpen: boolean;
@@ -78,10 +44,8 @@ export default function RegisterForm({ isOpen, onClose }: RegisterFormProps) {
         setError(data.error || 'Failed to register.');
       } else {
         setSuccess(
-          'Registration successful! Please check your email to verify your account.',
+          'Registration successful! Check your email to verify your account.',
         );
-        // You can optionally close the modal or leave it open.
-        // onClose();
       }
     } catch (err) {
       setError('An error occurred while registering.');
@@ -90,35 +54,33 @@ export default function RegisterForm({ isOpen, onClose }: RegisterFormProps) {
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
-      <FormContainer>
-        <h2>Register</h2>
-        <form onSubmit={handleSubmit} style={{ width: '100%' }}>
-          <Input
-            type="text"
-            placeholder="Name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-          />
-          <Input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-          <Input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-          <Button type="submit">Register</Button>
-        </form>
-        {error && <ErrorMessage>{error}</ErrorMessage>}
-        {success && <SuccessMessage>{success}</SuccessMessage>}
+      <Title>Register</Title>
+      <FormContainer onSubmit={handleSubmit}>
+        <Input
+          type="text"
+          placeholder="Name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          required
+        />
+        <Input
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
+        <Input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
+        <Button type="submit">Register</Button>
       </FormContainer>
+      {error && <ErrorMessage>{error}</ErrorMessage>}
+      {success && <SuccessMessage>{success}</SuccessMessage>}
     </Modal>
   );
 }
