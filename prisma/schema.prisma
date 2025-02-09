@@ -18,7 +18,7 @@ model User {
   posts     Post[]
   comments  Comment[] // A user can author many comments
   createdAt DateTime  @default(now())
-
+  role      Role     @default(USER) 
   verified           Boolean   @default(false)
   verificationToken  String?
 }
@@ -50,4 +50,9 @@ model Comment {
   parentId   Int?     
   parent     Comment?  @relation(name: "CommentReplies", fields: [parentId], references: [id]) 
   replies    Comment[] @relation(name: "CommentReplies")
+}
+
+enum Role {
+  ADMIN
+  USER
 }
