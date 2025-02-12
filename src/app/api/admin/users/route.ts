@@ -8,7 +8,7 @@ const prisma = new PrismaClient();
 export async function GET(req: Request) {
   const session = await getServerSession(authOptions);
 
-  if (!session || session.user.role !== 'admin') {
+  if (!session || session.user.role !== 'ADMIN') {
     return NextResponse.json({ message: 'Access denied' }, { status: 403 });
   }
 
