@@ -6,7 +6,7 @@ import {
   Title,
   ButtonContainer,
   Author,
-  ActionButton
+  ActionButton,
 } from '@/styles/components/posts/PostCard.styles'; // Import styles
 
 // Interfaces
@@ -20,6 +20,7 @@ interface Post {
   title: string;
   content?: string;
   published: boolean;
+  declineReason?: string;
   createdAt: string; // ISO string
   author: Author;
 }
@@ -52,6 +53,13 @@ export default function PostCard({
         {`${post?.author?.name} on ${new Date(post.createdAt).toLocaleDateString()}`}
       </Author>
       <p>{post.content || 'No content available'}...</p>
+      <p>
+        {post.published
+          ? 'This post is published.'
+          : post.declineReason
+            ? `Declined: ${post.declineReason}`
+            : 'Not published yet.'}
+      </p>
       <Link href={`/posts/${post.id}`}>Read More</Link>
       {showActions && (
         <ButtonContainer>

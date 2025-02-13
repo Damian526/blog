@@ -32,6 +32,7 @@ model Post {
   authorId  Int
   author    User      @relation(fields: [authorId], references: [id])
   comments  Comment[] // A post can have many comments
+  declineReason String? 
 }
 
 model Comment {

@@ -21,6 +21,8 @@ export async function GET(req: Request) {
         title: true,
         content: true,
         createdAt: true,
+        published: true,
+        declineReason: true,
         author: {
           select: {
             name: true,

@@ -27,7 +27,7 @@ export default function Dashboard() {
     }
   }, [status]);
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
-  // Fetch user posts using SWR
+
   const {
     data: posts,
     error,

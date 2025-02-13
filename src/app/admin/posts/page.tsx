@@ -3,19 +3,20 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import { PrismaClient } from '@prisma/client';
 import PublishButton from '@/components/admin/PublishButton';
+import RejectButton from '@/components/admin/RejectButton';
 
 const prisma = new PrismaClient();
 
 export default async function AdminPostsPage() {
-  // 1️⃣ Ensure only admins can access
+  // Ensure only admins can access
   const session = await getServerSession(authOptions);
   if (!session || session.user.role !== 'ADMIN') {
     redirect('/');
   }
 
-  // 2️⃣ Fetch all posts
+  // Fetch all posts
   const posts = await prisma.post.findMany({
-    include: { author: true }, // get author data if you need it
+    include: { author: true },
   });
 
   return (
@@ -28,7 +29,10 @@ export default async function AdminPostsPage() {
             {post.published ? (
               <em>Published</em>
             ) : (
-              <PublishButton postId={post.id} />
+              <>
+                <PublishButton postId={post.id} />
+                <RejectButton postId={post.id} />
+              </>
             )}
           </li>
         ))}
