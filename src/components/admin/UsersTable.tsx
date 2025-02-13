@@ -1,5 +1,6 @@
-'use client'; // ✅ This makes it a client component
+'use client';
 
+import { useState } from 'react';
 import {
   Container,
   Title,
@@ -10,6 +11,30 @@ import {
 } from '@/styles/admin/users/users.styles';
 
 export default function UsersTable({ users }) {
+  const [userList, setUserList] = useState(users);
+
+  async function handleDelete(userId) {
+    if (!confirm('Are you sure you want to delete this user?')) return;
+
+    try {
+      const res = await fetch('/api/admin/users', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId }),
+      });
+
+      if (!res.ok) {
+        throw new Error('Failed to delete user');
+      }
+
+      // Remove the deleted user from the UI without reloading
+      setUserList(userList.filter((user) => user.id !== userId));
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      alert('Failed to delete user');
+    }
+  }
+
   return (
     <Container>
       <Title>Admin Panel - User List</Title>
@@ -21,16 +46,34 @@ export default function UsersTable({ users }) {
             <Th>Email</Th>
             <Th>Role</Th>
             <Th>Verified</Th>
+            <Th>Actions</Th>
           </tr>
         </thead>
         <tbody>
-          {users.map((user) => (
+          {userList.map((user) => (
             <Row key={user.id}>
               <Td>{user.id}</Td>
               <Td>{user.name}</Td>
               <Td>{user.email}</Td>
               <Td>{user.role}</Td>
               <Td>{user.verified ? '✅' : '❌'}</Td>
+              <Td>
+                {user.role !== 'ADMIN' && (
+                  <button
+                    onClick={() => handleDelete(user.id)}
+                    style={{
+                      padding: '5px 10px',
+                      background: 'red',
+                      color: 'white',
+                      border: 'none',
+                      cursor: 'pointer',
+                      borderRadius: '5px',
+                    }}
+                  >
+                    Delete
+                  </button>
+                )}
+              </Td>
             </Row>
           ))}
         </tbody>
