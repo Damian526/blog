@@ -1,42 +1,83 @@
 import styled from 'styled-components';
 
 export const Card = styled.div`
-  border: 1px solid #ddd;
-  padding: 1.25rem; /* 20px */
-  border-radius: 8px;
-  margin-bottom: 1.25rem; /* 20px */
+  background: #fff;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
 `;
 
 export const Title = styled.h2`
-  font-size: 1.5rem;
-  margin-bottom: 0.625rem; /* 10px */
-`;
-
-export const ButtonContainer = styled.div`
-  margin-top: 0.9375rem; /* 15px */
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 10px;
 `;
 
 export const Author = styled.p`
-  font-size: 0.9rem;
-  color: #555;
-  margin-bottom: 1.25rem; /* 20px */
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 10px;
+`;
+
+export const StatusContainer = styled.div`
+  margin-top: 1rem;
+`;
+
+export const StatusBadge = styled.div<{
+  status: 'published' | 'rejected' | 'pending';
+}>`
+  margin-top: 5px;
+  padding: 6px 10px;
+  border-radius: 5px;
+  font-weight: bold;
+  display: inline-block;
+
+  ${({ status }) => {
+    switch (status) {
+      case 'published':
+        return `
+          color: green;
+          background: #e6ffe6;
+        `;
+      case 'rejected':
+        return `
+          color: red;
+          background: #ffe6e6;
+        `;
+      default: // "pending"
+        return `
+          color: #e67e22;
+          background: #fff3e6;
+        `;
+    }
+  }}
+`;
+
+export const ButtonContainer = styled.div`
+  margin-top: 10px;
+  display: flex;
+  gap: 10px;
 `;
 
 export const ActionButton = styled.button`
-  background-color: #0070f3;
+  padding: 8px 12px;
+  background: #0070f3;
   color: white;
   border: none;
-  padding: 0.5rem 1rem; /* 8px 16px */
-  border-radius: 5px;
   cursor: pointer;
-  font-size: 1rem;
-  margin-right: 0.625rem; /* 10px */
+  border-radius: 5px;
+  transition: 0.2s;
 
   &:hover {
-    background-color: #005bb5;
+    background: #0056b3;
   }
 
-  &:last-child {
-    margin-right: 0;
+  &:nth-child(2) {
+    background: red;
+
+    &:hover {
+      background: darkred;
+    }
   }
 `;

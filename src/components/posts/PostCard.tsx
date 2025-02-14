@@ -7,7 +7,9 @@ import {
   ButtonContainer,
   Author,
   ActionButton,
-} from '@/styles/components/posts/PostCard.styles'; // Import styles
+  StatusBadge,
+  StatusContainer,
+} from '@/styles/components/posts/PostCard.styles';
 
 // Interfaces
 interface Author {
@@ -21,14 +23,14 @@ interface Post {
   content?: string;
   published: boolean;
   declineReason?: string;
-  createdAt: string; // ISO string
+  createdAt: string;
   author: Author;
 }
 
 interface PostCardProps {
   post: Post;
-  showActions?: boolean; // Optional prop to show edit and delete buttons
-  onDelete?: (postId: number) => void; // Optional delete handler
+  showActions?: boolean;
+  onDelete?: (postId: number) => void;
 }
 
 export default function PostCard({
@@ -45,22 +47,32 @@ export default function PostCard({
     }
   };
 
+  let statusText = 'Status: Pending';
+  let statusType: 'published' | 'rejected' | 'pending' = 'pending';
+
+  if (post.published) {
+    statusText = 'Status: Published';
+    statusType = 'published';
+  } else if (post.declineReason) {
+    statusText = `Status: Rejected — Reason: ${post.declineReason}`;
+    statusType = 'rejected';
+  }
+
   return (
     <Card>
       <Title>{post.title}</Title>
       <Author>
         By{' '}
-        {`${post?.author?.name} on ${new Date(post.createdAt).toLocaleDateString()}`}
+        {`${post.author.name} on ${new Date(post.createdAt).toLocaleDateString()}`}
       </Author>
       <p>{post.content || 'No content available'}...</p>
-      <p>
-        {post.published
-          ? 'This post is published.'
-          : post.declineReason
-            ? `Declined: ${post.declineReason}`
-            : 'Not published yet.'}
-      </p>
+
       <Link href={`/posts/${post.id}`}>Read More</Link>
+
+      <StatusContainer>
+        <StatusBadge status={statusType}>{statusText}</StatusBadge>
+      </StatusContainer>
+
       {showActions && (
         <ButtonContainer>
           <Link href={`/posts/${post.id}/edit`}>
