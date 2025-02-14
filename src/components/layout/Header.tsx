@@ -33,6 +33,17 @@ const DashboardButton = styled.button`
     background-color: #005bb5;
   }
 `;
+const AppName = styled.h1`
+  font-size: 1.5rem;
+  margin: 0;
+  color: #333;
+  cursor: pointer;
+  text-decoration: none;
+
+  &:hover {
+    color: #0070f3;
+  }
+`;
 
 export default function Header() {
   const { data: session, status } = useSession();
@@ -42,7 +53,9 @@ export default function Header() {
 
   return (
     <HeaderContainer>
-      <h1>My Blog</h1>
+      <Link href="/" passHref legacyBehavior>
+        <AppName as="a">WebDevSphere</AppName>
+      </Link>
       <ButtonContainer>
         {session ? (
           <>

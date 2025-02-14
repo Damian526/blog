@@ -10,10 +10,20 @@ import {
   Row,
 } from '@/styles/admin/users/users.styles';
 
-export default function UsersTable({ users }) {
+interface User {
+  id: number;
+  name: string;
+  email: string;
+  role: 'ADMIN' | 'USER';
+  verified: boolean;
+}
+
+// Expl
+
+export default function UsersTable({ users }: { users: User[] }) {
   const [userList, setUserList] = useState(users);
 
-  async function handleDelete(userId) {
+  async function handleDelete(userId: number) {
     if (!confirm('Are you sure you want to delete this user?')) return;
 
     try {
