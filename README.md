@@ -1,6 +1,14 @@
+Open [http://localhost:4006](http://localhost:4006) with your browser to see the result or see deployed version - [blog-six-omega-22.vercel.app](blog-six-omega-22.vercel.app).
+
+Credantials for admin:
+Email: admin@admin.pl
+Password: !1234567
+
 
 ## Getting Started
+
 First, install dependencies:
+
 ```bash
 npm install
 # or
@@ -23,42 +31,59 @@ pnpm dev
 bun dev
 ```
 
-Open [http://localhost:4006](http://localhost:4006) with your browser to see the result or see deployed version - [blog-six-omega-22.vercel.app](blog-six-omega-22.vercel.app).
-
-
 ## Features
 
-### Authentication
-🔒 User authentication using next-auth with session management.
-🛡️ Secure login and registration forms with modal-based UI.
-📩 Email-based activation for new user registrations.
-### Blog Post Management
-📝 Create new blog posts dynamically, linked to the authenticated user.
-📖 View all posts with detailed content and author information.
-✅ Published and unpublished posts differentiation.
-🔄 Real-time updates for posts using SWR.
-### User Dashboard
-👤 Personalized dashboard for authenticated users.
-📜 Displays a list of user-specific blog posts.
-🛠️ Interactive interface to manage posts.
-### Comment System 
-💬 Add, edit, delete, and view comments on blog posts.
-🏷️ Comments linked to authenticated users.
-⏳ Real-time updates for comments without page refresh.
-### API Integration
-🌐 RESTful APIs powered by Prisma and Next.js App Router.
-🛡️ Authentication-protected APIs ensuring secure access.
-🔍 Fetch and manage blog posts with efficient querying.
-### Real-Time Updates
-⚡ Dynamic data fetching and caching using SWR.
-🔁 Automatic revalidation of data on focus and reconnect.
-### Backend
-🗄️ Powered by Prisma ORM with PostgreSQL.
-🧩 Models for User and Post with relational mappings.
-🔐 Secure backend implementation for CRUD operations.
+### 🛡️ Authentication
+- Secure NextAuth-based user authentication with session management.
+- Email-based account activation to prevent spam registrations.
+- Modal-based login & registration UI for a seamless experience.
+ 
+### 📝 Blog Post Management
+- Users can create and submit posts, which are reviewed by admins before publishing.
+- Published & Unpublished Status: Users see whether their posts are approved, rejected (with reason), or pending review.
+- Admin Panel for Post Management: Admins can approve, reject (with a reason), or delete posts.
+- Rich Text Support: Write engaging articles with markdown support.
+- Real-Time Updates: Changes reflect instantly without page refresh using SWR.
+
+### 👤 User Dashboard
+- Personalized dashboard for authenticated users.
+- Displays all user-created blog posts with their current status:
+    - ✅ Published (Live on the site)
+    - ❌ Rejected (With admin-provided reason)
+    - ⏳ Pending Review (Awaiting approval)
+- Interactive tools to edit or delete posts before publishing.
+
+### 💬 Comment System
+- Users can add, edit, delete, and reply to comments on blog posts.
+- Comments are linked to authenticated users for accountability.
+- Real-time comment updates for a seamless discussion experience.
+
+### 🛠️ Admin Panel
+- Manage Users:
+    - View all registered users.
+    - Delete non-admin users if necessary.
+- Manage Blog Posts:
+    - Approve or reject posts submitted by users.
+    - If rejecting a post, admins can provide a reason, which will be visible to the user.
+    - Ensure only high-quality and relevant web development articles are published.
+
+### 🌐 API Integration
+- RESTful APIs powered by Prisma and Next.js App Router.
+- Authentication-protected APIs ensuring secure access.
+- Fetch and manage blog posts with efficient querying.
+
+### ⚡ Real-Time Updates
+
+- SWR-powered dynamic data fetching for blog posts, comments, and user dashboards.
+- Automatic revalidation ensures users always see the latest content.   
+
+### 🗄️ Backend & Database
+
+- PostgreSQL as the database, managed using Prisma ORM.
+- Relational models for Users, Posts, and Comments.
+- Secure backend implementation for authentication, post moderation, and data access control.
+
 ### Testing (Jest)
-✅ Unit and integration testing using Jest.
-📌 Basic test coverage for authentication, blog posts, and comment system.
 
-
-
+- Unit and integration tests with Jest ensure system reliability.
+- Basic test coverage for authentication, blog posts, and comment system.
