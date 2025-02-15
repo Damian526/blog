@@ -3,7 +3,7 @@
 import styled from 'styled-components';
 import { useSession } from 'next-auth/react';
 import LoginButton from '@/components/auth/LoginButton';
-import RegisterButton from '@/components/auth/ReigsterButton';
+import RegisterButton from '@/components/auth/RegisterButton';
 import LogoutButton from '@/components/auth/LogoutButton';
 import Link from 'next/link';
 
@@ -33,6 +33,15 @@ const DashboardButton = styled.button`
     background-color: #005bb5;
   }
 `;
+
+const AdminButton = styled(DashboardButton)`
+  background-color: #ff5722;
+
+  &:hover {
+    background-color: #e64a19;
+  }
+`;
+
 const AppName = styled.h1`
   font-size: 1.5rem;
   margin: 0;
@@ -47,6 +56,7 @@ const AppName = styled.h1`
 
 export default function Header() {
   const { data: session, status } = useSession();
+
   if (status === 'loading') {
     return <HeaderContainer>Loading...</HeaderContainer>;
   }
@@ -59,6 +69,11 @@ export default function Header() {
       <ButtonContainer>
         {session ? (
           <>
+            {session.user.role === 'ADMIN' && (
+              <Link href="/admin" passHref>
+                <AdminButton>Admin Panel</AdminButton>
+              </Link>
+            )}
             <Link href="/dashboard" passHref>
               <DashboardButton>Dashboard</DashboardButton>
             </Link>
