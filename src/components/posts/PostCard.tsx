@@ -68,18 +68,19 @@ export default function PostCard({
       <p>{post.content || 'No content available'}...</p>
 
       <Link href={`/posts/${post.id}`}>Read More</Link>
-
-      <StatusContainer>
-        <StatusBadge status={statusType}>{statusText}</StatusBadge>
-      </StatusContainer>
-
       {showActions && (
-        <ButtonContainer>
-          <Link href={`/posts/${post.id}/edit`}>
-            <ActionButton>Edit</ActionButton>
-          </Link>
-          <ActionButton onClick={handleDelete}>Delete</ActionButton>
-        </ButtonContainer>
+        <div>
+          <StatusContainer>
+            <StatusBadge status={statusType}>{statusText}</StatusBadge>
+          </StatusContainer>
+
+          <ButtonContainer>
+            <Link href={`/posts/${post.id}/edit`}>
+              <ActionButton>Edit</ActionButton>
+            </Link>
+            <ActionButton onClick={handleDelete}>Delete</ActionButton>
+          </ButtonContainer>
+        </div>
       )}
     </Card>
   );
