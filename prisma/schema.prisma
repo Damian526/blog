@@ -33,6 +33,7 @@ model Post {
   author    User      @relation(fields: [authorId], references: [id])
   comments  Comment[] // A post can have many comments
   declineReason String? 
+  subcategories Subcategory[] @relation("PostSubcategories")
 }
 
 model Comment {
@@ -51,6 +52,22 @@ model Comment {
   parentId   Int?     
   parent     Comment?  @relation(name: "CommentReplies", fields: [parentId], references: [id]) 
   replies    Comment[] @relation(name: "CommentReplies")
+}
+
+model Category {
+  id            Int           @id @default(autoincrement())
+  name          String        @unique
+  subcategories Subcategory[] // One-to-many relationship with Subcategory
+  createdAt     DateTime      @default(now())
+}
+
+model Subcategory {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique
+  categoryId  Int       // Foreign key to Category
+  category    Category  @relation(fields: [categoryId], references: [id])
+  posts       Post[]    @relation("PostSubcategories")
+  createdAt   DateTime  @default(now())
 }
 
 enum Role {
