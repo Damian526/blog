@@ -1,11 +1,9 @@
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
-
-export async function getCategories() {
-  const categories = await prisma.category.findMany({
-    include: { subcategories: true },
+export default async function getCategories() {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/categories`, {
+    cache: 'force-cache', // ✅ Enables SSG (default behavior)
   });
 
-  return categories;
+  if (!res.ok) throw new Error('Failed to fetch categories');
+
+  return res.json();
 }

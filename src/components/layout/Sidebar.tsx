@@ -1,31 +1,21 @@
+// Sidebar.tsx (Server Component)
+import SidebarClient from './CategoriesList';
 
-import { getCategories } from '@/lib/fetchCategories';
-import Link from 'next/link';
+// SSG fetch on the server
+async function getCategories() {
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+  const res = await fetch(`${API_BASE_URL}/api/categories`, {
+    cache: 'force-cache', // or { next: { revalidate: 60 }} for ISR
+  });
+
+  if (!res.ok) throw new Error('Failed to fetch categories');
+  return res.json();
+}
 
 export default async function Sidebar() {
-  const categories = await getCategories(); // ✅ Fetch at build time (SSG)
+  const categories = await getCategories();
+  // We get our categories at build time (SSG) or at runtime (SSR)
 
-  return (
-    <div style={{ width: '250px', padding: '20px', background: '#f8f9fa' }}>
-      <h2>Categories</h2>
-      <ul>
-        {categories.map((cat) => (
-          <li key={cat.id}>
-            <Link href={`/category/${cat.name.toLowerCase()}`}>{cat.name}</Link>
-            <ul>
-              {cat.subcategories.map((sub) => (
-                <li key={sub.id}>
-                  <Link
-                    href={`/category/${cat.name.toLowerCase()}/${sub.name.toLowerCase()}`}
-                  >
-                    {sub.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
+  // Pass data to a Client Component
+  return <SidebarClient categories={categories} />;
 }
