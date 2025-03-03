@@ -5,7 +5,7 @@ import SidebarClient from './CategoriesList';
 async function getCategories() {
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
   const res = await fetch(`${API_BASE_URL}/api/categories`, {
-    cache: 'force-cache', // or { next: { revalidate: 60 }} for ISR
+    cache: 'force-cache', 
   });
 
   if (!res.ok) throw new Error('Failed to fetch categories');

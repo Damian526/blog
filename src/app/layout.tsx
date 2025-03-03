@@ -27,9 +27,39 @@ export default async function RootLayout({ children }: RootLayoutProps) {
           <SessionProviderWrapper session={session}>
             <SWRProvider>
               <Header />
-              <div style={{ display: 'flex', height: '100vh' }}>
-                <Sidebar />
-                <main style={{ flex: 1, padding: '20px', overflowY: 'auto' }}>
+              <div
+                style={{
+                  display: 'flex',
+                  height: 'calc(100vh - 60px)', // Adjust for header height
+                  overflow: 'hidden',
+                }}
+              >
+                {/* Sidebar with vertical scrolling */}
+                <aside
+                  style={{
+                    width: '250px',
+                    backgroundColor: '#f8f9fa',
+                    padding: '20px',
+                    overflowY: 'auto',
+                    overflowX: 'hidden',
+                    height: '100%',
+                  }}
+                >
+                  <Sidebar />
+                </aside>
+
+                {/* Main content area */}
+                <main
+                  style={{
+                    flex: 1,
+                    backgroundColor: '#fff',
+                    padding: '20px',
+                    overflow: 'auto', // Allows scrolling only in the right section
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '20px',
+                  }}
+                >
                   {children}
                 </main>
               </div>
