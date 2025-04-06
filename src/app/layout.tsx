@@ -54,7 +54,7 @@ export default async function RootLayout({ children }: RootLayoutProps) {
                     flex: 1,
                     backgroundColor: '#fff',
                     padding: '20px',
-                    overflow: 'auto', // Allows scrolling only in the right section
+                    overflow: 'auto', 
                     display: 'flex',
                     flexDirection: 'column',
                     gap: '20px',

@@ -39,7 +39,8 @@ export async function POST(request: Request) {
     if (!session || !session.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    const { title, content } = await request.json();
+
+    const { title, content, subcategoryIds } = await request.json();
 
     if (!title || !content) {
       return NextResponse.json(
@@ -47,6 +48,14 @@ export async function POST(request: Request) {
         { status: 400 },
       );
     }
+
+    if (!Array.isArray(subcategoryIds) || subcategoryIds.length === 0) {
+      return NextResponse.json(
+        { error: 'At least one subcategory is required.' },
+        { status: 400 },
+      );
+    }
+
     const user = await prisma.user.findUnique({
       where: { email: session.user.email as string },
     });
@@ -61,13 +70,19 @@ export async function POST(request: Request) {
         content,
         published: false,
         createdAt: new Date(),
-        authorId: user.id, // Replace with the authenticated user's ID
+        authorId: user.id,
+        subcategories: {
+          connect: subcategoryIds.map((id: number) => ({ id })),
+        },
+      },
+      include: {
+        subcategories: true,
       },
     });
 
     return NextResponse.json(post);
   } catch (error) {
-    console.error('Error creating post:', error);
+    console.error('Error creating post with subcategories:', error);
     return NextResponse.json(
       { error: 'Failed to create post.' },
       { status: 500 },
