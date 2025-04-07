@@ -9,12 +9,26 @@ import {
   ActionButton,
   StatusBadge,
   StatusContainer,
+  CategoriesContainer,
+  CategoryList,
+  CategoryTag,
 } from '@/styles/components/posts/PostCard.styles';
 
 // Interfaces
 interface Author {
   name: string;
   email: string;
+}
+
+interface Category {
+  id: number;
+  name: string;
+}
+
+interface Subcategory {
+  id: number;
+  name: string;
+  category: Category;
 }
 
 interface Post {
@@ -25,6 +39,7 @@ interface Post {
   declineReason?: string;
   createdAt: string;
   author: Author;
+  subcategories?: Subcategory[];
 }
 
 interface PostCardProps {
@@ -68,12 +83,25 @@ export default function PostCard({
       <p>{post.content || 'No content available'}...</p>
 
       <Link href={`/posts/${post.id}`}>Read More</Link>
+
+      {post.subcategories && post.subcategories.length > 0 && (
+        <CategoriesContainer>
+          <strong>Categories:</strong>
+          <CategoryList>
+            {post.subcategories.map((subcat) => (
+              <CategoryTag key={subcat.id}>
+                {subcat.category.name} / {subcat.name}
+              </CategoryTag>
+            ))}
+          </CategoryList>
+        </CategoriesContainer>
+      )}
+
       {showActions && (
         <div>
           <StatusContainer>
             <StatusBadge status={statusType}>{statusText}</StatusBadge>
           </StatusContainer>
-
           <ButtonContainer>
             <Link href={`/posts/${post.id}/edit`}>
               <ActionButton>Edit</ActionButton>

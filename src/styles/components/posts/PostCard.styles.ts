@@ -81,3 +81,28 @@ export const ActionButton = styled.button`
     }
   }
 `;
+
+export const CategoriesContainer = styled.div`
+  margin: 12px 0;
+`;
+
+export const CategoryList = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 6px;
+`;
+
+export const CategoryTag = styled.span`
+  background: #f0f0f0;
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-size: 0.9em;
+  color: #666;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #e0e0e0;
+    transform: translateY(-1px);
+  }
+`;

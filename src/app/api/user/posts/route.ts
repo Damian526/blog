@@ -13,7 +13,7 @@ export async function GET(req: Request) {
   }
 
   try {
-    // Fetch user-specific posts
+    // Fetch user-specific posts, including subcategories and their associated categories
     const userPosts = await prisma.post.findMany({
       where: { author: { email: session.user.email } },
       select: {
@@ -27,6 +27,18 @@ export async function GET(req: Request) {
           select: {
             name: true,
             email: true,
+          },
+        },
+        subcategories: {
+          select: {
+            id: true,
+            name: true,
+            category: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
           },
         },
       },
