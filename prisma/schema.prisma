@@ -34,6 +34,7 @@ model Post {
   comments  Comment[] // A post can have many comments
   declineReason String? 
   subcategories Subcategory[] @relation("PostSubcategories")
+  mainCategories Category[]  @relation("PostMainCategories")
 }
 
 model Comment {
@@ -59,6 +60,7 @@ model Category {
   name          String        @unique
   subcategories Subcategory[] // One-to-many relationship with Subcategory
   createdAt     DateTime      @default(now())
+  mainPosts     Post[]        @relation("PostMainCategories")
 }
 
 model Subcategory {

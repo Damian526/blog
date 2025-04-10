@@ -17,6 +17,18 @@ export async function GET() {
             email: true,
           },
         },
+        subcategories: {
+          select: {
+            id: true,
+            name: true,
+            category: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
       },
     });
     const formattedPosts = posts.map((post) => ({
