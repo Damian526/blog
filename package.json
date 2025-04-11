@@ -7,10 +7,8 @@
     "dev": "cross-env NODE_ENV=development next dev -p 4006",
     "build": "cross-env NODE_ENV=production prisma generate && next build",
     "start": "cross-env NODE_ENV=production next start -p 4006",
-    "lint": "next lint"
-  },
-  "prisma": {
-    "seed": "node prisma/seed.js"
+    "lint": "next lint",
+    "seed": "node prisma/scripts/seed2.js"
   },
   "dependencies": {
     "bcrypt": "^5.1.1",

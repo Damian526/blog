@@ -3,6 +3,7 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 async function main() {
+  // Standard categories with subcategories. For each standard category, we append an "Other" subcategory.
   const categories = [
     {
       name: 'Frontend',
@@ -15,6 +16,7 @@ async function main() {
         'Vue',
         'Angular',
         'Svelte',
+        'Other', // fallback for frontend
       ],
     },
     {
@@ -28,6 +30,7 @@ async function main() {
         'PHP',
         'Go',
         'GraphQL',
+        'Other', // fallback for backend
       ],
     },
     {
@@ -39,6 +42,7 @@ async function main() {
         'Kotlin (Android)',
         'Ionic',
         'PWAs (Progressive Web Apps)',
+        'Other', // fallback for mobile
       ],
     },
     {
@@ -51,6 +55,7 @@ async function main() {
         'Firebase',
         'Supabase',
         'SQL Optimization',
+        'Other', // fallback for database
       ],
     },
     {
@@ -63,6 +68,7 @@ async function main() {
         'Google Cloud',
         'Azure',
         'Terraform',
+        'Other', // fallback for devops
       ],
     },
     {
@@ -74,6 +80,7 @@ async function main() {
         'OAuth & JWT',
         'Penetration Testing',
         'Security Audits',
+        'Other', // fallback for security
       ],
     },
     {
@@ -84,6 +91,7 @@ async function main() {
         'Database Optimization',
         'Code Splitting & Bundling',
         'Server-Side Rendering (SSR)',
+        'Other', // fallback for performance
       ],
     },
     {
@@ -94,10 +102,12 @@ async function main() {
         'Design Systems',
         'Figma & Sketch',
         'Interaction Design',
+        'Other', // fallback for UX/UI
       ],
     },
   ];
 
+  // Insert the standard categories and subcategories
   for (const category of categories) {
     const createdCategory = await prisma.category.upsert({
       where: { name: category.name },
@@ -113,6 +123,13 @@ async function main() {
       });
     }
   }
+
+  // Add a global "Other" main category.
+  await prisma.category.upsert({
+    where: { name: 'Other' },
+    update: {},
+    create: { name: 'Other' },
+  });
 }
 
 main()
