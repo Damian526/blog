@@ -3,7 +3,7 @@ name: CI - Run Tests (Windows)
 on:
   push:
     branches:
-      - main       # Adjust this branch if needed
+      - main # Adjust this branch if needed
   pull_request:
     branches:
       - main
@@ -19,7 +19,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '16'   # Use the Node.js version your project requires
+          node-version: '20.17.0'
 
       - name: Install Dependencies
         run: npm install
