@@ -1,11 +1,12 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
+
 export async function GET(request: Request) {
   try {
     const url = new URL(request.url);
-    const pathSegments = url.pathname.split('/'); // Split the path by "/"
-    const id = pathSegments[pathSegments.length - 1]; // Get the last segment, which is the `id`
+    const pathSegments = url.pathname.split('/');
+    const id = pathSegments[pathSegments.length - 1];
 
     if (!id || isNaN(parseInt(id, 10))) {
       return NextResponse.json(
@@ -16,10 +17,20 @@ export async function GET(request: Request) {
 
     const postId = parseInt(id, 10);
 
-    // Fetch the post from the database
+    // Fetch the post from the database including author, mainCategories, and subcategories.
     const post = await prisma.post.findUnique({
       where: { id: postId },
-      include: { author: { select: { name: true } } }, // Include author details
+      include: {
+        author: { select: { name: true, email: true } },
+        mainCategories: { select: { id: true, name: true } },
+        subcategories: {
+          select: {
+            id: true,
+            name: true,
+            category: { select: { id: true, name: true } },
+          },
+        },
+      },
     });
 
     if (!post) {
@@ -55,10 +66,15 @@ export async function PATCH(request: Request) {
     const postId = parseInt(id, 10);
 
     // Parse the request body for fields to update
-    const { title, content } = await request.json();
+    const { title, content, mainCategoryIds, subcategoryIds } =
+      await request.json();
 
-    // If no fields were provided, return an error
-    if (title === undefined && content === undefined) {
+    if (
+      title === undefined &&
+      content === undefined &&
+      mainCategoryIds === undefined &&
+      subcategoryIds === undefined
+    ) {
       return NextResponse.json(
         { error: 'No fields provided for update.' },
         { status: 400 },
@@ -74,12 +90,34 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ error: 'Post not found' }, { status: 404 });
     }
 
-    // Perform a partial update: update only provided fields
+    // Build update data. Use the Prisma "set" operator for many-to-many relationships.
+    const updateData: any = {
+      ...(title !== undefined && { title }),
+      ...(content !== undefined && { content }),
+      ...(Array.isArray(mainCategoryIds) &&
+        mainCategoryIds.length > 0 && {
+          mainCategories: {
+            set: mainCategoryIds.map((id: number) => ({ id })),
+          },
+        }),
+      ...(Array.isArray(subcategoryIds) &&
+        subcategoryIds.length > 0 && {
+          subcategories: { set: subcategoryIds.map((id: number) => ({ id })) },
+        }),
+    };
+
     const updatedPost = await prisma.post.update({
       where: { id: postId },
-      data: {
-        ...(title && { title }),
-        ...(content && { content }),
+      data: updateData,
+      include: {
+        mainCategories: { select: { id: true, name: true } },
+        subcategories: {
+          select: {
+            id: true,
+            name: true,
+            category: { select: { id: true, name: true } },
+          },
+        },
       },
     });
 
@@ -100,7 +138,6 @@ export async function DELETE(request: Request) {
     const pathSegments = url.pathname.split('/');
     const id = pathSegments[pathSegments.length - 1];
 
-    // Validate the post ID
     if (!id || isNaN(parseInt(id, 10))) {
       return NextResponse.json(
         { error: 'Invalid or missing post ID' },

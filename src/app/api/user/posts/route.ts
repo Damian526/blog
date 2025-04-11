@@ -4,16 +4,13 @@ import { authOptions } from '@/lib/auth';
 import { NextResponse } from 'next/server';
 
 export async function GET(req: Request) {
-  // Get user session
   const session = await getServerSession(authOptions);
 
-  // If no session, return 401 Unauthorized
   if (!session || !session.user || !session.user.email) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   try {
-    // Fetch user-specific posts, including subcategories and their associated categories
     const userPosts = await prisma.post.findMany({
       where: { author: { email: session.user.email } },
       select: {
@@ -39,6 +36,12 @@ export async function GET(req: Request) {
                 name: true,
               },
             },
+          },
+        },
+        mainCategories: {
+          select: {
+            id: true,
+            name: true,
           },
         },
       },
