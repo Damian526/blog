@@ -36,7 +36,7 @@ interface PostFormProps {
   onSuccessRedirect?: string;
 }
 
-// SWR fetcher function (defined in your SWRProvider)
+// SWR fetcher function
 const fetcher = async (url: string) => {
   const response = await fetch(url);
   if (!response.ok) {
@@ -52,21 +52,41 @@ export default function PostForm({
   const [title, setTitle] = useState(post?.title || '');
   const [content, setContent] = useState(post?.content || '');
   const [error, setError] = useState<string | null>(null);
+
+  // Track selected main categories
+  const [selectedMainCategories, setSelectedMainCategories] = useState<
+    number[]
+  >([]);
+
+  // Track selected subcategories
   const [selectedSubcategories, setSelectedSubcategories] = useState<number[]>(
     [],
   );
-  const [searchTerm, setSearchTerm] = useState<string>('');
-  const router = useRouter();
 
+  // For subcategory search
+  const [searchTerm, setSearchTerm] = useState<string>('');
+
+  const router = useRouter();
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
-  // Fetch categories using SWR
+  // 1. Fetch categories (each has subcategories)
   const { data: categories, error: categoriesError } = useSWR<Category[]>(
     `${API_BASE_URL}/api/categories`,
     fetcher,
   );
 
-  // Handle checkbox changes
+  // 2. Handle main category checkbox changes
+  const handleMainCategoryChange = (categoryId: number, checked: boolean) => {
+    if (checked) {
+      setSelectedMainCategories((prev) => [...prev, categoryId]);
+    } else {
+      setSelectedMainCategories((prev) =>
+        prev.filter((id) => id !== categoryId),
+      );
+    }
+  };
+
+  // 3. Handle subcategory checkbox changes
   const handleSubcategoryChange = (subcategoryId: number, checked: boolean) => {
     if (checked) {
       setSelectedSubcategories((prev) => [...prev, subcategoryId]);
@@ -77,35 +97,41 @@ export default function PostForm({
     }
   };
 
-  // Filter subcategories based on search term (only subcategory names)
+  // 4. Filter subcategories based on search term
   const displayedCategories = categories
     ? categories
-        .map((category) => {
+        .map((cat) => {
           if (!searchTerm.trim()) {
-            return category;
+            // Show all subcategories if no search term
+            return cat;
           }
-          const matchingSubs = category.subcategories.filter((subcat) =>
-            subcat.name.toLowerCase().includes(searchTerm.toLowerCase()),
+          // Filter subcategories by name
+          const matchingSubs = cat.subcategories.filter((sub) =>
+            sub.name.toLowerCase().includes(searchTerm.toLowerCase()),
           );
           return {
-            ...category,
+            ...cat,
             subcategories: matchingSubs,
           };
         })
-        .filter(
-          (category) => category.subcategories.length > 0 || !searchTerm.trim(),
-        )
+        // If searching, hide categories that have zero matching subcategories
+        .filter((cat) => cat.subcategories.length > 0 || !searchTerm.trim())
     : [];
 
+  // 5. Submit the form
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
 
+    // Basic validations
     if (!title || !content) {
       setError('Title and Content are required.');
       return;
     }
-
+    if (selectedMainCategories.length === 0) {
+      setError('Please select at least one main category.');
+      return;
+    }
     if (selectedSubcategories.length === 0) {
       setError('Please select at least one subcategory.');
       return;
@@ -116,12 +142,15 @@ export default function PostForm({
         ? `${API_BASE_URL}/api/posts/${post.id}` // PATCH for editing
         : `${API_BASE_URL}/api/posts`; // POST for creating
 
+      const method = post?.id ? 'PATCH' : 'POST';
+
       const response = await fetch(url, {
-        method: post?.id ? 'PATCH' : 'POST',
+        method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           title,
           content,
+          mainCategoryIds: selectedMainCategories,
           subcategoryIds: selectedSubcategories,
         }),
       });
@@ -137,13 +166,13 @@ export default function PostForm({
     }
   }
 
+  // 6. Error or loading states
   if (categoriesError) return <div>Error loading categories.</div>;
   if (!categories) return <div>Loading categories...</div>;
 
+  // 7. Render the form UI
   return (
-    // Outer container takes the full width and leaves a small horizontal padding
     <div style={{ width: '100%', padding: '0 1rem' }}>
-      {/* Container can now use 100% of the available space */}
       <Container style={{ width: '100%' }}>
         <TitleHeading>{post ? 'Edit Post' : 'Create New Post'}</TitleHeading>
         {error && <ErrorMessage>{error}</ErrorMessage>}
@@ -177,8 +206,42 @@ export default function PostForm({
             }}
           />
 
-          {/* Search */}
-          <Label htmlFor="search">Search Subcategories</Label>
+          {/* Main Categories */}
+          <Label>Main Categories</Label>
+          <p style={{ fontSize: '0.9rem', margin: '0.5rem 0' }}>
+            (Choose at least one main category)
+          </p>
+          <div
+            style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: '0.75rem',
+              border: '1px solid #ccc',
+              borderRadius: '6px',
+              padding: '0.5rem',
+            }}
+          >
+            {categories.map((cat) => (
+              <label
+                key={cat.id}
+                style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}
+              >
+                <input
+                  type="checkbox"
+                  checked={selectedMainCategories.includes(cat.id)}
+                  onChange={(e) =>
+                    handleMainCategoryChange(cat.id, e.target.checked)
+                  }
+                />
+                {cat.name}
+              </label>
+            ))}
+          </div>
+
+          {/* Search Subcategories */}
+          <Label htmlFor="search" style={{ marginTop: '1rem' }}>
+            Search Subcategories
+          </Label>
           <Input
             id="search"
             type="text"
@@ -188,7 +251,7 @@ export default function PostForm({
             style={{ width: '100%', boxSizing: 'border-box' }}
           />
 
-          {/* Categories & Subcategories */}
+          {/* Subcategories */}
           {displayedCategories.length > 0 ? (
             displayedCategories.map((category) => (
               <div
@@ -207,7 +270,6 @@ export default function PostForm({
                   {category.subcategories.map((subcategory) => (
                     <label
                       key={subcategory.id}
-                      htmlFor={`subcategory-${subcategory.id}`}
                       style={{
                         display: 'flex',
                         alignItems: 'center',
@@ -216,8 +278,7 @@ export default function PostForm({
                     >
                       <input
                         type="checkbox"
-                        id={`subcategory-${subcategory.id}`}
-                        value={subcategory.id}
+                        checked={selectedSubcategories.includes(subcategory.id)}
                         onChange={(e) =>
                           handleSubcategoryChange(
                             subcategory.id,
@@ -235,7 +296,7 @@ export default function PostForm({
             <p>No subcategories match your search.</p>
           )}
 
-          {/* Submit Button */}
+          {/* Submit */}
           <Button type="submit" style={{ marginTop: '1rem' }}>
             {post ? 'Update Post' : 'Create Post'}
           </Button>

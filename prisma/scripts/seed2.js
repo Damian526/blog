@@ -117,7 +117,9 @@ async function main() {
 
     for (const sub of category.subcategories) {
       await prisma.subcategory.upsert({
-        where: { name: sub },
+        where: {
+          name_categoryId: { name: sub, categoryId: createdCategory.id },
+        },
         update: {},
         create: { name: sub, categoryId: createdCategory.id },
       });
