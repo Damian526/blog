@@ -1,48 +1,47 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
-
 export async function GET(request: Request) {
   try {
-    const url = new URL(request.url);
-    const pathSegments = url.pathname.split('/');
-    const id = pathSegments[pathSegments.length - 1];
-
-    if (!id || isNaN(parseInt(id, 10))) {
-      return NextResponse.json(
-        { error: 'Invalid or missing post ID' },
-        { status: 400 },
-      );
-    }
-
-    const postId = parseInt(id, 10);
-
-    // Fetch the post from the database including author, mainCategories, and subcategories.
-    const post = await prisma.post.findUnique({
-      where: { id: postId },
-      include: {
-        author: { select: { name: true, email: true } },
-        mainCategories: { select: { id: true, name: true } },
+    const posts = await prisma.post.findMany({
+      select: {
+        id: true,
+        title: true,
+        content: true,
+        published: true,
+        createdAt: true,
+        author: {
+          select: {
+            name: true,
+            email: true,
+          },
+        },
+        // Only subcategories are included now.
         subcategories: {
           select: {
             id: true,
             name: true,
-            category: { select: { id: true, name: true } },
+            category: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
           },
         },
       },
     });
 
-    if (!post) {
-      return NextResponse.json({ error: 'Post not found' }, { status: 404 });
-    }
+    const formattedPosts = posts.map((post) => ({
+      ...post,
+      createdAt: post.createdAt.toISOString(),
+    }));
 
-    // Return the post data
-    return NextResponse.json(post);
+    return NextResponse.json(formattedPosts);
   } catch (error) {
-    console.error('Error fetching post:', error);
+    console.error('Error fetching posts:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch post' },
+      { error: 'Failed to fetch posts' },
       { status: 500 },
     );
   }
@@ -65,14 +64,13 @@ export async function PATCH(request: Request) {
 
     const postId = parseInt(id, 10);
 
-    // Parse the request body for fields to update
-    const { title, content, mainCategoryIds, subcategoryIds } =
-      await request.json();
+    // Parse the request body for fields to update.
+    // We only accept title, content, and optionally subcategoryIds.
+    const { title, content, subcategoryIds } = await request.json();
 
     if (
       title === undefined &&
       content === undefined &&
-      mainCategoryIds === undefined &&
       subcategoryIds === undefined
     ) {
       return NextResponse.json(
@@ -90,16 +88,10 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ error: 'Post not found' }, { status: 404 });
     }
 
-    // Build update data. Use the Prisma "set" operator for many-to-many relationships.
+    // Build update data. Use "set" for many-to-many relationships.
     const updateData: any = {
       ...(title !== undefined && { title }),
       ...(content !== undefined && { content }),
-      ...(Array.isArray(mainCategoryIds) &&
-        mainCategoryIds.length > 0 && {
-          mainCategories: {
-            set: mainCategoryIds.map((id: number) => ({ id })),
-          },
-        }),
       ...(Array.isArray(subcategoryIds) &&
         subcategoryIds.length > 0 && {
           subcategories: { set: subcategoryIds.map((id: number) => ({ id })) },
@@ -110,7 +102,6 @@ export async function PATCH(request: Request) {
       where: { id: postId },
       data: updateData,
       include: {
-        mainCategories: { select: { id: true, name: true } },
         subcategories: {
           select: {
             id: true,

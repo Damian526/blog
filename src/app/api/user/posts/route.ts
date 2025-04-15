@@ -38,12 +38,6 @@ export async function GET(req: Request) {
             },
           },
         },
-        mainCategories: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
       },
     });
 

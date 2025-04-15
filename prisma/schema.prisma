@@ -1,6 +1,4 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
+// schema.prisma
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
@@ -11,30 +9,30 @@ generator client {
 }
 
 model User {
-  id        Int       @id @default(autoincrement())
-  name      String
-  email     String    @unique
-  password  String
-  posts     Post[]
-  comments  Comment[] // A user can author many comments
-  createdAt DateTime  @default(now())
-  role      Role     @default(USER) 
+  id                 Int       @id @default(autoincrement())
+  name               String
+  email              String    @unique
+  password           String
+  posts              Post[]
+  comments           Comment[] // A user can author many comments
+  createdAt          DateTime  @default(now())
+  role               Role      @default(USER)
   verified           Boolean   @default(false)
   verificationToken  String?
 }
 
 model Post {
-  id        Int       @id @default(autoincrement())
-  title     String
-  content   String?
-  published Boolean   @default(false)
-  createdAt DateTime  @default(now())
-  authorId  Int
-  author    User      @relation(fields: [authorId], references: [id])
-  comments  Comment[] // A post can have many comments
-  declineReason String? 
+  id            Int       @id @default(autoincrement())
+  title         String
+  content       String?
+  published     Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  authorId      Int
+  author        User      @relation(fields: [authorId], references: [id])
+  comments      Comment[]
+  declineReason String?
   subcategories Subcategory[] @relation("PostSubcategories")
-  mainCategories Category[]  @relation("PostMainCategories")
+  // Removed mainCategories relation
 }
 
 model Comment {
@@ -45,13 +43,12 @@ model Comment {
   // Relations
   postId    Int
   post      Post     @relation(fields: [postId], references: [id])
-
   authorId  Int
   author    User     @relation(fields: [authorId], references: [id])
 
   // Self-referencing relation for replies
-  parentId   Int?     
-  parent     Comment?  @relation(name: "CommentReplies", fields: [parentId], references: [id]) 
+  parentId   Int?
+  parent     Comment? @relation(name: "CommentReplies", fields: [parentId], references: [id])
   replies    Comment[] @relation(name: "CommentReplies")
 }
 
@@ -60,18 +57,18 @@ model Category {
   name          String        @unique
   subcategories Subcategory[] // One-to-many relationship with Subcategory
   createdAt     DateTime      @default(now())
-  mainPosts     Post[]        @relation("PostMainCategories")
+  // Removed mainPosts relation (used for mainCategories)
 }
 
 model Subcategory {
-  id          Int       @id @default(autoincrement())
-  name        String    
-  categoryId  Int       
-  category    Category  @relation(fields: [categoryId], references: [id])
-  posts       Post[]    @relation("PostSubcategories")
-  createdAt   DateTime  @default(now())
+  id         Int       @id @default(autoincrement())
+  name       String
+  categoryId Int       // Foreign key to Category
+  category   Category  @relation(fields: [categoryId], references: [id])
+  posts      Post[]    @relation("PostSubcategories")
+  createdAt  DateTime  @default(now())
 
-  @@unique([name, categoryId]) 
+  @@unique([name, categoryId])
 }
 
 enum Role {

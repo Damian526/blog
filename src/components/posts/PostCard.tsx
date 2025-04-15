@@ -14,7 +14,6 @@ import {
   CategoryTag,
 } from '@/styles/components/posts/PostCard.styles';
 
-// Interfaces
 interface Author {
   name: string;
   email: string;
@@ -62,6 +61,7 @@ export default function PostCard({
     }
   };
 
+  // Determine status text and type
   let statusText = 'Status: Pending';
   let statusType: 'published' | 'rejected' | 'pending' = 'pending';
 
@@ -76,26 +76,26 @@ export default function PostCard({
   return (
     <Card>
       <Title>{post.title}</Title>
+
       <Author>
-        By{' '}
-        {`${post.author.name} on ${new Date(post.createdAt).toLocaleDateString()}`}
+        By {post.author.name} on {new Date(post.createdAt).toLocaleDateString()}
       </Author>
-      <p>{post.content || 'No content available'}...</p>
 
-      <Link href={`/posts/${post.id}`}>Read More</Link>
-
+      {/* Place subcategories below the Author */}
       {post.subcategories && post.subcategories.length > 0 && (
-        <CategoriesContainer>
-          <strong>Categories:</strong>
+        <CategoriesContainer
+          style={{ marginTop: '0.75rem', marginBottom: '0.75rem' }}
+        >
           <CategoryList>
             {post.subcategories.map((subcat) => (
-              <CategoryTag key={subcat.id}>
-                {subcat.category.name} / {subcat.name}
-              </CategoryTag>
+              <CategoryTag key={subcat.id}>{subcat.name}</CategoryTag>
             ))}
           </CategoryList>
         </CategoriesContainer>
       )}
+
+      <p>{post.content || 'No content available'}...</p>
+      <Link href={`/posts/${post.id}`}>Read More</Link>
 
       {showActions && (
         <div>

@@ -29,12 +29,6 @@ export async function GET(request: Request) {
             },
           },
         },
-        mainCategories: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
       },
     });
 
@@ -59,20 +53,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Expect title, content, mainCategoryIds, and subcategoryIds from the request body
-    const { title, content, mainCategoryIds, subcategoryIds } =
-      await request.json();
+    // Expect title, content, and subcategoryIds from the request body
+    const { title, content, subcategoryIds } = await request.json();
 
     if (!title || !content) {
       return NextResponse.json(
         { error: 'Title and Content are required.' },
-        { status: 400 },
-      );
-    }
-
-    if (!Array.isArray(mainCategoryIds) || mainCategoryIds.length === 0) {
-      return NextResponse.json(
-        { error: 'At least one main category is required.' },
         { status: 400 },
       );
     }
@@ -99,24 +85,19 @@ export async function POST(request: Request) {
         published: false,
         createdAt: new Date(),
         authorId: user.id,
-        // Connect multiple main categories
-        mainCategories: {
-          connect: mainCategoryIds.map((id: number) => ({ id })),
-        },
-        // Connect one or more subcategories
+        // Connect one or more subcategories only
         subcategories: {
           connect: subcategoryIds.map((id: number) => ({ id })),
         },
       },
       include: {
-        mainCategories: true,
         subcategories: true,
       },
     });
 
     return NextResponse.json(post);
   } catch (error) {
-    console.error('Error creating post with categories:', error);
+    console.error('Error creating post with subcategories:', error);
     return NextResponse.json(
       { error: 'Failed to create post.' },
       { status: 500 },
