@@ -6,30 +6,22 @@ import { authOptions } from '@/lib/auth';
 export async function GET(request: Request) {
   try {
     const url = new URL(request.url);
-    const categoryIdParam = url.searchParams.get('categoryId');
-    const subcategoryIdParam = url.searchParams.get('subcategoryId');
+    const categoryId = url.searchParams.get('categoryId');
+    const subcategoryId = url.searchParams.get('subcategoryId');
 
-    // build zero or more filters
-    const filters: any[] = [];
-    if (categoryIdParam) {
-      const cid = parseInt(categoryIdParam, 10);
+    const filters = [];
+    if (categoryId) {
       filters.push({
-        subcategories: {
-          some: { categoryId: cid },
-        },
+        subcategories: { some: { categoryId: +categoryId } },
       });
     }
-    if (subcategoryIdParam) {
-      const scid = parseInt(subcategoryIdParam, 10);
+    if (subcategoryId) {
       filters.push({
-        subcategories: {
-          some: { id: scid },
-        },
+        subcategories: { some: { id: +subcategoryId } },
       });
     }
-
-    // combine filters with AND, or no filter at all
-    const where = filters.length > 0 ? { AND: filters } : {};
+    // AND‑combine or no filter
+    const where = filters.length ? { AND: filters } : {};
 
     const posts = await prisma.post.findMany({
       where,
@@ -39,9 +31,7 @@ export async function GET(request: Request) {
         content: true,
         published: true,
         createdAt: true,
-        author: {
-          select: { name: true, email: true },
-        },
+        author: { select: { name: true, email: true } },
         subcategories: {
           select: {
             id: true,

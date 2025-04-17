@@ -45,20 +45,21 @@ export default function SidebarClient({ categories }: { categories: any[] }) {
         {categories.map((cat) => (
           <CategoryItem key={cat.id}>
             {/* Clicking this will reload home with ?categoryId=cat.id */}
-            <Link
-              href={`/?categoryId=${cat.id}`}
-              style={{ textDecoration: 'none' }}
-            >
+            <Link href={{ pathname: '/', query: { categoryId: cat.id } }}>
               {cat.name}
             </Link>
             {cat.subcategories?.length > 0 && (
               <SubcategoryList>
                 {cat.subcategories.map((sub: any) => (
                   <SubcategoryItem key={sub.id}>
-                    {/* You could also filter directly by subcategory if you like: */}
                     <Link
-                      href={`/?categoryId=${sub?.category?.id}`}
-                      style={{ textDecoration: 'none' }}
+                      href={{
+                        pathname: '/',
+                        query: {
+                          categoryId: cat.id,
+                          subcategoryId: sub.id,
+                        },
+                      }}
                     >
                       {sub.name}
                     </Link>
