@@ -2,17 +2,31 @@
 import PostList from '@/components/posts/PostList';
 
 export const dynamic = 'force-dynamic';
+type HomeProps = {
+  searchParams?: Record<string, string | string[] | undefined>;
+};
+export default async function Home({ searchParams = {} }: HomeProps) {
+  const csvToNumberArray = (val?: string | string[]) =>
+    typeof val === 'string'
+      ? val
+          .split(',')
+          .map(Number)
+          .filter((n) => !isNaN(n))
+      : Array.isArray(val)
+        ? val.flatMap((v) =>
+            v
+              .split(',')
+              .map(Number)
+              .filter((n) => !isNaN(n)),
+          )
+        : [];
 
-export default async function Home(props: {
-  searchParams: Record<string, string> | Promise<Record<string, string>>;
-}) {
-  const { categoryId, subcategoryId } = await props.searchParams;
-
+  const catIds = csvToNumberArray(searchParams.categoryIds);
+  const subIds = csvToNumberArray(searchParams.subcategoryIds);
+  // build fetch URL
   const url = new URL(`${process.env.NEXT_PUBLIC_API_URL}/api/posts`);
-  const cid = Number(categoryId);
-  if (!Number.isNaN(cid)) url.searchParams.set('categoryId', String(cid));
-  const scid = Number(subcategoryId);
-  if (!Number.isNaN(scid)) url.searchParams.set('subcategoryId', String(scid));
+  if (catIds.length) url.searchParams.set('categoryIds', catIds.join(','));
+  if (subIds.length) url.searchParams.set('subcategoryIds', subIds.join(','));
 
   let posts = [];
   try {

@@ -3,25 +3,37 @@ import prisma from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 
+
 export async function GET(request: Request) {
   try {
-    const url = new URL(request.url, 'http://localhost');
-    const categoryId = url.searchParams.get('categoryId');
-    const subcategoryId = url.searchParams.get('subcategoryId');
+    const url = new URL(request.url);
+    const catParam = url.searchParams.get('categoryIds');
+    const subParam = url.searchParams.get('subcategoryIds');
 
-    const filters = [];
-    if (categoryId) {
-      filters.push({
-        subcategories: { some: { categoryId: +categoryId } },
+    const whereClauses: any[] = [];
+
+    if (catParam) {
+      const catIds = catParam
+        .split(',')
+        .map(Number)
+        .filter((n) => !isNaN(n));
+      whereClauses.push({
+        subcategories: { some: { categoryId: { in: catIds } } },
       });
     }
-    if (subcategoryId) {
-      filters.push({
-        subcategories: { some: { id: +subcategoryId } },
+
+    if (subParam) {
+      const subIds = subParam
+        .split(',')
+        .map(Number)
+        .filter((n) => !isNaN(n));
+      whereClauses.push({
+        subcategories: { some: { id: { in: subIds } } },
       });
     }
-    // AND‑combine or no filter
-    const where = filters.length ? { AND: filters } : {};
+
+    // OR them: posts matching any selected category _or_ subcategory
+    const where = whereClauses.length > 0 ? { OR: whereClauses } : {};
 
     const posts = await prisma.post.findMany({
       where,
