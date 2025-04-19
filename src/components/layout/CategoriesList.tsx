@@ -75,7 +75,7 @@ export default function SidebarClient({ categories }: { categories: any[] }) {
     const params = new URLSearchParams();
     if (newCats.length) params.set('categoryIds', newCats.join(','));
     if (newSubs.length) params.set('subcategoryIds', newSubs.join(','));
-    router.push(`/?${params.toString()}`, { shallow: true });
+    router.push(`/?${params.toString()}`);
   }
 
   // handlers
