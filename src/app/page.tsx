@@ -2,11 +2,23 @@
 import PostList from '@/components/posts/PostList';
 
 export const dynamic = 'force-dynamic';
-type HomeProps = {
-  searchParams?: Record<string, string | string[] | undefined>;
-};
-export default async function Home({ searchParams = {} }: HomeProps) {
-  const csvToNumberArray = (val?: string | string[]) =>
+type SearchParams =
+  | Record<string, string | string[] | undefined>
+  | Promise<Record<string, string | string[] | undefined>>;
+export default async function Home({
+  searchParams,
+}: {
+  searchParams?: SearchParams;
+}) {
+  const params =
+    searchParams && typeof (searchParams as any)?.then === 'function'
+      ? await searchParams
+      : ((searchParams as
+          | Record<string, string | string[] | undefined>
+          | undefined) ?? {});
+
+  /* ---------- helpers ---------- */
+  const csvToNums = (val?: string | string[]) =>
     typeof val === 'string'
       ? val
           .split(',')
@@ -21,8 +33,9 @@ export default async function Home({ searchParams = {} }: HomeProps) {
           )
         : [];
 
-  const catIds = csvToNumberArray(searchParams.categoryIds);
-  const subIds = csvToNumberArray(searchParams.subcategoryIds);
+  const catIds = csvToNums(params.categoryIds);
+  const subIds = csvToNums(params.subcategoryIds);
+
   // build fetch URL
   const url = new URL(`${process.env.NEXT_PUBLIC_API_URL}/api/posts`);
   if (catIds.length) url.searchParams.set('categoryIds', catIds.join(','));
