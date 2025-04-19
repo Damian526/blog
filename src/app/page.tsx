@@ -2,22 +2,18 @@
 import PostList from '@/components/posts/PostList';
 
 export const dynamic = 'force-dynamic';
-type SearchParams =
-  | Record<string, string | string[] | undefined>
-  | Promise<Record<string, string | string[] | undefined>>;
+type RawParams = Record<string, string | string[] | undefined>;
+
 export default async function Home({
   searchParams,
 }: {
-  searchParams?: SearchParams;
+  // exactly what Next expects: Promise | undefined
+  searchParams?: Promise<RawParams>;
 }) {
-  const params =
-    searchParams && typeof (searchParams as any)?.then === 'function'
-      ? await searchParams
-      : ((searchParams as
-          | Record<string, string | string[] | undefined>
-          | undefined) ?? {});
+  /* 1️⃣  always await (it may be undefined, that's OK) */
+  const params: RawParams = (await searchParams) ?? {};
 
-  /* ---------- helpers ---------- */
+  /* ------- helpers ------- */
   const csvToNums = (val?: string | string[]) =>
     typeof val === 'string'
       ? val
