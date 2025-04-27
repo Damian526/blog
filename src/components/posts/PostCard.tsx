@@ -3,15 +3,18 @@
 import Link from 'next/link';
 import {
   Card,
+  Header,
+  Content,
   Title,
-  ButtonContainer,
-  Author,
+  Meta,
+  Categories,
+  CategoryTag,
+  Actions,
+  Footer,
+  ReadMore,
+  Excerpt,
   ActionButton,
   StatusBadge,
-  StatusContainer,
-  CategoriesContainer,
-  CategoryList,
-  CategoryTag,
 } from '@/styles/components/posts/PostCard.styles';
 
 interface Author {
@@ -39,6 +42,7 @@ interface Post {
   createdAt: string;
   author: Author;
   subcategories?: Subcategory[];
+  coverImageUrl?: string; // optional header image URL
 }
 
 interface PostCardProps {
@@ -61,55 +65,66 @@ export default function PostCard({
     }
   };
 
-  // Determine status text and type
-  let statusText = 'Status: Pending';
+  let statusText = 'Pending';
   let statusType: 'published' | 'rejected' | 'pending' = 'pending';
-
   if (post.published) {
-    statusText = 'Status: Published';
+    statusText = 'Published';
     statusType = 'published';
   } else if (post.declineReason) {
-    statusText = `Status: Rejected — Reason: ${post.declineReason}`;
+    statusText = `Rejected: ${post.declineReason}`;
     statusType = 'rejected';
   }
 
+  const date = new Date(post.createdAt).toLocaleDateString();
+  const categoryColors = ['#e67e22', '#3498db', '#9b59b6', '#27ae60'];
+
   return (
     <Card>
-      <Title>{post.title}</Title>
+      {post.coverImageUrl && <Header imgUrl={post.coverImageUrl} />}
 
-      <Author>
-        By {post.author.name} on {new Date(post.createdAt).toLocaleDateString()}
-      </Author>
+      <Content>
+        <Title>{post.title}</Title>
 
-      {/* Place subcategories below the Author */}
-      {post.subcategories && post.subcategories.length > 0 && (
-        <CategoriesContainer
-          style={{ marginTop: '0.75rem', marginBottom: '0.75rem' }}
-        >
-          <CategoryList>
-            {post.subcategories.map((subcat) => (
-              <CategoryTag key={subcat.id}>{subcat.name}</CategoryTag>
-            ))}
-          </CategoryList>
-        </CategoriesContainer>
-      )}
-
-      <p>{post.content || 'No content available'}...</p>
-      <Link href={`/posts/${post.id}`}>Read More</Link>
-
-      {showActions && (
-        <div>
-          <StatusContainer>
+        <Meta>
+          <span>By {post.author.name}</span>
+          <span>•</span>
+          <span>{date}</span>
+          {showActions && (
             <StatusBadge status={statusType}>{statusText}</StatusBadge>
-          </StatusContainer>
-          <ButtonContainer>
-            <Link href={`/posts/${post.id}/edit`}>
-              <ActionButton>Edit</ActionButton>
-            </Link>
-            <ActionButton onClick={handleDelete}>Delete</ActionButton>
-          </ButtonContainer>
-        </div>
-      )}
+          )}
+        </Meta>
+
+        {post.subcategories?.length > 0 && (
+          <Categories>
+            {post.subcategories.map((sub, i) => (
+              <CategoryTag
+                key={sub.id}
+                color={categoryColors[i % categoryColors.length]}
+              >
+                {sub.name}
+              </CategoryTag>
+            ))}
+          </Categories>
+        )}
+
+        <Excerpt>
+          {(post.content || 'No content available').slice(0, 140)}…
+        </Excerpt>
+
+        <Footer>
+          <ReadMore href={`/posts/${post.id}`}>Read More →</ReadMore>
+          {showActions && (
+            <Actions>
+              <ActionButton variant="edit">
+                <Link href={`/posts/${post.id}/edit`}>Edit</Link>
+              </ActionButton>
+              <ActionButton variant="delete" onClick={handleDelete}>
+                Delete
+              </ActionButton>
+            </Actions>
+          )}
+        </Footer>
+      </Content>
     </Card>
   );
 }
