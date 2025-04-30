@@ -56,6 +56,8 @@ export default function PostCard({
   showActions = false,
   onDelete,
 }: PostCardProps) {
+  const subcategories = post.subcategories ?? [];
+
   const handleDelete = () => {
     if (
       onDelete &&
@@ -94,9 +96,9 @@ export default function PostCard({
           )}
         </Meta>
 
-        {post.subcategories?.length > 0 && (
+        {subcategories.length > 0 && (
           <Categories>
-            {post.subcategories.map((sub, i) => (
+            {subcategories.map((sub, i) => (
               <CategoryTag
                 key={sub.id}
                 color={categoryColors[i % categoryColors.length]}
