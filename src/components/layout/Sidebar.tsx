@@ -16,6 +16,5 @@ export default async function Sidebar() {
   const categories = await getCategories();
   // We get our categories at build time (SSG) or at runtime (SSR)
 
-  // Pass data to a Client Component
   return <SidebarClient categories={categories} />;
 }

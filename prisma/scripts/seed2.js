@@ -1,5 +1,8 @@
 // prisma/seed.ts
 import { PrismaClient } from '@prisma/client';
+// If you're on Node.js <18 install node-fetch: `npm install node-fetch`
+import fetch from 'node-fetch';
+
 const prisma = new PrismaClient();
 
 async function main() {
@@ -132,10 +135,26 @@ async function main() {
     update: {},
     create: { name: 'Other' },
   });
+
+  // ── Deploy Hook trigger ──
+  const hookUrl = process.env.VERCEL_DEPLOY_HOOK;
+  if (hookUrl) {
+    try {
+      await fetch(hookUrl, { method: 'POST' });
+      console.log('✅ Vercel Deploy Hook fired: site is rebuilding');
+    } catch (err) {
+      console.error('❌ Failed to fire Vercel Deploy Hook', err);
+    }
+  } else {
+    console.warn('⚠️ VERCEL_DEPLOY_HOOK is not defined');
+  }
 }
 
 main()
-  .catch((e) => console.error(e))
+  .catch((e) => {
+    console.error(e);
+    process.exit(1);
+  })
   .finally(async () => {
     await prisma.$disconnect();
   });
