@@ -29,14 +29,6 @@ export const Input = styled.input`
   font-size: 1rem;
 `;
 
-export const TextArea = styled.textarea`
-  margin-bottom: 20px;
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  font-size: 1rem;
-`;
-
 export const Button = styled.button`
   background-color: #0070f3;
   color: white;

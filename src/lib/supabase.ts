@@ -7,11 +7,21 @@ export const supabase = createClient(
 );
 
 export async function uploadImage(file: File): Promise<string> {
+  // 1) Upload the file
   const path = `uploads/${Date.now()}_${file.name}`;
-  const { data, error } = await supabase.storage
+  const { data: uploadData, error: uploadError } = await supabase.storage
     .from('images')
     .upload(path, file);
-  if (error || !data) throw error || new Error('Upload failed');
-  const { publicUrl } = supabase.storage.from('images').getPublicUrl(data.path);
-  return publicUrl;
+
+  if (uploadError || !uploadData) {
+    throw uploadError ?? new Error('Upload failed');
+  }
+
+  // 2) Get the public URL (synchronous and always “successful”)
+  const { data: urlData } = supabase.storage
+    .from('images')
+    .getPublicUrl(uploadData.path);
+
+  // urlData.publicUrl definitely exists here
+  return urlData.publicUrl;
 }
