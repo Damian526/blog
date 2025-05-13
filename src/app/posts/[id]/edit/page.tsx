@@ -1,12 +1,14 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter, useParams } from 'next/navigation';
-import PostForm from '@/components/posts/PostForm';
+import { useParams } from 'next/navigation';
+import dynamic from 'next/dynamic';
+const PostForm = dynamic(() => import('@/components/posts/PostForm'), {
+  ssr: false,
+});
 
 export default function EditPostPage() {
   const params = useParams();
-  const router = useRouter();
   const [post, setPost] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');

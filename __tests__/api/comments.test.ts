@@ -2,7 +2,7 @@ import request from 'supertest';
 import { createServer } from 'http';
 import { POST } from '@/app/api/comments/route';
 import { prisma } from '@/lib/prisma';
-import { mockDeep, DeepMockProxy } from 'jest-mock-extended';
+import { DeepMockProxy } from 'jest-mock-extended';
 import { getServerSession } from 'next-auth';
 
 jest.mock('next-auth', () => ({

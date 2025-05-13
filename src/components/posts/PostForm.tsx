@@ -3,6 +3,11 @@
 import { useState } from 'react';
 import useSWR from 'swr';
 import { useRouter } from 'next/navigation';
+import { useEditor, EditorContent } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
+import ImageExtension from '@tiptap/extension-image';
+import { uploadImage } from '@/lib/supabase';
+
 import {
   Container,
   TitleHeading,
@@ -49,8 +54,11 @@ export default function PostForm({
   post,
   onSuccessRedirect = '/dashboard',
 }: PostFormProps) {
+  const editor = useEditor({
+    extensions: [StarterKit, ImageExtension.configure({ inline: true })],
+    content: post?.content || '',
+  });
   const [title, setTitle] = useState(post?.title || '');
-  const [content, setContent] = useState(post?.content || '');
   const [error, setError] = useState<string | null>(null);
 
   // Track selected main categories
@@ -124,7 +132,7 @@ export default function PostForm({
     setError(null);
 
     // Basic validations
-    if (!title || !content) {
+    if (!title || !editor) {
       setError('Title and Content are required.');
       return;
     }
@@ -143,13 +151,13 @@ export default function PostForm({
         : `${API_BASE_URL}/api/posts`; // POST for creating
 
       const method = post?.id ? 'PATCH' : 'POST';
-
+      const html = editor?.getHTML() || '';
       const response = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           title,
-          content,
+          content: html,
           mainCategoryIds: selectedMainCategories,
           subcategoryIds: selectedSubcategories,
         }),
@@ -189,23 +197,37 @@ export default function PostForm({
             required
             style={{ width: '100%', boxSizing: 'border-box' }}
           />
-
           {/* Content */}
           <Label htmlFor="content">Content</Label>
-          <TextArea
-            id="content"
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            placeholder="Enter the post content"
-            rows={5}
-            required
-            style={{
-              width: '100%',
-              resize: 'vertical',
-              boxSizing: 'border-box',
-            }}
-          />
 
+          {editor && (
+            <EditorContent
+              editor={editor}
+              style={{
+                minHeight: 300,
+                border: '1px solid #ccc',
+                padding: '0.5rem',
+              }}
+            />
+          )}
+          <button
+            type="button"
+            onClick={async () => {
+              const input = document.createElement('input');
+              input.type = 'file';
+              input.accept = 'image/*';
+              input.click();
+              input.onchange = async () => {
+                const file = input.files?.[0];
+                if (file && editor) {
+                  const url = await uploadImage(file);
+                  editor.chain().focus().setImage({ src: url }).run();
+                }
+              };
+            }}
+          >
+            Insert Image
+          </button>
           {/* Main Categories */}
           <Label>Main Categories</Label>
           <p style={{ fontSize: '0.9rem', margin: '0.5rem 0' }}>
@@ -237,7 +259,6 @@ export default function PostForm({
               </label>
             ))}
           </div>
-
           {/* Search Subcategories */}
           <Label htmlFor="search" style={{ marginTop: '1rem' }}>
             Search Subcategories
@@ -250,7 +271,6 @@ export default function PostForm({
             placeholder="Type to search subcategories..."
             style={{ width: '100%', boxSizing: 'border-box' }}
           />
-
           {/* Subcategories */}
           {displayedCategories.length > 0 ? (
             displayedCategories.map((category) => (
@@ -295,7 +315,6 @@ export default function PostForm({
           ) : (
             <p>No subcategories match your search.</p>
           )}
-
           {/* Submit */}
           <Button type="submit" style={{ marginTop: '1rem' }}>
             {post ? 'Update Post' : 'Create Post'}
