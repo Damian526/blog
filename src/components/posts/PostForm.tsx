@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import useSWR from 'swr';
 import { useRouter } from 'next/navigation';
 import {
   Container,
@@ -34,20 +33,13 @@ interface Post {
 interface PostFormProps {
   post?: Post; // Optional for editing
   onSuccessRedirect?: string;
+  categories: Category[];
 }
-
-// SWR fetcher function
-const fetcher = async (url: string) => {
-  const response = await fetch(url);
-  if (!response.ok) {
-    throw new Error(`Failed to fetch: ${response.statusText}`);
-  }
-  return response.json();
-};
 
 export default function PostForm({
   post,
   onSuccessRedirect = '/dashboard',
+  categories,
 }: PostFormProps) {
   const [title, setTitle] = useState(post?.title || '');
   const [content, setContent] = useState(post?.content || '');
@@ -68,12 +60,6 @@ export default function PostForm({
 
   const router = useRouter();
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
-
-  // 1. Fetch categories (each has subcategories)
-  const { data: categories, error: categoriesError } = useSWR<Category[]>(
-    `${API_BASE_URL}/api/categories`,
-    fetcher,
-  );
 
   // 2. Handle main category checkbox changes
   const handleMainCategoryChange = (categoryId: number, checked: boolean) => {
@@ -167,7 +153,7 @@ export default function PostForm({
   }
 
   // 6. Error or loading states
-  if (categoriesError) return <div>Error loading categories.</div>;
+
   if (!categories) return <div>Loading categories...</div>;
 
   // 7. Render the form UI
