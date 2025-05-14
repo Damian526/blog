@@ -160,7 +160,8 @@ export default function PostForm({
   }
 
   // 6. Error or loading states
-  if (!categories) return <div>Loading...</div>;
+
+  if (!categories) return <div>Loading categories...</div>;
 
   // 7. Render the form UI
   return (
