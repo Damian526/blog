@@ -45,10 +45,26 @@ export default function PostForm({
   onSuccessRedirect = '/dashboard',
   categories,
 }: PostFormProps) {
-  const editor = useEditor({
-    extensions: [StarterKit, ImageExtension.configure({ inline: true })],
-    content: post?.content || '',
-  });
+  const [isMounted, setIsMounted] = useState(false);
+
+  const editor = useEditor(
+    {
+      extensions: [StarterKit, ImageExtension.configure({ inline: true })],
+      content: post?.content || '',
+      immediatelyRender: false, // Add this line to fix SSR hydration issues
+      editorProps: {
+        attributes: {
+          class:
+            'prose prose-sm sm:prose lg:prose-lg xl:prose-2xl mx-auto focus:outline-none',
+        },
+      },
+      onCreate: () => {
+        setIsMounted(true);
+      },
+    },
+    [post?.content],
+  );
+
   const [title, setTitle] = useState(post?.title || '');
   const [error, setError] = useState<string | null>(null);
 
@@ -164,6 +180,17 @@ export default function PostForm({
   if (!categories) return <div>Loading categories...</div>;
 
   // 7. Render the form UI
+  const editorContent = isMounted && editor && (
+    <EditorContent
+      editor={editor}
+      style={{
+        minHeight: 300,
+        border: '1px solid #ccc',
+        padding: '0.5rem',
+      }}
+    />
+  );
+
   return (
     <div style={{ width: '100%', padding: '0 1rem' }}>
       <Container style={{ width: '100%' }}>
@@ -184,17 +211,7 @@ export default function PostForm({
           />
           {/* Content */}
           <Label htmlFor="content">Content</Label>
-
-          {editor && (
-            <EditorContent
-              editor={editor}
-              style={{
-                minHeight: 300,
-                border: '1px solid #ccc',
-                padding: '0.5rem',
-              }}
-            />
-          )}
+          {editorContent}
           <button
             type="button"
             onClick={async () => {
