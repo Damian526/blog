@@ -87,3 +87,17 @@ bun dev
 
 - Unit and integration tests with Jest ensure system reliability.
 - Basic test coverage for authentication, blog posts, and comment system.
+
+### 🔍 Search Posts by Category & Subcategory
+- **Overview:**  
+  Users can now search for blog posts by selecting a specific category and/or subcategory.  
+- **Usage:**  
+  Append query parameters to the search URL. For example:  
+  ```
+  /search?category=2&subcategory=5
+  ```  
+  This will display a list of posts filtered by the specified category and subcategory.
+- **API Integration:**  
+  The client component uses these query parameters to hit a dedicated API endpoint, which returns the matching posts.
+- **User Experience:**  
+  If no posts are found matching the criteria, an informative message is displayed.
