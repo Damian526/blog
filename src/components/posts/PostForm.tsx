@@ -6,6 +6,7 @@ import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import ImageExtension from '@tiptap/extension-image';
 import { uploadImage } from '@/lib/supabase';
+import Placeholder from '@tiptap/extension-placeholder';
 
 import {
   Container,
@@ -49,14 +50,15 @@ export default function PostForm({
 
   const editor = useEditor(
     {
-      extensions: [StarterKit, ImageExtension.configure({ inline: true })],
+      extensions: [
+        StarterKit,
+        ImageExtension.configure({ inline: true }),
+        Placeholder.configure({ placeholder: 'Click here to start writing…' }),
+      ],
       content: post?.content || '',
       immediatelyRender: false, // Add this line to fix SSR hydration issues
       editorProps: {
-        attributes: {
-          class:
-            'prose prose-sm sm:prose lg:prose-lg xl:prose-2xl mx-auto focus:outline-none',
-        },
+        attributes: { class: 'editor-content' },
       },
       onCreate: () => {
         setIsMounted(true);
@@ -83,6 +85,22 @@ export default function PostForm({
 
   const router = useRouter();
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+
+  // 1) Define handleAddImage in this scope
+  const handleAddImage = async () => {
+    if (!editor) return;
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.click();
+    input.onchange = async () => {
+      const file = input.files?.[0];
+      if (file) {
+        const url = await uploadImage(file);
+        editor.chain().focus().setImage({ src: url }).run();
+      }
+    };
+  };
 
   // 2. Handle main category checkbox changes
   const handleMainCategoryChange = (categoryId: number, checked: boolean) => {
@@ -179,18 +197,6 @@ export default function PostForm({
 
   if (!categories) return <div>Loading categories...</div>;
 
-  // 7. Render the form UI
-  const editorContent = isMounted && editor && (
-    <EditorContent
-      editor={editor}
-      style={{
-        minHeight: 300,
-        border: '1px solid #ccc',
-        padding: '0.5rem',
-      }}
-    />
-  );
-
   return (
     <div style={{ width: '100%', padding: '0 1rem' }}>
       <Container style={{ width: '100%' }}>
@@ -211,25 +217,38 @@ export default function PostForm({
           />
           {/* Content */}
           <Label htmlFor="content">Content</Label>
-          {editorContent}
-          <button
-            type="button"
-            onClick={async () => {
-              const input = document.createElement('input');
-              input.type = 'file';
-              input.accept = 'image/*';
-              input.click();
-              input.onchange = async () => {
-                const file = input.files?.[0];
-                if (file && editor) {
-                  const url = await uploadImage(file);
-                  editor.chain().focus().setImage({ src: url }).run();
-                }
-              };
-            }}
-          >
-            Insert Image
-          </button>
+          <div style={{ display: 'flex', gap: 4, margin: '4px 0' }}>
+            <button
+              className="toolbar-btn"
+              onClick={() => editor?.chain().focus().toggleBold().run()}
+            >
+              B
+            </button>
+            <button
+              className="toolbar-btn"
+              onClick={() => editor?.chain().focus().toggleItalic().run()}
+            >
+              I
+            </button>
+            <button className="toolbar-btn" onClick={handleAddImage}>
+              📷
+            </button>
+          </div>
+
+          {/* Editor wrapper - no focus outline, cursor only shows on click */}
+          <div>
+            {editor && (
+              <EditorContent
+                editor={editor}
+                style={{
+                  border: '1px solid #ccc',
+                  borderRadius: 4,
+                  minHeight: 200,
+                  padding: 8,
+                }}
+              />
+            )}
+          </div>
           {/* Main Categories */}
           <Label>Main Categories</Label>
           <p style={{ fontSize: '0.9rem', margin: '0.5rem 0' }}>
