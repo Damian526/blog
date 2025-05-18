@@ -1,92 +1,50 @@
 'use client';
-
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useEditor, EditorContent } from '@tiptap/react';
+import { useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import ImageExtension from '@tiptap/extension-image';
-import { uploadImage } from '@/lib/supabase';
 import Placeholder from '@tiptap/extension-placeholder';
+import { uploadImage } from '@/lib/supabase';
 
+import EditorSection from '@/components/posts/EditorSection';
+import CategorySelector from './CategorySelector';
+import { PostFormProps } from '@/types/posts';
 import {
   Container,
   TitleHeading,
   Form,
-  Label,
-  Input,
   Button,
   ErrorMessage,
 } from '@/styles/components/posts/PostForm.styles';
-
-interface Category {
-  id: number;
-  name: string;
-  subcategories: Subcategory[];
-}
-
-interface Subcategory {
-  id: number;
-  name: string;
-}
-
-interface Post {
-  id?: string;
-  title: string;
-  content: string;
-}
-
-interface PostFormProps {
-  post?: Post;
-  onSuccessRedirect?: string;
-  categories: Category[];
-}
 
 export default function PostForm({
   post,
   onSuccessRedirect = '/dashboard',
   categories,
 }: PostFormProps) {
-  const [isMounted, setIsMounted] = useState(false);
-
-  const editor = useEditor(
-    {
-      extensions: [
-        StarterKit,
-        ImageExtension.configure({ inline: true }),
-        Placeholder.configure({ placeholder: 'Click here to start writing…' }),
-      ],
-      content: post?.content || '',
-      immediatelyRender: false, // Add this line to fix SSR hydration issues
-      editorProps: {
-        attributes: { class: 'editor-content' },
-      },
-      onCreate: () => {
-        setIsMounted(true);
-      },
-    },
-    [post?.content],
-  );
-
   const [title, setTitle] = useState(post?.title || '');
-  const [error, setError] = useState<string | null>(null);
-
-  // Track selected main categories
+  const [searchTerm, setSearchTerm] = useState('');
   const [selectedMainCategories, setSelectedMainCategories] = useState<
     number[]
   >([]);
-
-  // Track selected subcategories
   const [selectedSubcategories, setSelectedSubcategories] = useState<number[]>(
     [],
   );
-
-  // For subcategory search
-  const [searchTerm, setSearchTerm] = useState<string>('');
-
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
-  // 1) Define handleAddImage in this scope
+  const editor = useEditor({
+    extensions: [
+      StarterKit,
+      ImageExtension.configure({ inline: true }),
+      Placeholder.configure({ placeholder: 'Click here to start writing…' }),
+    ],
+    content: post?.content || '',
+    onCreate: () => {},
+  });
+
   const handleAddImage = async () => {
     if (!editor) return;
     const input = document.createElement('input');
@@ -102,76 +60,24 @@ export default function PostForm({
     };
   };
 
-  // 2. Handle main category checkbox changes
-  const handleMainCategoryChange = (categoryId: number, checked: boolean) => {
-    if (checked) {
-      setSelectedMainCategories((prev) => [...prev, categoryId]);
-    } else {
-      setSelectedMainCategories((prev) =>
-        prev.filter((id) => id !== categoryId),
-      );
-    }
-  };
-
-  // 3. Handle subcategory checkbox changes
-  const handleSubcategoryChange = (subcategoryId: number, checked: boolean) => {
-    if (checked) {
-      setSelectedSubcategories((prev) => [...prev, subcategoryId]);
-    } else {
-      setSelectedSubcategories((prev) =>
-        prev.filter((id) => id !== subcategoryId),
-      );
-    }
-  };
-
-  // 4. Filter subcategories based on search term
-  const displayedCategories = categories
-    ? categories
-        .map((cat) => {
-          if (!searchTerm.trim()) {
-            // Show all subcategories if no search term
-            return cat;
-          }
-          // Filter subcategories by name
-          const matchingSubs = cat.subcategories.filter((sub) =>
-            sub.name.toLowerCase().includes(searchTerm.toLowerCase()),
-          );
-          return {
-            ...cat,
-            subcategories: matchingSubs,
-          };
-        })
-        // If searching, hide categories that have zero matching subcategories
-        .filter((cat) => cat.subcategories.length > 0 || !searchTerm.trim())
-    : [];
-
-  // 5. Submit the form
-  async function handleSubmit(e: React.FormEvent) {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
-    // Basic validations
-    if (!title || !editor) {
-      setError('Title and Content are required.');
-      return;
-    }
-    if (selectedMainCategories.length === 0) {
-      setError('Please select at least one main category.');
-      return;
-    }
-    if (selectedSubcategories.length === 0) {
-      setError('Please select at least one subcategory.');
-      return;
-    }
+    if (!title || !editor) return setError('Title and Content are required.');
+    if (selectedMainCategories.length === 0)
+      return setError('Select at least one main category.');
+    if (selectedSubcategories.length === 0)
+      return setError('Select at least one subcategory.');
 
     try {
       const url = post?.id
-        ? `${API_BASE_URL}/api/posts/${post.id}` // PATCH for editing
-        : `${API_BASE_URL}/api/posts`; // POST for creating
-
+        ? `${API_BASE_URL}/api/posts/${post.id}`
+        : `${API_BASE_URL}/api/posts`;
       const method = post?.id ? 'PATCH' : 'POST';
-      const html = editor?.getHTML() || '';
-      const response = await fetch(url, {
+      const html = editor.getHTML();
+
+      const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -182,166 +88,44 @@ export default function PostForm({
         }),
       });
 
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || 'Failed to save post.');
-      }
-
+      if (!res.ok)
+        throw new Error((await res.json()).error || 'Failed to save.');
       router.push(onSuccessRedirect);
     } catch (err) {
-      setError((err as Error).message || 'Something went wrong.');
+      setError(err.message);
     }
-  }
-
-  // 6. Error or loading states
-
-  if (!categories) return <div>Loading categories...</div>;
+  };
 
   return (
-    <div style={{ width: '100%', padding: '0 1rem' }}>
-      <Container style={{ width: '100%' }}>
-        <TitleHeading>{post ? 'Edit Post' : 'Create New Post'}</TitleHeading>
-        {error && <ErrorMessage>{error}</ErrorMessage>}
-
-        <Form onSubmit={handleSubmit} style={{ width: '100%' }}>
-          {/* Title */}
-          <Label htmlFor="title">Title</Label>
-          <Input
-            id="title"
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="Enter the post title"
-            required
-            style={{ width: '100%', boxSizing: 'border-box' }}
-          />
-          {/* Content */}
-          <Label htmlFor="content">Content</Label>
-          <div style={{ display: 'flex', gap: 4, margin: '4px 0' }}>
-            <button
-              className="toolbar-btn"
-              onClick={() => editor?.chain().focus().toggleBold().run()}
-            >
-              B
-            </button>
-            <button
-              className="toolbar-btn"
-              onClick={() => editor?.chain().focus().toggleItalic().run()}
-            >
-              I
-            </button>
-            <button className="toolbar-btn" onClick={handleAddImage}>
-              📷
-            </button>
-          </div>
-
-          {/* Editor wrapper - no focus outline, cursor only shows on click */}
-          <div>
-            {editor && (
-              <EditorContent
-                editor={editor}
-                style={{
-                  border: '1px solid #ccc',
-                  borderRadius: 4,
-                  minHeight: 200,
-                  padding: 8,
-                }}
-              />
-            )}
-          </div>
-          {/* Main Categories */}
-          <Label>Main Categories</Label>
-          <p style={{ fontSize: '0.9rem', margin: '0.5rem 0' }}>
-            (Choose at least one main category)
-          </p>
-          <div
-            style={{
-              display: 'flex',
-              flexWrap: 'wrap',
-              gap: '0.75rem',
-              border: '1px solid #ccc',
-              borderRadius: '6px',
-              padding: '0.5rem',
-            }}
-          >
-            {categories.map((cat) => (
-              <label
-                key={cat.id}
-                style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}
-              >
-                <input
-                  type="checkbox"
-                  checked={selectedMainCategories.includes(cat.id)}
-                  onChange={(e) =>
-                    handleMainCategoryChange(cat.id, e.target.checked)
-                  }
-                />
-                {cat.name}
-              </label>
-            ))}
-          </div>
-          {/* Search Subcategories */}
-          <Label htmlFor="search" style={{ marginTop: '1rem' }}>
-            Search Subcategories
-          </Label>
-          <Input
-            id="search"
-            type="text"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Type to search subcategories..."
-            style={{ width: '100%', boxSizing: 'border-box' }}
-          />
-          {/* Subcategories */}
-          {displayedCategories.length > 0 ? (
-            displayedCategories.map((category) => (
-              <div
-                key={category.id}
-                style={{
-                  margin: '1rem 0',
-                  padding: '0.5rem',
-                  border: '1px solid #ccc',
-                  borderRadius: '6px',
-                }}
-              >
-                <h3 style={{ margin: '0 0 0.5rem' }}>{category.name}</h3>
-                <div
-                  style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem' }}
-                >
-                  {category.subcategories.map((subcategory) => (
-                    <label
-                      key={subcategory.id}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.3rem',
-                      }}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={selectedSubcategories.includes(subcategory.id)}
-                        onChange={(e) =>
-                          handleSubcategoryChange(
-                            subcategory.id,
-                            e.target.checked,
-                          )
-                        }
-                      />
-                      {subcategory.name}
-                    </label>
-                  ))}
-                </div>
-              </div>
-            ))
-          ) : (
-            <p>No subcategories match your search.</p>
-          )}
-          {/* Submit */}
-          <Button type="submit" style={{ marginTop: '1rem' }}>
-            {post ? 'Update Post' : 'Create Post'}
-          </Button>
-        </Form>
-      </Container>
-    </div>
+    <Container>
+      <TitleHeading>{post ? 'Edit Post' : 'Create New Post'}</TitleHeading>
+      {error && <ErrorMessage>{error}</ErrorMessage>}
+      <Form onSubmit={handleSubmit}>
+        <EditorSection
+          title={title}
+          setTitle={setTitle}
+          editor={editor}
+          handleAddImage={handleAddImage}
+        />
+        <CategorySelector
+          categories={categories}
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
+          selectedMainCategories={selectedMainCategories}
+          handleMainCategoryChange={(id, checked) =>
+            setSelectedMainCategories((prev) =>
+              checked ? [...prev, id] : prev.filter((x) => x !== id),
+            )
+          }
+          selectedSubcategories={selectedSubcategories}
+          handleSubcategoryChange={(id, checked) =>
+            setSelectedSubcategories((prev) =>
+              checked ? [...prev, id] : prev.filter((x) => x !== id),
+            )
+          }
+        />
+        <Button type="submit">{post ? 'Update Post' : 'Create Post'}</Button>
+      </Form>
+    </Container>
   );
 }
