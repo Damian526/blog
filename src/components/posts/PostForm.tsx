@@ -55,6 +55,7 @@ export default function PostForm({
       const file = input.files?.[0];
       if (file) {
         const url = await uploadImage(file);
+
         editor.chain().focus().setImage({ src: url }).run();
       }
     };

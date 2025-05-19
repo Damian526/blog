@@ -8,11 +8,11 @@ export const supabase = createClient(
 
 export async function uploadImage(file: File): Promise<string> {
   // 1) Upload the file
-  const path = `uploads/${Date.now()}_${file.name}`;
+  const safeName = encodeURIComponent(file.name.replace(/\s+/g, '-'));
+  const path = `uploads/${Date.now()}_${safeName}`;
   const { data: uploadData, error: uploadError } = await supabase.storage
     .from('images')
     .upload(path, file);
-
   if (uploadError || !uploadData) {
     throw uploadError ?? new Error('Upload failed');
   }
