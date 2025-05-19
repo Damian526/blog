@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import styled from 'styled-components';
 
 const PostContainer = styled.div`
@@ -27,7 +28,8 @@ interface PostContentProps {
     id: number;
     title: string;
     content: string;
-    author: {
+    author?: {
+      // Make author optional
       name: string;
     };
     createdAt: string;
@@ -35,13 +37,28 @@ interface PostContentProps {
 }
 
 export default function PostContent({ post }: PostContentProps) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const formattedDate = mounted
+    ? new Date(post.createdAt).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      })
+    : '';
+
   return (
     <PostContainer>
-      <Title>{post.title}</Title>
+      <Title>{post?.title}</Title>
       <Author>
-        By {post.author.name} on {new Date(post.createdAt).toLocaleDateString()}
+        {post?.author?.name ? `By ${post.author.name}` : 'Anonymous'}
+        {mounted && formattedDate && <span> on {formattedDate}</span>}
       </Author>
-      <Content>{post.content}</Content>
+      <Content>{post?.content}</Content>
     </PostContainer>
   );
 }

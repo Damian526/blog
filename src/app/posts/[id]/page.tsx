@@ -1,18 +1,17 @@
+// app/posts/[id]/page.tsx  (or wherever your SinglePostPage lives)
 'use client';
 
-import PostContent from '@/components/posts/PostContent';
-import CommentsSection from '@/components/comments/CommentsSection';
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
+import RichText from '@/components/common/RichText';
+import CommentsSection from '@/components/comments/CommentsSection';
 
 interface Post {
   id: number;
   title: string;
   content: string;
   createdAt: string;
-  author: {
-    name: string;
-  };
+  author: { name: string };
 }
 
 export default function SinglePostPage() {
@@ -25,12 +24,9 @@ export default function SinglePostPage() {
     async function fetchPost() {
       try {
         const res = await fetch(`/api/posts/${id}`, { cache: 'no-store' });
-        if (!res.ok) {
-          const data = await res.json();
-          throw new Error(data.error || 'Failed to fetch post');
-        }
-        const postData = await res.json();
-        setPost(postData);
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to fetch post');
+        setPost(data);
       } catch (err: any) {
         setError(err.message);
       } finally {
@@ -38,19 +34,24 @@ export default function SinglePostPage() {
       }
     }
 
-    if (id) {
-      fetchPost();
-    }
+    if (id) fetchPost();
   }, [id]);
 
-  if (loading) return <p>Loading post...</p>;
+  if (loading) return <p>Loading post…</p>;
   if (error) return <p style={{ color: 'red' }}>{error}</p>;
   if (!post) return <p>Post not found.</p>;
 
   return (
-    <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-      <PostContent post={post} />
+    <article style={{ maxWidth: 800, margin: '0 auto', padding: '1rem' }}>
+      <h1>{post.title}</h1>
+      <p style={{ color: '#666', fontSize: '0.9rem' }}>
+        By {post.author.name} • {new Date(post.createdAt).toLocaleDateString()}
+      </p>
+
+      {/* ← Here’s your rich‐text render */}
+      <RichText html={post.content} />
+
       <CommentsSection postId={post.id} />
-    </div>
+    </article>
   );
 }

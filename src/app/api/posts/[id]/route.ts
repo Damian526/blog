@@ -1,47 +1,34 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
-export async function GET(request: Request) {
+export async function GET(
+  request: Request,
+  { params }: { params: { id: string } },
+) {
   try {
-    const posts = await prisma.post.findMany({
-      select: {
-        id: true,
-        title: true,
-        content: true,
-        published: true,
-        createdAt: true,
+    const id = parseInt(params.id);
+
+    if (isNaN(id)) {
+      return NextResponse.json({ error: 'Invalid post ID' }, { status: 400 });
+    }
+
+    const post = await prisma.post.findUnique({
+      where: { id },
+      include: {
         author: {
-          select: {
-            name: true,
-            email: true,
-          },
-        },
-        // Only subcategories are included now.
-        subcategories: {
-          select: {
-            id: true,
-            name: true,
-            category: {
-              select: {
-                id: true,
-                name: true,
-              },
-            },
-          },
+          select: { name: true },
         },
       },
     });
 
-    const formattedPosts = posts.map((post) => ({
-      ...post,
-      createdAt: post.createdAt.toISOString(),
-    }));
+    if (!post) {
+      return NextResponse.json({ error: 'Post not found' }, { status: 404 });
+    }
 
-    return NextResponse.json(formattedPosts);
+    return NextResponse.json(post);
   } catch (error) {
-    console.error('Error fetching posts:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch posts' },
+      { error: 'Failed to fetch post' },
       { status: 500 },
     );
   }

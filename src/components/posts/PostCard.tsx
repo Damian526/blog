@@ -1,5 +1,6 @@
 'use client';
 
+import { stripHtml } from 'string-strip-html';
 import Link from 'next/link';
 import {
   Card,
@@ -110,7 +111,11 @@ export default function PostCard({
         )}
 
         <Excerpt>
-          {(post.content || 'No content available').slice(0, 140)}…
+          {stripHtml(post.content || 'No content available').result.slice(
+            0,
+            140,
+          )}
+          …
         </Excerpt>
 
         <Footer>
