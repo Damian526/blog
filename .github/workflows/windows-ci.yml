@@ -1,4 +1,4 @@
-name: CI - Run Tests (Windows)
+name: CI - Build, Lint, and Test (Windows)
 
 on:
   push:
@@ -23,6 +23,15 @@ jobs:
 
       - name: Install Dependencies
         run: npm install
+
+      - name: Run Linting
+        run: npm run lint
+
+      - name: Run Type Checking
+        run: npm run type-check
+
+      - name: Build Project
+        run: npm run build
 
       - name: Run Tests
         run: npm test
