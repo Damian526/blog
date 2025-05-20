@@ -42,7 +42,6 @@ export default function PostForm({
       Placeholder.configure({ placeholder: 'Click here to start writing…' }),
     ],
     content: post?.content || '',
-    onCreate: () => {},
   });
 
   const handleAddImage = async () => {
@@ -55,7 +54,6 @@ export default function PostForm({
       const file = input.files?.[0];
       if (file) {
         const url = await uploadImage(file);
-
         editor.chain().focus().setImage({ src: url }).run();
       }
     };
@@ -65,11 +63,18 @@ export default function PostForm({
     e.preventDefault();
     setError(null);
 
-    if (!title || !editor) return setError('Title and Content are required.');
-    if (selectedMainCategories.length === 0)
-      return setError('Select at least one main category.');
-    if (selectedSubcategories.length === 0)
-      return setError('Select at least one subcategory.');
+    if (!title || !editor) {
+      setError('Title and Content are required.');
+      return;
+    }
+    if (selectedMainCategories.length === 0) {
+      setError('Select at least one main category.');
+      return;
+    }
+    if (selectedSubcategories.length === 0) {
+      setError('Select at least one subcategory.');
+      return;
+    }
 
     try {
       const url = post?.id
@@ -89,14 +94,20 @@ export default function PostForm({
         }),
       });
 
-      if (!res.ok)
-        throw new Error((await res.json()).error || 'Failed to save.');
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || 'Failed to save.');
+      }
+
       router.push(onSuccessRedirect);
     } catch (err) {
-      setError(err.message);
+      setError(
+        err instanceof Error ? err.message : 'An unknown error occurred.',
+      );
     }
-  };
+  }; // ← make sure to close handleSubmit here!
 
+  // Now the component’s return lives here, not inside handleSubmit
   return (
     <Container>
       <TitleHeading>{post ? 'Edit Post' : 'Create New Post'}</TitleHeading>
