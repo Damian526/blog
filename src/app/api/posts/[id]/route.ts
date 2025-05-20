@@ -1,8 +1,8 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
 export async function GET(
-  request: Request,
+  req: NextRequest,
   { params }: { params: { id: string } },
 ) {
   try {
@@ -27,13 +27,13 @@ export async function GET(
 
     return NextResponse.json(post);
   } catch (error) {
+    console.error('Error fetching post:', error);
     return NextResponse.json(
       { error: 'Failed to fetch post' },
       { status: 500 },
     );
   }
 }
-
 export async function PATCH(request: Request) {
   try {
     // Extract the post ID from the URL path
