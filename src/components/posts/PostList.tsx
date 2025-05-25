@@ -5,9 +5,32 @@ import PostCard from './PostCard';
 
 // Styled Components
 const Container = styled.div`
-  max-width: 800px;
+  max-width: 900px;
   margin: 0 auto;
-  padding: 20px;
+  width: 100%;
+`;
+
+const PostsGrid = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xl);
+`;
+
+const EmptyState = styled.div`
+  text-align: center;
+  padding: var(--space-2xl);
+  color: var(--text-secondary);
+  
+  h3 {
+    font-size: var(--font-xl);
+    margin-bottom: var(--space-md);
+    color: var(--text-primary);
+  }
+  
+  p {
+    font-size: var(--font-medium);
+    line-height: 1.6;
+  }
 `;
 
 // Interfaces
@@ -36,16 +59,29 @@ export default function PostList({
   showActions,
   onDelete,
 }: PostListProps) {
+  if (!posts || posts.length === 0) {
+    return (
+      <Container>
+        <EmptyState>
+          <h3>No posts found</h3>
+          <p>There are no posts to display at the moment. Check back later for new content!</p>
+        </EmptyState>
+      </Container>
+    );
+  }
+
   return (
     <Container>
-      {posts.map((post) => (
-        <PostCard
-          key={post.id}
-          post={post}
-          showActions={showActions}
-          onDelete={onDelete}
-        />
-      ))}
+      <PostsGrid>
+        {posts.map((post) => (
+          <PostCard
+            key={post.id}
+            post={post}
+            showActions={showActions}
+            onDelete={onDelete}
+          />
+        ))}
+      </PostsGrid>
     </Container>
   );
 }

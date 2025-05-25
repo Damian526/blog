@@ -10,10 +10,74 @@ import styled from 'styled-components';
 import PostList from '@/components/posts/PostList';
 
 // Styled Components
-const PostsContainer = styled.div`
-  margin-top: 20px;
-  max-width: 800px;
-  margin: 0 auto;
+const PostsSection = styled.div`
+  background: var(--background);
+  border-radius: var(--radius-xl);
+  padding: var(--space-xl);
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border-light);
+`;
+
+const SectionTitle = styled.h2`
+  font-size: var(--font-xl);
+  font-weight: 600;
+  margin: 0 0 var(--space-lg) 0;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+
+  &::before {
+    content: '📝';
+    font-size: var(--font-large);
+  }
+`;
+
+const LoadingState = styled.div`
+  text-align: center;
+  padding: var(--space-2xl);
+  color: var(--text-secondary);
+  font-size: var(--font-medium);
+`;
+
+const ErrorState = styled.div`
+  text-align: center;
+  padding: var(--space-2xl);
+  color: var(--error-color);
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: var(--radius-md);
+  font-size: var(--font-medium);
+`;
+
+const EmptyState = styled.div`
+  text-align: center;
+  padding: var(--space-2xl);
+  color: var(--text-secondary);
+  
+  h3 {
+    font-size: var(--font-xl);
+    margin-bottom: var(--space-md);
+    color: var(--text-primary);
+  }
+  
+  p {
+    font-size: var(--font-medium);
+    line-height: 1.6;
+    margin-bottom: var(--space-lg);
+  }
+`;
+
+const UnauthenticatedMessage = styled.div`
+  text-align: center;
+  margin-top: var(--space-2xl);
+  padding: var(--space-xl);
+  background: var(--background);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border-light);
+  color: var(--text-secondary);
+  font-size: var(--font-large);
 `;
 
 export default function Dashboard() {
@@ -26,6 +90,7 @@ export default function Dashboard() {
       setShowLoginModal(true);
     }
   }, [status]);
+  
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
   const {
@@ -36,6 +101,7 @@ export default function Dashboard() {
   } = useSWR(
     session ? `${API_BASE_URL}/api/user/posts` : null, // Only fetch if session exists
   );
+  
   const handleDelete = async (postId: number) => {
     try {
       const response = await fetch(`${API_BASE_URL}/api/posts/${postId}`, {
@@ -54,9 +120,10 @@ export default function Dashboard() {
       alert('Failed to delete the post. Please try again.');
     }
   };
+  
   // Show loading indicator while session is being fetched
   if (status === 'loading') {
-    return <p>Loading session...</p>;
+    return <LoadingState>Loading session...</LoadingState>;
   }
 
   // Show dashboard content if user is authenticated
@@ -64,14 +131,17 @@ export default function Dashboard() {
     return (
       <div>
         <DashboardContent session={session} />
-        <PostsContainer>
-          <h1>Your Posts</h1>
+        <PostsSection>
+          <SectionTitle>Your Posts</SectionTitle>
           {isLoading ? (
-            <p>Loading your posts...</p>
+            <LoadingState>Loading your posts...</LoadingState>
           ) : error ? (
-            <p>Error fetching posts: {error.message}</p>
+            <ErrorState>Error fetching posts: {error.message}</ErrorState>
           ) : posts?.length === 0 ? (
-            <p>You don&apos;t have any posts yet.</p>
+            <EmptyState>
+              <h3>No posts yet</h3>
+              <p>You haven't created any posts yet. Start writing your first post to share your knowledge with the community!</p>
+            </EmptyState>
           ) : (
             <PostList
               posts={posts}
@@ -79,7 +149,7 @@ export default function Dashboard() {
               onDelete={handleDelete}
             />
           )}
-        </PostsContainer>
+        </PostsSection>
       </div>
     );
   }
@@ -87,9 +157,9 @@ export default function Dashboard() {
   // If not authenticated, show login modal and fallback message
   return (
     <>
-      <p style={{ textAlign: 'center', marginTop: '40px' }}>
+      <UnauthenticatedMessage>
         Please login to access the dashboard.
-      </p>
+      </UnauthenticatedMessage>
 
       <Modal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)}>
         <LoginForm />

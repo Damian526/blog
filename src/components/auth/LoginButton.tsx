@@ -6,16 +6,25 @@ import Modal from '@/components/ui/Modal';
 import LoginForm from '@/components/auth/LoginForm';
 
 const LoginButtonStyled = styled.button`
-  padding: 10px 20px;
-  font-size: 1rem;
-  background-color: #0070f3;
-  color: white;
-  border: none;
-  border-radius: 5px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-sm) var(--space-lg);
+  font-size: var(--font-medium);
+  font-weight: 500;
+  background: var(--primary-color);
+  color: var(--background);
+  border: 1px solid var(--primary-color);
+  border-radius: var(--radius-md);
   cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 40px;
 
   &:hover {
-    background-color: #005bb5;
+    background: var(--primary-hover);
+    border-color: var(--primary-hover);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
   }
 `;
 

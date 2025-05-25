@@ -21,6 +21,14 @@ export default async function RootLayout({ children }: RootLayoutProps) {
 
   return (
     <html lang="en">
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+          rel="stylesheet"
+        />
+      </head>
       <body>
         <StyledComponentsRegistry>
           <GlobalStyle />
@@ -30,16 +38,16 @@ export default async function RootLayout({ children }: RootLayoutProps) {
               <div
                 style={{
                   display: 'flex',
-                  height: 'calc(100vh - 60px)', // Adjust for header height
+                  height: 'calc(100vh - 70px)',
                   overflow: 'hidden',
                 }}
               >
-                {/* Sidebar with vertical scrolling */}
+                {/* Sidebar with modern styling */}
                 <aside
                   style={{
-                    width: '250px',
-                    backgroundColor: '#f8f9fa',
-                    padding: '20px',
+                    width: '280px',
+                    backgroundColor: 'var(--background)',
+                    borderRight: '1px solid var(--border-color)',
                     overflowY: 'auto',
                     overflowX: 'hidden',
                     height: '100%',
@@ -48,16 +56,15 @@ export default async function RootLayout({ children }: RootLayoutProps) {
                   <Sidebar />
                 </aside>
 
-                {/* Main content area */}
+                {/* Main content area with improved spacing */}
                 <main
                   style={{
                     flex: 1,
-                    backgroundColor: '#fff',
-                    padding: '20px',
-                    overflow: 'auto', 
+                    backgroundColor: 'var(--background-secondary)',
+                    padding: 'var(--space-xl)',
+                    overflow: 'auto',
                     display: 'flex',
                     flexDirection: 'column',
-                    gap: '20px',
                   }}
                 >
                   {children}
