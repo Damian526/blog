@@ -93,7 +93,7 @@ export default function PostCard({
           <span>•</span>
           <span>{date}</span>
           {showActions && (
-            <StatusBadge status={statusType}>{statusText}</StatusBadge>
+            <StatusBadge $status={statusType}>{statusText}</StatusBadge>
           )}
         </Meta>
 
@@ -122,10 +122,10 @@ export default function PostCard({
           <ReadMore href={`/posts/${post.id}`}>Read More →</ReadMore>
           {showActions && (
             <Actions>
-              <ActionButton variant="edit">
+              <ActionButton $variant="edit">
                 <Link href={`/posts/${post.id}/edit`}>Edit</Link>
               </ActionButton>
-              <ActionButton variant="delete" onClick={handleDelete}>
+              <ActionButton $variant="delete" onClick={handleDelete}>
                 Delete
               </ActionButton>
             </Actions>

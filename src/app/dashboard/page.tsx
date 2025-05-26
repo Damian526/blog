@@ -77,8 +77,8 @@ export default function Dashboard() {
             <EmptyState>
               <h3>No posts yet</h3>
               <p>
-                You haven't created any posts yet. Start writing your first post
-                to share your knowledge with the community!
+                You haven&apos;t created any posts yet. Start writing your first
+                post to share your knowledge with the community!
               </p>
             </EmptyState>
           ) : (

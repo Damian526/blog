@@ -23,7 +23,7 @@ export const Header = styled.div<{ imgUrl?: string }>`
   background: url(${({ imgUrl }) => imgUrl}) center/cover no-repeat;
   height: 200px;
   position: relative;
-  
+
   &::after {
     content: '';
     position: absolute;
@@ -31,7 +31,11 @@ export const Header = styled.div<{ imgUrl?: string }>`
     left: 0;
     right: 0;
     bottom: 0;
-    background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.1) 100%);
+    background: linear-gradient(
+      180deg,
+      transparent 0%,
+      rgba(0, 0, 0, 0.1) 100%
+    );
   }
 `;
 
@@ -50,7 +54,7 @@ export const Title = styled.h2`
   color: var(--text-primary);
   line-height: 1.3;
   transition: color 0.2s ease;
-  
+
   &:hover {
     color: var(--primary-color);
   }
@@ -66,7 +70,7 @@ export const Meta = styled.div`
 `;
 
 export const StatusBadge = styled.span<{
-  status: 'published' | 'rejected' | 'pending';
+  $status: 'published' | 'rejected' | 'pending';
 }>`
   margin-left: auto;
   padding: var(--space-xs) var(--space-sm);
@@ -75,10 +79,10 @@ export const StatusBadge = styled.span<{
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  ${({ status }) =>
-    status === 'published'
+  ${({ $status }) =>
+    $status === 'published'
       ? `background: rgba(16, 185, 129, 0.1); color: var(--success-color); border: 1px solid rgba(16, 185, 129, 0.2);`
-      : status === 'rejected'
+      : $status === 'rejected'
         ? `background: rgba(239, 68, 68, 0.1); color: var(--error-color); border: 1px solid rgba(239, 68, 68, 0.2);`
         : `background: rgba(245, 158, 11, 0.1); color: var(--warning-color); border: 1px solid rgba(245, 158, 11, 0.2);`}
 `;
@@ -172,7 +176,7 @@ export const Actions = styled.div`
   gap: var(--space-sm);
 `;
 
-export const ActionButton = styled.button<{ variant: 'edit' | 'delete' }>`
+export const ActionButton = styled.button<{ $variant: 'edit' | 'delete' }>`
   padding: var(--space-sm) var(--space-md);
   font-size: var(--font-small);
   font-weight: 500;
@@ -180,9 +184,9 @@ export const ActionButton = styled.button<{ variant: 'edit' | 'delete' }>`
   border-radius: var(--radius-md);
   cursor: pointer;
   transition: all 0.2s ease;
-  
-  ${({ variant }) =>
-    variant === 'delete'
+
+  ${({ $variant }) =>
+    $variant === 'delete'
       ? `
         background: rgba(239, 68, 68, 0.1);
         color: var(--error-color);
