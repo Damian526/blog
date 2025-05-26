@@ -6,6 +6,7 @@ import SWRProvider from '@/components/providers/SWRProvider';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import Sidebar from '@/components/layout/Sidebar';
+import { layoutStyles } from '@/styles/components/layout/Layout.styles';
 
 export const metadata = {
   title: 'WebDevSphere',
@@ -35,38 +36,11 @@ export default async function RootLayout({ children }: RootLayoutProps) {
           <SessionProviderWrapper session={session}>
             <SWRProvider>
               <Header />
-              <div
-                style={{
-                  display: 'flex',
-                  height: 'calc(100vh - 70px)',
-                  overflow: 'hidden',
-                }}
-              >
-                {/* Sidebar with modern styling */}
-                <aside
-                  style={{
-                    width: '280px',
-                    backgroundColor: 'var(--background)',
-                    borderRight: '1px solid var(--border-color)',
-                    overflowY: 'auto',
-                    overflowX: 'hidden',
-                    height: '100%',
-                  }}
-                >
+              <div style={layoutStyles.container}>
+                <aside style={layoutStyles.sidebar}>
                   <Sidebar />
                 </aside>
-
-                {/* Main content area with improved spacing */}
-                <main
-                  style={{
-                    flex: 1,
-                    backgroundColor: 'var(--background-secondary)',
-                    padding: 'var(--space-xl)',
-                    overflow: 'auto',
-                    display: 'flex',
-                    flexDirection: 'column',
-                  }}
-                >
+                <main style={layoutStyles.main}>
                   {children}
                 </main>
               </div>
