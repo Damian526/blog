@@ -1,64 +1,40 @@
-'use client';
-
-import { useEffect, useState } from 'react';
-import styled from 'styled-components';
-
-const PostContainer = styled.div`
-  margin-bottom: 20px;
-`;
-
-const Title = styled.h1`
-  font-size: 2rem;
-  margin-bottom: 10px;
-`;
-
-const Author = styled.p`
-  font-size: 0.9rem;
-  color: #555;
-  margin-bottom: 20px;
-`;
-
-const Content = styled.div`
-  font-size: 1rem;
-  line-height: 1.6;
-`;
+import RichText from '@/components/common/RichText';
+import {
+  PostContainer,
+  PostTitle,
+  PostMeta,
+  PostBody,
+} from '@/styles/components/posts/Post.styles';
 
 interface PostContentProps {
   post: {
     id: number;
     title: string;
     content: string;
-    author?: {
-      // Make author optional
-      name: string;
+    createdAt: Date;
+    author: {
+      name: string | null;
+      email: string;
     };
-    createdAt: string;
+    _count: {
+      comments: number;
+    };
   };
 }
 
+// This is a Server Component - no 'use client' directive
 export default function PostContent({ post }: PostContentProps) {
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  const formattedDate = mounted
-    ? new Date(post.createdAt).toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-      })
-    : '';
-
   return (
     <PostContainer>
-      <Title>{post?.title}</Title>
-      <Author>
-        {post?.author?.name ? `By ${post.author.name}` : 'Anonymous'}
-        {mounted && formattedDate && <span> on {formattedDate}</span>}
-      </Author>
-      <Content>{post?.content}</Content>
+      <PostTitle>{post.title}</PostTitle>
+      <PostMeta>
+        By {post.author.name || post.author.email} •{' '}
+        {new Date(post.createdAt).toLocaleDateString()} • {post._count.comments}{' '}
+        comments
+      </PostMeta>
+      <PostBody>
+        <RichText html={post.content} />
+      </PostBody>
     </PostContainer>
   );
 }

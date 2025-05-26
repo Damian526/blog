@@ -1,57 +1,73 @@
-// app/posts/[id]/page.tsx  (or wherever your SinglePostPage lives)
-'use client';
-
-import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
-import RichText from '@/components/common/RichText';
+import { notFound } from 'next/navigation';
+import { PrismaClient } from '@prisma/client';
+import PostContent from '@/components/posts/PostContent';
 import CommentsSection from '@/components/comments/CommentsSection';
 
-interface Post {
-  id: number;
-  title: string;
-  content: string;
-  createdAt: string;
-  author: { name: string };
+const prisma = new PrismaClient();
+
+// This is a Server Component - runs on the server
+export default async function PostPage({ params }: { params: { id: string } }) {
+  const postId = parseInt(params.id);
+
+  if (isNaN(postId)) {
+    notFound();
+  }
+
+  // Fetch post data on the server
+  const post = await prisma.post.findUnique({
+    where: { id: postId },
+    include: {
+      author: {
+        select: { name: true, email: true },
+      },
+      _count: {
+        select: { comments: true },
+      },
+    },
+  });
+
+  if (!post) {
+    notFound();
+  }
+
+  // This content is pre-rendered on the server
+  return (
+    <div>
+      <PostContent post={post} />
+      {/* Comments section can be client-side for interactivity */}
+      <CommentsSection postId={postId} />
+    </div>
+  );
 }
 
-export default function SinglePostPage() {
-  const { id } = useParams();
-  const [post, setPost] = useState<Post | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+// Generate metadata for SEO
+export async function generateMetadata({ params }: { params: { id: string } }) {
+  const postId = parseInt(params.id);
 
-  useEffect(() => {
-    async function fetchPost() {
-      try {
-        const res = await fetch(`/api/posts/${id}`, { cache: 'no-store' });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'Failed to fetch post');
-        setPost(data);
-      } catch (err: any) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    }
+  if (isNaN(postId)) {
+    return { title: 'Post Not Found' };
+  }
 
-    if (id) fetchPost();
-  }, [id]);
+  const post = await prisma.post.findUnique({
+    where: { id: postId },
+    select: { title: true, content: true },
+  });
 
-  if (loading) return <p>Loading post…</p>;
-  if (error) return <p style={{ color: 'red' }}>{error}</p>;
-  if (!post) return <p>Post not found.</p>;
+  if (!post) {
+    return { title: 'Post Not Found' };
+  }
 
-  return (
-    <article style={{ maxWidth: 800, margin: '0 auto', padding: '1rem' }}>
-      <h1>{post.title}</h1>
-      <p style={{ color: '#666', fontSize: '0.9rem' }}>
-        By {post.author.name} • {new Date(post.createdAt).toLocaleDateString()}
-      </p>
+  // Create excerpt from content (first 160 characters)
+  const excerpt = post.content
+    ? post.content.replace(/<[^>]*>/g, '').substring(0, 160) + '...'
+    : `Read ${post.title} on WebDevSphere`;
 
-      {/* ← Here’s your rich‐text render */}
-      <RichText html={post.content} />
-
-      <CommentsSection postId={post.id} />
-    </article>
-  );
+  return {
+    title: post.title,
+    description: excerpt,
+    openGraph: {
+      title: post.title,
+      description: excerpt,
+    },
+  };
 }

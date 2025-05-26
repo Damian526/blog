@@ -16,18 +16,32 @@ import {
   UnauthenticatedMessage,
 } from '@/styles/components/ui/Dashboard.styles';
 
+// Custom fetcher for SWR
+const fetcher = async (url: string) => {
+  const response = await fetch(url);
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || 'Failed to fetch');
+  }
+  return response.json();
+};
+
 export default function Dashboard() {
   const { data: session, status } = useSession();
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [isClient, setIsClient] = useState(false);
 
-  // Automatically show login modal if unauthenticated
+  // Ensure we're on the client side
   useEffect(() => {
-    if (status === 'unauthenticated') {
+    setIsClient(true);
+  }, []);
+
+  // Handle authentication redirect on client side
+  useEffect(() => {
+    if (isClient && status === 'unauthenticated') {
       setShowLoginModal(true);
     }
-  }, [status]);
-
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+  }, [status, isClient]);
 
   const {
     data: posts,
@@ -35,12 +49,19 @@ export default function Dashboard() {
     isLoading,
     mutate,
   } = useSWR(
-    session ? `${API_BASE_URL}/api/user/posts` : null, // Only fetch if session exists
+    // Only fetch if we have a session and are on client side
+    isClient && session ? '/api/user/posts' : null,
+    fetcher,
+    {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: true,
+      shouldRetryOnError: false,
+    },
   );
 
   const handleDelete = async (postId: number) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/posts/${postId}`, {
+      const response = await fetch(`/api/posts/${postId}`, {
         method: 'DELETE',
       });
 
@@ -49,7 +70,7 @@ export default function Dashboard() {
         throw new Error(errorData.error || 'Failed to delete the post.');
       }
 
-      // Optimistically update the UI by revalidating SWR cache
+      // Revalidate the posts list
       mutate();
     } catch (error) {
       console.error('Error deleting post:', error);
@@ -57,9 +78,9 @@ export default function Dashboard() {
     }
   };
 
-  // Show loading indicator while session is being fetched
-  if (status === 'loading') {
-    return <LoadingState>Loading session...</LoadingState>;
+  // Show loading state during initial client-side render
+  if (!isClient || status === 'loading') {
+    return <LoadingState>Loading dashboard...</LoadingState>;
   }
 
   // Show dashboard content if user is authenticated
@@ -73,7 +94,7 @@ export default function Dashboard() {
             <LoadingState>Loading your posts...</LoadingState>
           ) : error ? (
             <ErrorState>Error fetching posts: {error.message}</ErrorState>
-          ) : posts?.length === 0 ? (
+          ) : !posts || posts.length === 0 ? (
             <EmptyState>
               <h3>No posts yet</h3>
               <p>
