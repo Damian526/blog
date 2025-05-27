@@ -1,23 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { PrismaClient } from '@prisma/client';
+
+const prismaClient = new PrismaClient();
 
 export async function GET(
-  req: NextRequest,
+  request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const { id: idParam } = await params;
-    const id = parseInt(idParam, 10);
+    const { id } = await params;
+    const postId = parseInt(id);
 
-    if (isNaN(id)) {
+    if (isNaN(postId)) {
       return NextResponse.json({ error: 'Invalid post ID' }, { status: 400 });
     }
 
-    const post = await prisma.post.findUnique({
-      where: { id },
+    const post = await prismaClient.post.findUnique({
+      where: { id: postId },
       include: {
         author: {
-          select: { name: true },
+          select: { name: true, email: true },
+        },
+        _count: {
+          select: { comments: true },
         },
       },
     });
@@ -30,11 +36,12 @@ export async function GET(
   } catch (error) {
     console.error('Error fetching post:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch post' },
+      { error: 'Internal server error' },
       { status: 500 },
     );
   }
 }
+
 export async function PATCH(request: Request) {
   try {
     // Extract the post ID from the URL path

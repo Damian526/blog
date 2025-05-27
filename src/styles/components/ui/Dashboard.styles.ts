@@ -15,7 +15,11 @@ export const Title = styled.h1`
   font-weight: 700;
   margin: 0 0 var(--space-md) 0;
   color: var(--text-primary);
-  background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+  background: linear-gradient(
+    135deg,
+    var(--primary-color),
+    var(--accent-color)
+  );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -121,13 +125,13 @@ export const EmptyState = styled.div`
   text-align: center;
   padding: var(--space-2xl);
   color: var(--text-secondary);
-  
+
   h3 {
     font-size: var(--font-xl);
     margin-bottom: var(--space-md);
     color: var(--text-primary);
   }
-  
+
   p {
     font-size: var(--font-medium);
     line-height: 1.6;
@@ -145,4 +149,4 @@ export const UnauthenticatedMessage = styled.div`
   border: 1px solid var(--border-light);
   color: var(--text-secondary);
   font-size: var(--font-large);
-`; 
+`;

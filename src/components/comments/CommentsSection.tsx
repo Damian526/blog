@@ -8,12 +8,134 @@ import AddCommentForm from '@/components/comments/AddCommentForm';
 import ReplyForm from '@/components/comments/ReplyForm';
 
 const CommentsContainer = styled.div`
-  margin-top: 30px;
-  max-width: 600px;
-  background: white;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+  margin-top: 0;
+  width: 100%;
+  background: #ffffff;
+  padding: 3rem 4rem;
+  border-radius: 16px;
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  border: 1px solid #f1f5f9;
+
+  @media (max-width: 1200px) {
+    padding: 3rem;
+  }
+
+  @media (max-width: 768px) {
+    padding: 2rem;
+    border-radius: 12px;
+  }
+
+  @media (max-width: 480px) {
+    padding: 1.5rem;
+    border-radius: 8px;
+  }
+`;
+
+const CommentsHeader = styled.div`
+  margin-bottom: 2.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 2px solid #f1f5f9;
+`;
+
+const CommentsTitle = styled.h2`
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+
+  &::before {
+    content: '💬';
+    font-size: 1.5rem;
+  }
+
+  @media (max-width: 768px) {
+    font-size: 1.5rem;
+
+    &::before {
+      font-size: 1.25rem;
+    }
+  }
+`;
+
+const CommentsCount = styled.span`
+  font-size: 1rem;
+  color: #64748b;
+  font-weight: 400;
+  background-color: #f1f5f9;
+  padding: 0.375rem 1rem;
+  border-radius: 12px;
+
+  @media (max-width: 768px) {
+    font-size: 0.9rem;
+    padding: 0.25rem 0.75rem;
+  }
+`;
+
+const CommentsList = styled.div`
+  margin-bottom: 2rem;
+`;
+
+const CommentThread = styled.div`
+  margin-bottom: 1.5rem;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+`;
+
+const RepliesContainer = styled.div`
+  margin-top: 1rem;
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: 1.375rem;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: linear-gradient(to bottom, #e2e8f0, transparent);
+    border-radius: 1px;
+  }
+
+  @media (max-width: 768px) {
+    &::before {
+      left: 1rem;
+    }
+  }
+
+  @media (max-width: 480px) {
+    &::before {
+      left: 0.75rem;
+      width: 1px;
+    }
+  }
+`;
+
+const NoCommentsMessage = styled.div`
+  text-align: center;
+  padding: 3rem 1rem;
+  color: #64748b;
+  font-size: 1rem;
+
+  &::before {
+    content: '💭';
+    display: block;
+    font-size: 2rem;
+    margin-bottom: 1rem;
+  }
+`;
+
+const LoadingMessage = styled.div`
+  text-align: center;
+  padding: 2rem;
+  color: #64748b;
+  font-size: 1rem;
 `;
 
 interface Comment {
@@ -56,8 +178,8 @@ export default function CommentsSection({ postId }: CommentsSectionProps) {
     fetchCurrentUser();
   }, []);
 
-  if (isLoading) return <p>Loading comments...</p>;
-  if (error) return <p>Failed to load comments</p>;
+  if (isLoading) return <LoadingMessage>Loading comments...</LoadingMessage>;
+  if (error) return <LoadingMessage>Failed to load comments</LoadingMessage>;
 
   const handleDelete = async (commentId: number) => {
     if (confirm('Are you sure you want to delete this comment?')) {
@@ -97,14 +219,28 @@ export default function CommentsSection({ postId }: CommentsSectionProps) {
     }
   };
 
+  const handleReplyAdded = () => {
+    mutate();
+    setReplyingTo(null);
+  };
+
+  const topLevelComments =
+    comments?.filter((comment) => !comment.parentId) || [];
+  const totalComments = comments?.length || 0;
+
   return (
     <CommentsContainer>
-      <h2>Comments</h2>
-      {comments && comments.length > 0 ? (
-        comments
-          .filter((comment) => !comment.parentId)
-          .map((comment) => (
-            <div key={comment.id}>
+      <CommentsHeader>
+        <CommentsTitle>
+          Comments
+          <CommentsCount>{totalComments}</CommentsCount>
+        </CommentsTitle>
+      </CommentsHeader>
+
+      <CommentsList>
+        {topLevelComments.length > 0 ? (
+          topLevelComments.map((comment) => (
+            <CommentThread key={comment.id}>
               <EditableComment
                 comment={comment}
                 currentUserEmail={currentUserEmail}
@@ -112,8 +248,9 @@ export default function CommentsSection({ postId }: CommentsSectionProps) {
                 onEdit={handleEdit}
                 onReplyClick={() => setReplyingTo(comment.id)}
               />
+
               {comment.replies && comment.replies.length > 0 && (
-                <div style={{ marginLeft: '20px', marginTop: '5px' }}>
+                <RepliesContainer>
                   {comment.replies.map((reply) => (
                     <EditableComment
                       key={reply.id}
@@ -124,20 +261,26 @@ export default function CommentsSection({ postId }: CommentsSectionProps) {
                       onReplyClick={() => setReplyingTo(reply.id)}
                     />
                   ))}
-                </div>
+                </RepliesContainer>
               )}
+
               {replyingTo === comment.id && (
                 <ReplyForm
                   postId={postId}
                   parentId={comment.id}
-                  onReplyAdded={mutate}
+                  onReplyAdded={handleReplyAdded}
+                  onCancel={() => setReplyingTo(null)}
                 />
               )}
-            </div>
+            </CommentThread>
           ))
-      ) : (
-        <p>No comments yet.</p>
-      )}
+        ) : (
+          <NoCommentsMessage>
+            No comments yet. Be the first to share your thoughts!
+          </NoCommentsMessage>
+        )}
+      </CommentsList>
+
       <AddCommentForm postId={postId} onCommentAdded={() => mutate()} />
     </CommentsContainer>
   );
