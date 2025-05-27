@@ -6,7 +6,7 @@ import SWRProvider from '@/components/providers/SWRProvider';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import Sidebar from '@/components/layout/Sidebar';
-import { layoutStyles } from '@/styles/components/layout/Layout.styles';
+import ResponsiveLayoutWrapper from '@/components/layout/ResponsiveLayoutWrapper';
 
 export const metadata = {
   title: 'WebDevSphere',
@@ -33,6 +33,7 @@ export default async function RootLayout({ children }: RootLayoutProps) {
           href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
           rel="stylesheet"
         />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
       </head>
       <body suppressHydrationWarning>
         <StyledComponentsRegistry>
@@ -40,12 +41,9 @@ export default async function RootLayout({ children }: RootLayoutProps) {
           <SessionProviderWrapper session={session}>
             <SWRProvider>
               <Header />
-              <div style={layoutStyles.container}>
-                <aside style={layoutStyles.sidebar}>
-                  <Sidebar />
-                </aside>
-                <main style={layoutStyles.main}>{children}</main>
-              </div>
+              <ResponsiveLayoutWrapper sidebar={<Sidebar />}>
+                {children}
+              </ResponsiveLayoutWrapper>
             </SWRProvider>
           </SessionProviderWrapper>
         </StyledComponentsRegistry>

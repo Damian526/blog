@@ -4,7 +4,7 @@ export const HeaderContainer = styled.header`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: var(--space-md) var(--space-xl);
+  padding: var(--space-md) var(--space-responsive-md);
   background: var(--background);
   border-bottom: 1px solid var(--border-color);
   box-shadow: var(--shadow-sm);
@@ -12,12 +12,70 @@ export const HeaderContainer = styled.header`
   position: sticky;
   top: 0;
   z-index: 100;
+
+  @media (max-width: 768px) {
+    height: 60px;
+    padding: var(--space-sm) var(--space-md);
+  }
 `;
 
 export const ButtonContainer = styled.div`
   display: flex;
   align-items: center;
   gap: var(--space-md);
+
+  @media (max-width: 768px) {
+    gap: var(--space-sm);
+  }
+`;
+
+export const MobileMenuButton = styled.button`
+  display: none;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: var(--text-primary);
+  cursor: pointer;
+  padding: var(--space-xs);
+  border-radius: var(--radius-sm);
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background: var(--background-tertiary);
+  }
+
+  @media (max-width: 768px) {
+    display: block;
+  }
+`;
+
+export const MobileMenu = styled.div<{ $isOpen: boolean }>`
+  display: none;
+
+  @media (max-width: 768px) {
+    display: ${({ $isOpen }) => ($isOpen ? 'flex' : 'none')};
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--background);
+    border-bottom: 1px solid var(--border-color);
+    box-shadow: var(--shadow-lg);
+    flex-direction: column;
+    padding: var(--space-md);
+    gap: var(--space-md);
+    z-index: 99;
+  }
+`;
+
+export const DesktopButtonContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+
+  @media (max-width: 768px) {
+    display: none;
+  }
 `;
 
 export const ModernButton = styled.button`
@@ -33,6 +91,13 @@ export const ModernButton = styled.button`
   align-items: center;
   justify-content: center;
   min-height: 40px;
+
+  @media (max-width: 768px) {
+    width: 100%;
+    padding: var(--space-md);
+    font-size: var(--font-medium);
+    min-height: 44px;
+  }
 `;
 
 export const PrimaryButton = styled(ModernButton)`
@@ -46,6 +111,12 @@ export const PrimaryButton = styled(ModernButton)`
     transform: translateY(-1px);
     box-shadow: var(--shadow-md);
   }
+
+  @media (max-width: 768px) {
+    &:hover {
+      transform: none;
+    }
+  }
 `;
 
 export const SecondaryButton = styled(ModernButton)`
@@ -58,6 +129,12 @@ export const SecondaryButton = styled(ModernButton)`
     border-color: var(--primary-color);
     transform: translateY(-1px);
     box-shadow: var(--shadow-md);
+  }
+
+  @media (max-width: 768px) {
+    &:hover {
+      transform: none;
+    }
   }
 `;
 
@@ -78,7 +155,11 @@ export const AppName = styled.h1`
   color: var(--text-primary);
   cursor: pointer;
   text-decoration: none;
-  background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+  background: linear-gradient(
+    135deg,
+    var(--primary-color),
+    var(--accent-color)
+  );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -86,6 +167,17 @@ export const AppName = styled.h1`
 
   &:hover {
     transform: translateY(-1px);
+  }
+
+  @media (max-width: 768px) {
+    font-size: var(--font-large);
+    &:hover {
+      transform: none;
+    }
+  }
+
+  @media (max-width: 480px) {
+    font-size: var(--font-medium);
   }
 `;
 
@@ -96,17 +188,44 @@ export const UserInfo = styled.div`
   color: var(--text-secondary);
   font-size: var(--font-small);
   font-weight: 500;
+
+  @media (max-width: 768px) {
+    width: 100%;
+    padding: var(--space-sm);
+    background: var(--background-tertiary);
+    border-radius: var(--radius-md);
+
+    span {
+      font-size: var(--font-medium);
+    }
+  }
+
+  @media (max-width: 480px) {
+    span {
+      display: none;
+    }
+  }
 `;
 
 export const UserAvatar = styled.div`
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+  background: linear-gradient(
+    135deg,
+    var(--primary-color),
+    var(--accent-color)
+  );
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--background);
   font-weight: 600;
   font-size: var(--font-small);
-`; 
+  flex-shrink: 0;
+
+  @media (max-width: 768px) {
+    width: 36px;
+    height: 36px;
+  }
+`;

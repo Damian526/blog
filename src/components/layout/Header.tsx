@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { useSession } from 'next-auth/react';
 import LoginButton from '@/components/auth/LoginButton';
 import RegisterButton from '@/components/auth/RegisterButton';
@@ -13,10 +14,14 @@ import {
   AppName,
   UserInfo,
   UserAvatar,
+  MobileMenuButton,
+  MobileMenu,
+  DesktopButtonContainer,
 } from '@/styles/components/layout/Header.styles';
 
 export default function Header() {
   const { data: session, status } = useSession();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   if (status === 'loading') {
     return (
@@ -29,7 +34,12 @@ export default function Header() {
 
   const getUserInitials = (name?: string | null, email?: string | null) => {
     if (name) {
-      return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+      return name
+        .split(' ')
+        .map((n) => n[0])
+        .join('')
+        .toUpperCase()
+        .slice(0, 2);
     }
     if (email) {
       return email[0].toUpperCase();
@@ -37,12 +47,24 @@ export default function Header() {
     return 'U';
   };
 
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
+
+  const closeMobileMenu = () => {
+    setIsMobileMenuOpen(false);
+  };
+
   return (
     <HeaderContainer>
       <Link href="/" passHref legacyBehavior>
-        <AppName as="a">WebDevSphere</AppName>
+        <AppName as="a" onClick={closeMobileMenu}>
+          WebDevSphere
+        </AppName>
       </Link>
-      <ButtonContainer>
+
+      {/* Desktop Navigation */}
+      <DesktopButtonContainer>
         {session ? (
           <>
             <UserInfo>
@@ -67,7 +89,40 @@ export default function Header() {
             <RegisterButton />
           </>
         )}
-      </ButtonContainer>
+      </DesktopButtonContainer>
+
+      {/* Mobile Menu Button */}
+      <MobileMenuButton onClick={toggleMobileMenu}>
+        {isMobileMenuOpen ? '✕' : '☰'}
+      </MobileMenuButton>
+
+      {/* Mobile Menu */}
+      <MobileMenu $isOpen={isMobileMenuOpen}>
+        {session ? (
+          <>
+            <UserInfo>
+              <UserAvatar>
+                {getUserInitials(session.user.name, session.user.email)}
+              </UserAvatar>
+              <span>Welcome, {session.user.name || session.user.email}</span>
+            </UserInfo>
+            {session.user.role === 'ADMIN' && (
+              <Link href="/admin" passHref>
+                <AdminButton onClick={closeMobileMenu}>Admin Panel</AdminButton>
+              </Link>
+            )}
+            <Link href="/dashboard" passHref>
+              <PrimaryButton onClick={closeMobileMenu}>Dashboard</PrimaryButton>
+            </Link>
+            <LogoutButton onClick={closeMobileMenu} />
+          </>
+        ) : (
+          <>
+            <LoginButton onClick={closeMobileMenu} />
+            <RegisterButton onClick={closeMobileMenu} />
+          </>
+        )}
+      </MobileMenu>
     </HeaderContainer>
   );
 }

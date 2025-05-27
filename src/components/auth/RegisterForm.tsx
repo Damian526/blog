@@ -1,8 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import Modal from '@/components/ui/Modal';
-
 import {
   Title,
   FormContainer,
@@ -12,12 +10,7 @@ import {
   SuccessMessage,
 } from '@/styles/components/auth/authFormStyles';
 
-interface RegisterFormProps {
-  isOpen: boolean;
-  onClose: () => void;
-}
-
-export default function RegisterForm({ isOpen, onClose }: RegisterFormProps) {
+export default function RegisterForm() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -53,7 +46,7 @@ export default function RegisterForm({ isOpen, onClose }: RegisterFormProps) {
   }
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
+    <>
       <Title>Register</Title>
       <FormContainer onSubmit={handleSubmit}>
         <Input
@@ -81,6 +74,6 @@ export default function RegisterForm({ isOpen, onClose }: RegisterFormProps) {
       </FormContainer>
       {error && <ErrorMessage>{error}</ErrorMessage>}
       {success && <SuccessMessage>{success}</SuccessMessage>}
-    </Modal>
+    </>
   );
 }

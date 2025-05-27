@@ -3,10 +3,15 @@
 import { signOut } from 'next-auth/react';
 import { DangerAuthButton } from '@/styles/components/auth/AuthButton.styles';
 
-export default function LogoutButton() {
-  return (
-    <DangerAuthButton onClick={() => signOut({ callbackUrl: '/' })}>
-      Logout
-    </DangerAuthButton>
-  );
+interface LogoutButtonProps {
+  onClick?: () => void;
+}
+
+export default function LogoutButton({ onClick }: LogoutButtonProps) {
+  const handleClick = () => {
+    onClick?.();
+    signOut({ callbackUrl: '/' });
+  };
+
+  return <DangerAuthButton onClick={handleClick}>Logout</DangerAuthButton>;
 }

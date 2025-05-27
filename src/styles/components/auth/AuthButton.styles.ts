@@ -13,6 +13,18 @@ export const BaseButton = styled.button`
   min-height: 40px;
   border: 1px solid;
   text-decoration: none;
+  white-space: nowrap;
+
+  @media (max-width: 768px) {
+    width: 100%;
+    min-height: 44px;
+    padding: var(--space-md);
+    font-size: var(--font-medium);
+  }
+
+  @media (max-width: 480px) {
+    font-size: var(--font-small);
+  }
 `;
 
 export const PrimaryAuthButton = styled(BaseButton)`
@@ -25,6 +37,12 @@ export const PrimaryAuthButton = styled(BaseButton)`
     border-color: var(--primary-hover);
     transform: translateY(-1px);
     box-shadow: var(--shadow-md);
+  }
+
+  @media (max-width: 768px) {
+    &:hover {
+      transform: none;
+    }
   }
 `;
 
@@ -39,6 +57,12 @@ export const SecondaryAuthButton = styled(BaseButton)`
     transform: translateY(-1px);
     box-shadow: var(--shadow-md);
   }
+
+  @media (max-width: 768px) {
+    &:hover {
+      transform: none;
+    }
+  }
 `;
 
 export const DangerAuthButton = styled(BaseButton)`
@@ -52,4 +76,10 @@ export const DangerAuthButton = styled(BaseButton)`
     transform: translateY(-1px);
     box-shadow: var(--shadow-md);
   }
-`; 
+
+  @media (max-width: 768px) {
+    &:hover {
+      transform: none;
+    }
+  }
+`;
