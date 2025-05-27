@@ -1,3 +1,5 @@
+'use client';
+
 import RichText from '@/components/common/RichText';
 import {
   PostContainer,
