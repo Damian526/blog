@@ -240,6 +240,8 @@ export const UserAvatar = styled.div`
   font-weight: 600;
   font-size: var(--font-small);
   flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
 
   @media (max-width: 768px) {
     width: 36px;

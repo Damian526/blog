@@ -2,10 +2,12 @@
 
 import { useState } from 'react';
 import { useSession } from 'next-auth/react';
+import useSWR from 'swr';
 import LoginButton from '@/components/auth/LoginButton';
 import RegisterButton from '@/components/auth/RegisterButton';
 import LogoutButton from '@/components/auth/LogoutButton';
 import Link from 'next/link';
+import Image from 'next/image';
 import {
   HeaderContainer,
   ButtonContainer,
@@ -19,9 +21,30 @@ import {
   DesktopButtonContainer,
 } from '@/styles/components/layout/Header.styles';
 
+interface User {
+  id: number;
+  name: string;
+  email: string;
+  profilePicture?: string;
+  role: string;
+  verified: boolean;
+  createdAt: string;
+}
+
 export default function Header() {
   const { data: session, status } = useSession();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // Fetch user profile data to get profile picture
+  const { data: userProfile, error: profileError } = useSWR<User>(
+    session?.user?.email ? '/api/user/profile' : null,
+    {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: true,
+      shouldRetryOnError: false,
+      errorRetryCount: 2,
+    },
+  );
 
   if (status === 'loading') {
     return (
@@ -47,6 +70,28 @@ export default function Header() {
     return 'U';
   };
 
+  const renderUserAvatar = () => {
+    if (userProfile?.profilePicture) {
+      return (
+        <UserAvatar>
+          <Image
+            src={userProfile.profilePicture}
+            alt="Profile Picture"
+            fill
+            style={{ objectFit: 'cover' }}
+            sizes="40px"
+          />
+        </UserAvatar>
+      );
+    }
+
+    return (
+      <UserAvatar>
+        {getUserInitials(session?.user.name, session?.user.email)}
+      </UserAvatar>
+    );
+  };
+
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
@@ -69,9 +114,7 @@ export default function Header() {
           <>
             <Link href="/profile" passHref legacyBehavior>
               <UserInfo as="a" title="Go to Profile">
-                <UserAvatar>
-                  {getUserInitials(session.user.name, session.user.email)}
-                </UserAvatar>
+                {renderUserAvatar()}
                 <span>Welcome, {session.user.name || session.user.email}</span>
               </UserInfo>
             </Link>
@@ -104,9 +147,7 @@ export default function Header() {
           <>
             <Link href="/profile" passHref legacyBehavior>
               <UserInfo as="a" onClick={closeMobileMenu} title="Go to Profile">
-                <UserAvatar>
-                  {getUserInitials(session.user.name, session.user.email)}
-                </UserAvatar>
+                {renderUserAvatar()}
                 <span>Welcome, {session.user.name || session.user.email}</span>
               </UserInfo>
             </Link>

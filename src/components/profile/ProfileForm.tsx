@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import useSWR from 'swr';
 import styled from 'styled-components';
+import { uploadImage } from '@/lib/supabase';
+import Image from 'next/image';
 
 const FormContainer = styled.div`
   background: var(--background);
@@ -65,6 +67,95 @@ const Input = styled.input`
     background: var(--background-tertiary);
     color: var(--text-secondary);
     cursor: not-allowed;
+  }
+`;
+
+const ProfilePictureContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-md);
+`;
+
+const ProfilePicturePreview = styled.div`
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 3px solid var(--border-light);
+  background: var(--background-tertiary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: var(--primary-color);
+  }
+`;
+
+const ProfilePictureInitials = styled.div`
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  background: linear-gradient(
+    135deg,
+    var(--primary-color),
+    var(--accent-color)
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+`;
+
+const UploadButton = styled.button`
+  padding: var(--space-sm) var(--space-lg);
+  border: 2px solid var(--primary-color);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--primary-color);
+  font-size: var(--font-small);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover:not(:disabled) {
+    background: var(--primary-color);
+    color: var(--background);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
+`;
+
+const RemoveButton = styled.button`
+  padding: var(--space-sm) var(--space-lg);
+  border: 2px solid var(--error-color);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--error-color);
+  font-size: var(--font-small);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover:not(:disabled) {
+    background: var(--error-color);
+    color: var(--background);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
   }
 `;
 
@@ -161,6 +252,7 @@ interface User {
   id: number;
   name: string;
   email: string;
+  profilePicture?: string;
   role: string;
   verified: boolean;
   createdAt: string;
@@ -175,6 +267,8 @@ export default function ProfileForm() {
     newPassword: '',
     confirmPassword: '',
   });
+  const [profilePicture, setProfilePicture] = useState<string | null>(null);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [message, setMessage] = useState<{
     type: 'success' | 'error';
     text: string;
@@ -197,13 +291,74 @@ export default function ProfileForm() {
         name: user.name || '',
         email: user.email || '',
       }));
+      setProfilePicture(user.profilePicture || null);
     }
   }, [user]);
+
+  const getUserInitials = (name?: string, email?: string) => {
+    if (name) {
+      return name
+        .split(' ')
+        .map((n) => n[0])
+        .join('')
+        .toUpperCase()
+        .slice(0, 2);
+    }
+    if (email) {
+      return email[0].toUpperCase();
+    }
+    return 'U';
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
     setMessage(null);
+  };
+
+  const handleImageUpload = async () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.click();
+
+    input.onchange = async () => {
+      const file = input.files?.[0];
+      if (!file) return;
+
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        setMessage({ type: 'error', text: 'Image must be less than 5MB' });
+        return;
+      }
+
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        setMessage({ type: 'error', text: 'Please select an image file' });
+        return;
+      }
+
+      setIsUploadingImage(true);
+      setMessage(null);
+
+      try {
+        const imageUrl = await uploadImage(file);
+        setProfilePicture(imageUrl);
+        setMessage({ type: 'success', text: 'Image uploaded successfully!' });
+      } catch (error) {
+        setMessage({
+          type: 'error',
+          text: 'Failed to upload image. Please try again.',
+        });
+      } finally {
+        setIsUploadingImage(false);
+      }
+    };
+  };
+
+  const handleRemoveImage = () => {
+    setProfilePicture(null);
+    setMessage({ type: 'success', text: 'Profile picture removed' });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -240,14 +395,27 @@ export default function ProfileForm() {
     }
 
     try {
-      const updateData: any = {};
+      interface UpdateData {
+        name?: string;
+        email?: string;
+        profilePicture?: string;
+        currentPassword?: string;
+        newPassword?: string;
+      }
+
+      const updateData: UpdateData = {};
+      const emailChanged = formData.email !== user?.email;
 
       if (formData.name !== user?.name) {
         updateData.name = formData.name;
       }
 
-      if (formData.email !== user?.email) {
+      if (emailChanged) {
         updateData.email = formData.email;
+      }
+
+      if (profilePicture !== user?.profilePicture) {
+        updateData.profilePicture = profilePicture || '';
       }
 
       if (formData.newPassword) {
@@ -279,15 +447,23 @@ export default function ProfileForm() {
         confirmPassword: '',
       }));
 
-      // Refresh user data
-      mutate();
-
-      // Update session if name or email changed
+      // Update session with new data
       if (updateData.name || updateData.email) {
         await update({
           name: updateData.name || user?.name,
           email: updateData.email || user?.email,
         });
+      }
+
+      // If email changed, we need to wait a bit for the session to update
+      // then refresh the SWR cache
+      if (emailChanged) {
+        setTimeout(() => {
+          mutate();
+        }, 1000);
+      } else {
+        // Refresh user data immediately if email didn't change
+        mutate();
       }
     } catch (error) {
       setMessage({
@@ -320,6 +496,45 @@ export default function ProfileForm() {
     <FormContainer>
       <Form onSubmit={handleSubmit}>
         {message && <Message $type={message.type}>{message.text}</Message>}
+
+        <Section>
+          <SectionTitle>Profile Picture</SectionTitle>
+          <ProfilePictureContainer>
+            <ProfilePicturePreview>
+              {profilePicture ? (
+                <Image
+                  src={profilePicture}
+                  alt="Profile Picture"
+                  fill
+                  style={{ objectFit: 'cover' }}
+                  sizes="120px"
+                />
+              ) : (
+                <ProfilePictureInitials>
+                  {getUserInitials(user.name, user.email)}
+                </ProfilePictureInitials>
+              )}
+            </ProfilePicturePreview>
+            <div style={{ display: 'flex', gap: 'var(--space-sm)' }}>
+              <UploadButton
+                type="button"
+                onClick={handleImageUpload}
+                disabled={isUploadingImage || isLoading}
+              >
+                {isUploadingImage ? 'Uploading...' : 'Upload Photo'}
+              </UploadButton>
+              {profilePicture && (
+                <RemoveButton
+                  type="button"
+                  onClick={handleRemoveImage}
+                  disabled={isLoading}
+                >
+                  Remove
+                </RemoveButton>
+              )}
+            </div>
+          </ProfilePictureContainer>
+        </Section>
 
         <Section>
           <SectionTitle>Account Information</SectionTitle>
@@ -413,13 +628,14 @@ export default function ProfileForm() {
                 newPassword: '',
                 confirmPassword: '',
               });
+              setProfilePicture(user.profilePicture || null);
               setMessage(null);
             }}
             disabled={isLoading}
           >
             Reset
           </Button>
-          <Button type="submit" disabled={isLoading}>
+          <Button type="submit" disabled={isLoading || isUploadingImage}>
             {isLoading ? 'Updating...' : 'Update Profile'}
           </Button>
         </ButtonGroup>

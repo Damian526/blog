@@ -18,6 +18,7 @@ export async function GET() {
         id: true,
         name: true,
         email: true,
+        profilePicture: true,
         role: true,
         verified: true,
         createdAt: true,
@@ -46,9 +47,10 @@ export async function PATCH(req: Request) {
   }
 
   try {
-    const { name, email, currentPassword, newPassword } = await req.json();
+    const { name, email, profilePicture, currentPassword, newPassword } =
+      await req.json();
 
-    // Find the current user
+    // Find the current user by email first
     const currentUser = await prisma.user.findUnique({
       where: { email: session.user.email },
     });
@@ -58,7 +60,14 @@ export async function PATCH(req: Request) {
     }
 
     // Prepare update data
-    const updateData: any = {};
+    interface UpdateData {
+      name?: string;
+      email?: string;
+      profilePicture?: string;
+      password?: string;
+    }
+
+    const updateData: UpdateData = {};
 
     // Update name if provided
     if (name && name !== currentUser.name) {
@@ -80,6 +89,11 @@ export async function PATCH(req: Request) {
       }
 
       updateData.email = email;
+    }
+
+    // Update profile picture if provided
+    if (profilePicture !== undefined) {
+      updateData.profilePicture = profilePicture;
     }
 
     // Update password if provided
@@ -110,14 +124,15 @@ export async function PATCH(req: Request) {
       );
     }
 
-    // Update user
+    // Update user using ID instead of email to avoid issues with email changes
     const updatedUser = await prisma.user.update({
-      where: { email: session.user.email },
+      where: { id: currentUser.id },
       data: updateData,
       select: {
         id: true,
         name: true,
         email: true,
+        profilePicture: true,
         role: true,
         verified: true,
         createdAt: true,
