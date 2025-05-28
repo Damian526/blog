@@ -3,31 +3,31 @@ import styled from 'styled-components';
 export const Card = styled.div`
   margin: 0;
   background: var(--background);
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-lg);
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-sm);
   border: 1px solid var(--border-light);
   transition: all 0.3s ease;
-  height: fit-content;
+  width: 100%;
 
   &:hover {
-    transform: translateY(-8px);
-    box-shadow: var(--shadow-xl);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
     border-color: var(--primary-color);
   }
 
   @media (max-width: 768px) {
-    border-radius: var(--radius-lg);
+    border-radius: var(--radius-md);
 
     &:hover {
-      transform: translateY(-4px);
+      transform: translateY(-1px);
     }
   }
 
   @media (max-width: 480px) {
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-sm);
 
     &:hover {
       transform: none;
@@ -38,7 +38,7 @@ export const Card = styled.div`
 export const Header = styled.div<{ imgUrl?: string }>`
   display: ${({ imgUrl }) => (imgUrl ? 'block' : 'none')};
   background: url(${({ imgUrl }) => imgUrl}) center/cover no-repeat;
-  height: 200px;
+  height: 240px;
   position: relative;
 
   &::after {
@@ -56,11 +56,11 @@ export const Header = styled.div<{ imgUrl?: string }>`
   }
 
   @media (max-width: 768px) {
-    height: 160px;
+    height: 200px;
   }
 
   @media (max-width: 480px) {
-    height: 140px;
+    height: 180px;
   }
 `;
 
@@ -68,7 +68,7 @@ export const Content = styled.div`
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding: var(--space-xl);
+  padding: var(--space-xl) var(--space-xl) var(--space-lg);
   gap: var(--space-md);
 
   @media (max-width: 768px) {
@@ -82,8 +82,8 @@ export const Content = styled.div`
 `;
 
 export const Title = styled.h2`
-  font-size: var(--font-xl);
-  font-weight: 600;
+  font-size: 1.75rem;
+  font-weight: 700;
   margin: 0;
   color: var(--text-primary);
   line-height: 1.3;
@@ -98,12 +98,12 @@ export const Title = styled.h2`
   }
 
   @media (max-width: 768px) {
-    font-size: var(--font-large);
+    font-size: 1.5rem;
     -webkit-line-clamp: 3;
   }
 
   @media (max-width: 480px) {
-    font-size: var(--font-medium);
+    font-size: 1.25rem;
   }
 `;
 
@@ -115,6 +115,7 @@ export const Meta = styled.div`
   gap: var(--space-sm);
   font-weight: 500;
   flex-wrap: wrap;
+  margin-bottom: var(--space-xs);
 
   @media (max-width: 480px) {
     font-size: 0.75rem;
@@ -208,22 +209,23 @@ export const CategoryTag = styled.span<{ color?: string }>`
 
 export const Excerpt = styled.p`
   flex: 1;
-  font-size: var(--font-medium);
+  font-size: 1.125rem;
   color: var(--text-secondary);
-  line-height: 1.6;
-  margin: 0;
+  line-height: 1.7;
+  margin: var(--space-sm) 0;
   display: -webkit-box;
-  -webkit-line-clamp: 3;
+  -webkit-line-clamp: 4;
   -webkit-box-orient: vertical;
   overflow: hidden;
 
   @media (max-width: 768px) {
-    font-size: var(--font-small);
-    -webkit-line-clamp: 2;
+    font-size: 1rem;
+    -webkit-line-clamp: 3;
   }
 
   @media (max-width: 480px) {
-    font-size: 0.8rem;
+    font-size: 0.9rem;
+    -webkit-line-clamp: 2;
   }
 `;
 
@@ -231,7 +233,8 @@ export const Footer = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-top: var(--space-md);
+  padding-top: var(--space-lg);
+  margin-top: var(--space-md);
   border-top: 1px solid var(--border-light);
   gap: var(--space-sm);
 
@@ -248,20 +251,20 @@ export const ReadMore = styled.a`
   justify-content: center;
   gap: var(--space-xs);
   font-size: var(--font-medium);
-  font-weight: 500;
-  padding: var(--space-sm) var(--space-lg);
-  background: var(--primary-color);
-  color: var(--background);
+  font-weight: 600;
+  padding: var(--space-md) var(--space-xl);
+  background: transparent;
+  color: var(--primary-color);
   border-radius: var(--radius-md);
   text-decoration: none;
   transition: all 0.2s ease;
-  border: 1px solid var(--primary-color);
+  border: 2px solid var(--primary-color);
   min-height: 44px;
 
   &:hover {
-    background: var(--primary-hover);
-    border-color: var(--primary-hover);
-    transform: translateY(-2px);
+    background: var(--primary-color);
+    color: var(--background);
+    transform: translateY(-1px);
     box-shadow: var(--shadow-md);
   }
 

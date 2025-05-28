@@ -1,35 +1,33 @@
 import styled from 'styled-components';
 
 export const Container = styled.div`
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
   width: 100%;
-  padding: 0 var(--space-responsive-md);
+  padding: 0 var(--space-responsive-lg);
+
+  @media (max-width: 1200px) {
+    max-width: 95%;
+    padding: 0 var(--space-responsive-md);
+  }
 
   @media (max-width: 768px) {
-    padding: 0;
+    max-width: 100%;
+    padding: 0 var(--space-md);
   }
 `;
 
 export const PostsGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-  gap: var(--space-responsive-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-responsive-xl);
 
-  @media (max-width: 1200px) {
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  @media (max-width: 768px) {
     gap: var(--space-lg);
   }
 
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-    gap: var(--space-md);
-    padding: 0 var(--space-md);
-  }
-
   @media (max-width: 480px) {
-    gap: var(--space-sm);
-    padding: 0 var(--space-sm);
+    gap: var(--space-md);
   }
 `;
 
@@ -37,7 +35,6 @@ export const EmptyState = styled.div`
   text-align: center;
   padding: var(--space-responsive-xl);
   color: var(--text-secondary);
-  grid-column: 1 / -1; /* Span full width */
 
   h3 {
     font-size: var(--font-xl);
