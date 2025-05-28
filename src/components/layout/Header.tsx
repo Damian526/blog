@@ -67,12 +67,14 @@ export default function Header() {
       <DesktopButtonContainer>
         {session ? (
           <>
-            <UserInfo>
-              <UserAvatar>
-                {getUserInitials(session.user.name, session.user.email)}
-              </UserAvatar>
-              <span>Welcome, {session.user.name || session.user.email}</span>
-            </UserInfo>
+            <Link href="/profile" passHref legacyBehavior>
+              <UserInfo as="a" title="Go to Profile">
+                <UserAvatar>
+                  {getUserInitials(session.user.name, session.user.email)}
+                </UserAvatar>
+                <span>Welcome, {session.user.name || session.user.email}</span>
+              </UserInfo>
+            </Link>
             {session.user.role === 'ADMIN' && (
               <Link href="/admin" passHref>
                 <AdminButton>Admin Panel</AdminButton>
@@ -100,12 +102,14 @@ export default function Header() {
       <MobileMenu $isOpen={isMobileMenuOpen}>
         {session ? (
           <>
-            <UserInfo>
-              <UserAvatar>
-                {getUserInitials(session.user.name, session.user.email)}
-              </UserAvatar>
-              <span>Welcome, {session.user.name || session.user.email}</span>
-            </UserInfo>
+            <Link href="/profile" passHref legacyBehavior>
+              <UserInfo as="a" onClick={closeMobileMenu} title="Go to Profile">
+                <UserAvatar>
+                  {getUserInitials(session.user.name, session.user.email)}
+                </UserAvatar>
+                <span>Welcome, {session.user.name || session.user.email}</span>
+              </UserInfo>
+            </Link>
             {session.user.role === 'ADMIN' && (
               <Link href="/admin" passHref>
                 <AdminButton onClick={closeMobileMenu}>Admin Panel</AdminButton>

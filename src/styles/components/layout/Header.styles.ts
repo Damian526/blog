@@ -188,12 +188,29 @@ export const UserInfo = styled.div`
   color: var(--text-secondary);
   font-size: var(--font-small);
   font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  padding: var(--space-sm);
+  border-radius: var(--radius-md);
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: var(--background-tertiary);
+    color: var(--text-primary);
+    transform: translateY(-1px);
+  }
 
   @media (max-width: 768px) {
     width: 100%;
     padding: var(--space-sm);
     background: var(--background-tertiary);
     border-radius: var(--radius-md);
+
+    &:hover {
+      background: var(--primary-color);
+      color: var(--background);
+      transform: none;
+    }
 
     span {
       font-size: var(--font-medium);
