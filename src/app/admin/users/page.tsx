@@ -1,10 +1,7 @@
 import { redirect } from 'next/navigation';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
-import { PrismaClient } from '@prisma/client';
-import UsersTable from '@/components/admin/UsersTable'; 
-
-const prisma = new PrismaClient();
+import UsersTable from '@/components/admin/UsersTable';
 
 export default async function AdminUsersPage() {
   // Get session on the server
@@ -14,10 +11,6 @@ export default async function AdminUsersPage() {
     redirect('/');
   }
 
-  // Fetch users on the server
-  const users = await prisma.user.findMany({
-    select: { id: true, name: true, email: true, role: true, verified: true },
-  });
-
-  return <UsersTable users={users} />;
+  // No need to fetch users on the server anymore - UsersTable handles it with SWR
+  return <UsersTable />;
 }

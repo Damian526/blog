@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import useSWR from 'swr';
 import {
   Container,
   Title,
@@ -18,10 +18,17 @@ interface User {
   verified: boolean;
 }
 
-// Expl
-
-export default function UsersTable({ users }: { users: User[] }) {
-  const [userList, setUserList] = useState(users);
+export default function UsersTable() {
+  const {
+    data: users,
+    error,
+    isLoading,
+    mutate,
+  } = useSWR<User[]>('/api/admin/users', {
+    revalidateOnFocus: true,
+    revalidateOnReconnect: true,
+    shouldRetryOnError: false,
+  });
 
   async function handleDelete(userId: number) {
     if (!confirm('Are you sure you want to delete this user?')) return;
@@ -37,13 +44,32 @@ export default function UsersTable({ users }: { users: User[] }) {
         throw new Error('Failed to delete user');
       }
 
-      // Remove the deleted user from the UI without reloading
-      setUserList(userList.filter((user) => user.id !== userId));
+      // Revalidate the users list to get fresh data
+      mutate();
     } catch (error) {
       console.error('Error deleting user:', error);
       alert('Failed to delete user');
     }
   }
+
+  if (isLoading)
+    return (
+      <Container>
+        <Title>Loading users...</Title>
+      </Container>
+    );
+  if (error)
+    return (
+      <Container>
+        <Title>Error loading users: {error.message}</Title>
+      </Container>
+    );
+  if (!users)
+    return (
+      <Container>
+        <Title>No users found</Title>
+      </Container>
+    );
 
   return (
     <Container>
@@ -60,7 +86,7 @@ export default function UsersTable({ users }: { users: User[] }) {
           </tr>
         </thead>
         <tbody>
-          {userList.map((user) => (
+          {users.map((user) => (
             <Row key={user.id}>
               <Td>{user.id}</Td>
               <Td>{user.name}</Td>

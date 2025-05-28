@@ -2,10 +2,11 @@
 
 import useSWR from 'swr';
 import styled from 'styled-components';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import EditableComment from '@/components/comments/EditableComment';
 import AddCommentForm from '@/components/comments/AddCommentForm';
 import ReplyForm from '@/components/comments/ReplyForm';
+import { useCurrentUser } from '@/hooks/useCurrentUser';
 
 const CommentsContainer = styled.div`
   margin-top: 0;
@@ -161,22 +162,11 @@ export default function CommentsSection({ postId }: CommentsSectionProps) {
     isLoading,
     mutate,
   } = useSWR<Comment[]>(postId ? `/api/comments?postId=${postId}` : null);
-  const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null);
+
+  const { user: currentUser } = useCurrentUser();
   const [replyingTo, setReplyingTo] = useState<number | null>(null);
 
-  useEffect(() => {
-    async function fetchCurrentUser() {
-      try {
-        const res = await fetch('/api/auth/session');
-        const data = await res.json();
-        setCurrentUserEmail(data?.user?.email || null);
-      } catch (err) {
-        console.error('Failed to fetch current user:', err);
-        setCurrentUserEmail(null);
-      }
-    }
-    fetchCurrentUser();
-  }, []);
+  const currentUserEmail = currentUser?.email || null;
 
   if (isLoading) return <LoadingMessage>Loading comments...</LoadingMessage>;
   if (error) return <LoadingMessage>Failed to load comments</LoadingMessage>;

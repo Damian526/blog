@@ -5,6 +5,7 @@ import styled from 'styled-components';
 import { useEffect, useState } from 'react';
 import PostContent from '@/components/posts/PostContent';
 import CommentsSection from '@/components/comments/CommentsSection';
+import { usePost } from '@/hooks/usePost';
 
 const PageContainer = styled.div`
   max-width: 95vw;
@@ -36,65 +37,35 @@ const LoadingMessage = styled.div`
   font-size: 1rem;
 `;
 
-interface Post {
-  id: number;
-  title: string;
-  content: string;
-  createdAt: Date;
-  author: {
-    name: string | null;
-    email: string;
-  };
-  _count: {
-    comments: number;
-  };
-}
-
 // This is now a Client Component
 export default function PostPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const [post, setPost] = useState<Post | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
   const [postId, setPostId] = useState<number | null>(null);
+  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
-    async function fetchPost() {
+    async function resolveParams() {
       try {
         const resolvedParams = await params;
         const id = parseInt(resolvedParams.id);
-        if (isNaN(id)) {
-          setError(true);
-          setLoading(false);
-          return;
+        if (!isNaN(id)) {
+          setPostId(id);
         }
-
-        setPostId(id);
-
-        const response = await fetch(`/api/posts/${id}`);
-        if (!response.ok) {
-          setError(true);
-          setLoading(false);
-          return;
-        }
-
-        const postData = await response.json();
-        setPost(postData);
-        setLoading(false);
+        setIsClient(true);
       } catch (err) {
-        console.error('Error fetching post:', err);
-        setError(true);
-        setLoading(false);
+        console.error('Error resolving params:', err);
+        setIsClient(true);
       }
     }
-
-    fetchPost();
+    resolveParams();
   }, [params]);
 
-  if (loading) {
+  const { post, error, isLoading } = usePost(isClient ? postId : null);
+
+  if (!isClient || isLoading) {
     return (
       <PageContainer>
         <LoadingMessage>Loading post...</LoadingMessage>
