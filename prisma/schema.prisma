@@ -9,23 +9,47 @@ generator client {
 }
 
 model User {
-  id                 Int       @id @default(autoincrement())
+  id                 Int         @id @default(autoincrement())
   name               String
-  email              String    @unique
+  email              String      @unique
   password           String
-  profilePicture     String?   // URL to profile picture stored in Supabase
+  profilePicture     String?     // URL to profile picture stored in Supabase
+  
+  // Simple status system
+  status             UserStatus  @default(PENDING)
+  isExpert           Boolean     @default(false)  // Can write articles
+  
   posts              Post[]
-  comments           Comment[] // A user can author many comments
-  createdAt          DateTime  @default(now())
-  role               Role      @default(USER)
-  verified           Boolean   @default(false)
+  discussions        Discussion[] // New: user discussions
+  comments           Comment[]   // A user can author many comments
+  createdAt          DateTime    @default(now())
+  role               Role        @default(USER)
+  verified           Boolean     @default(false)
   verificationToken  String?
+}
+
+// Simple Discussion model
+model Discussion {
+  id         Int      @id @default(autoincrement())
+  title      String
+  content    String
+  type       DiscussionType @default(DISCUSSION)
+  
+  authorId   Int
+  author     User     @relation(fields: [authorId], references: [id])
+  categoryId Int?
+  category   Category? @relation(fields: [categoryId], references: [id])
+  comments   Comment[]
+  
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 }
 
 model Post {
   id            Int       @id @default(autoincrement())
   title         String
   content       String?
+  type          PostType  @default(ARTICLE) // New: article type
   published     Boolean   @default(false)
   createdAt     DateTime  @default(now())
   authorId      Int
@@ -33,7 +57,6 @@ model Post {
   comments      Comment[]
   declineReason String?
   subcategories Subcategory[] @relation("PostSubcategories")
-  // Removed mainCategories relation
 }
 
 model Comment {
@@ -41,9 +64,12 @@ model Comment {
   content   String?
   createdAt DateTime @default(now())
 
-  // Relations
-  postId    Int
-  post      Post     @relation(fields: [postId], references: [id])
+  // Relations - can comment on posts or discussions
+  postId       Int?
+  post         Post?       @relation(fields: [postId], references: [id])
+  discussionId Int?
+  discussion   Discussion? @relation(fields: [discussionId], references: [id])
+  
   authorId  Int
   author    User     @relation(fields: [authorId], references: [id])
 
@@ -57,8 +83,8 @@ model Category {
   id            Int           @id @default(autoincrement())
   name          String        @unique
   subcategories Subcategory[] // One-to-many relationship with Subcategory
+  discussions   Discussion[]  // New: discussions in category
   createdAt     DateTime      @default(now())
-  // Removed mainPosts relation (used for mainCategories)
 }
 
 model Subcategory {
@@ -75,4 +101,24 @@ model Subcategory {
 enum Role {
   ADMIN
   USER
+}
+
+// Simple user status
+enum UserStatus {
+  PENDING    // Waiting admin approval (can only read)
+  APPROVED   // Can create discussions
+  VERIFIED   // Can write articles (isExpert = true)
+}
+
+// Simple post types
+enum PostType {
+  ARTICLE    // Professional articles (for verified users)
+  TUTORIAL   // Tutorials
+}
+
+// Simple discussion types  
+enum DiscussionType {
+  QUESTION    // Questions
+  DISCUSSION  // General discussion
+  HELP        // Help requests
 }
