@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, UserStatus } from '@prisma/client';
 import { NextResponse } from 'next/server';
 
 const prisma = new PrismaClient();
@@ -26,11 +26,12 @@ export async function GET(req: Request) {
       );
     }
 
-    // Update user to verified
+    // Update user to verified AND approved automatically
     await prisma.user.update({
       where: { id: user.id },
       data: {
         verified: true,
+        status: UserStatus.APPROVED, // 🎯 Auto-approve after email verification
         verificationToken: null, // clear token
       },
     });

@@ -19,6 +19,12 @@ model User {
   status             UserStatus  @default(PENDING)
   isExpert           Boolean     @default(false)  // Can write articles
   
+  // Simple verification tracking (no separate table needed)
+  verificationReason String?     // Why user wants to be verified
+  portfolioUrl       String?     // Portfolio/GitHub link
+  approvedBy         Int?        // Admin who approved
+  approvedAt         DateTime?   // When approved
+  
   posts              Post[]
   discussions        Discussion[] // New: user discussions
   comments           Comment[]   // A user can author many comments

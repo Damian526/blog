@@ -1,72 +1,116 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { PrismaClient } from '@prisma/client';
+import prisma from '@/lib/prisma';
+import { userPermissions } from '@/lib/permissions';
+import { UserStatus } from '@prisma/client';
 
-const prisma = new PrismaClient();
-
+// GET - List users for admin
 export async function GET() {
-  const session = await getServerSession(authOptions);
-
-  if (!session || session.user.role !== 'ADMIN') {
-    return NextResponse.json({ message: 'Access denied' }, { status: 403 });
-  }
-
   try {
-    const users = await prisma.user.findMany({
-      select: { id: true, name: true, email: true, role: true, verified: true },
+    // Check if user is admin
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+    }
+
+    const currentUser = await prisma.user.findUnique({
+      where: { email: session.user.email },
     });
 
-    return NextResponse.json(users, { status: 200 });
+    if (!userPermissions.canApproveUsers(currentUser)) {
+      return NextResponse.json({ error: 'Not authorized' }, { status: 403 });
+    }
+
+    // Get all users with basic info
+    const users = await prisma.user.findMany({
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        status: true,
+        isExpert: true,
+        role: true,
+        createdAt: true,
+        approvedAt: true,
+        verificationReason: true,
+        portfolioUrl: true,
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return NextResponse.json({ users });
   } catch (error) {
+    console.error('Error fetching users:', error);
     return NextResponse.json(
-      { message: 'Something went wrong' },
+      { error: 'Failed to fetch users' },
       { status: 500 },
     );
   }
 }
 
-export async function DELETE(req: Request) {
-  const session = await getServerSession(authOptions);
-  if (!session || session.user.role !== 'ADMIN') {
-    return NextResponse.json({ message: 'Access denied' }, { status: 403 });
-  }
-
+// PUT - Update user status
+export async function PUT(request: Request) {
   try {
-    const { userId } = await req.json();
-    if (!userId) {
-      return NextResponse.json(
-        { message: 'User ID is required' },
-        { status: 400 },
-      );
+    const { userId, action } = await request.json();
+
+    // Check if user is admin
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
-    // Prevent admins from deleting themselves or other admins (optional safety)
-    const userToDelete = await prisma.user.findUnique({
-      where: { id: userId },
+    const currentUser = await prisma.user.findUnique({
+      where: { email: session.user.email },
     });
 
-    if (!userToDelete) {
-      return NextResponse.json({ message: 'User not found' }, { status: 404 });
+    if (!userPermissions.canApproveUsers(currentUser)) {
+      return NextResponse.json({ error: 'Not authorized' }, { status: 403 });
     }
 
-    if (userToDelete.role === 'ADMIN') {
-      return NextResponse.json(
-        { message: 'Cannot delete an admin' },
-        { status: 403 },
-      );
+    // Perform the action
+    let updateData: any = {
+      approvedBy: currentUser!.id,
+      approvedAt: new Date(),
+    };
+
+    switch (action) {
+      case 'approve':
+        updateData.status = UserStatus.APPROVED;
+        break;
+      case 'verify':
+        updateData.status = UserStatus.VERIFIED;
+        updateData.isExpert = true;
+        break;
+      case 'reject':
+        updateData.status = UserStatus.PENDING;
+        updateData.isExpert = false;
+        break;
+      default:
+        return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
     }
 
-    // Delete user
-    await prisma.user.delete({ where: { id: userId } });
+    // Update user
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: updateData,
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        status: true,
+        isExpert: true,
+      },
+    });
 
-    return NextResponse.json(
-      { message: 'User deleted successfully' },
-      { status: 200 },
-    );
+    return NextResponse.json({
+      user: updatedUser,
+      message: `User ${action}d successfully`,
+    });
   } catch (error) {
+    console.error('Error updating user:', error);
     return NextResponse.json(
-      { message: 'Failed to delete user' },
+      { error: 'Failed to update user' },
       { status: 500 },
     );
   }
