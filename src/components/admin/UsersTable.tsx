@@ -14,21 +14,26 @@ interface User {
   id: number;
   name: string;
   email: string;
-  role: 'ADMIN' | 'USER';
-  verified: boolean;
+  status: string;
+  isExpert: boolean;
+  role: string;
+  createdAt: string;
+  approvedAt: string | null;
+  verificationReason: string | null;
+  portfolioUrl: string | null;
 }
 
 export default function UsersTable() {
-  const {
-    data: users,
-    error,
-    isLoading,
-    mutate,
-  } = useSWR<User[]>('/api/admin/users', {
-    revalidateOnFocus: true,
-    revalidateOnReconnect: true,
-    shouldRetryOnError: false,
-  });
+  const { data, error, isLoading, mutate } = useSWR<{ users: User[] }>(
+    '/api/admin/users',
+    {
+      revalidateOnFocus: true,
+      revalidateOnReconnect: true,
+      shouldRetryOnError: false,
+    },
+  );
+
+  const users = data?.users;
 
   async function handleDelete(userId: number) {
     if (!confirm('Are you sure you want to delete this user?')) return;
@@ -64,7 +69,7 @@ export default function UsersTable() {
         <Title>Error loading users: {error.message}</Title>
       </Container>
     );
-  if (!users)
+  if (!users || !Array.isArray(users))
     return (
       <Container>
         <Title>No users found</Title>
@@ -80,19 +85,21 @@ export default function UsersTable() {
             <Th>ID</Th>
             <Th>Name</Th>
             <Th>Email</Th>
+            <Th>Status</Th>
+            <Th>Expert</Th>
             <Th>Role</Th>
-            <Th>Verified</Th>
             <Th>Actions</Th>
           </tr>
         </thead>
         <tbody>
-          {users.map((user) => (
+          {(users || []).map((user) => (
             <Row key={user.id}>
               <Td>{user.id}</Td>
               <Td>{user.name}</Td>
               <Td>{user.email}</Td>
+              <Td>{user.status}</Td>
+              <Td>{user.isExpert ? '✅' : '❌'}</Td>
               <Td>{user.role}</Td>
-              <Td>{user.verified ? '✅' : '❌'}</Td>
               <Td>
                 {user.role !== 'ADMIN' && (
                   <button
