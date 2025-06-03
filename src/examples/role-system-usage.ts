@@ -6,6 +6,7 @@ import {
   getUserBadge,
 } from '@/lib/permissions';
 import { User, Role } from '@prisma/client';
+import { NextResponse } from 'next/server';
 
 // Example users for testing
 const pendingUser: User = {
@@ -20,9 +21,6 @@ const pendingUser: User = {
   portfolioUrl: null,
   approvedBy: null,
   approvedAt: null,
-  posts: [],
-  discussions: [],
-  comments: [],
   createdAt: new Date(),
   role: Role.USER,
   verificationToken: null,
@@ -40,9 +38,6 @@ const verifiedUser: User = {
   portfolioUrl: null,
   approvedBy: 1,
   approvedAt: new Date(),
-  posts: [],
-  discussions: [],
-  comments: [],
   createdAt: new Date(),
   role: Role.USER,
   verificationToken: null,
@@ -60,9 +55,6 @@ const expertUser: User = {
   portfolioUrl: 'https://github.com/bobexpert',
   approvedBy: 1,
   approvedAt: new Date(),
-  posts: [],
-  discussions: [],
-  comments: [],
   createdAt: new Date(),
   role: Role.USER,
   verificationToken: null,
@@ -74,17 +66,17 @@ console.log('🔍 Testing Permission System');
 console.log('\n👤 Pending User (John):');
 console.log('Can create posts:', canCreatePost(pendingUser)); // false
 console.log('Can create discussions:', canCreateDiscussion(pendingUser)); // false
-console.log('Badge:', getUserBadge(pendingUser)); // "⏳ Pending Approval"
+console.log('Badge:', getUserBadge(pendingUser)); // { label: 'New', color: 'gray' }
 
 console.log('\n✅ Verified User (Jane):');
 console.log('Can create posts:', canCreatePost(verifiedUser)); // true
 console.log('Can create discussions:', canCreateDiscussion(verifiedUser)); // true
-console.log('Badge:', getUserBadge(verifiedUser)); // "✅ Community Member"
+console.log('Badge:', getUserBadge(verifiedUser)); // { label: 'Member', color: 'green' }
 
 console.log('\n⭐ Expert User (Bob):');
 console.log('Can create posts:', canCreatePost(expertUser)); // true
 console.log('Can create discussions:', canCreateDiscussion(expertUser)); // true
-console.log('Badge:', getUserBadge(expertUser)); // "⭐ Verified Expert"
+console.log('Badge:', getUserBadge(expertUser)); // { label: 'Expert', color: 'purple' }
 
 // Example API usage
 export async function checkUserPermissions(user: User) {

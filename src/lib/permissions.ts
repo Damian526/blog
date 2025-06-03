@@ -64,11 +64,12 @@ export const statusLabels = {
 };
 
 // Get user badge/label
-export const getUserBadge = (user?: User | null): string => {
-  if (!user) return 'Guest';
-
-  if (user.verified) return '⭐ Verified Expert';
-  if (!user.verificationReason) return '✅ Community Member';
-
-  return '⏳ Pending Approval';
+export const getUserBadge = (user?: User | null): { label: string; color: 'red' | 'purple' | 'green' | 'gray' } => {
+  if (!user) return { label: 'Guest', color: 'gray' };
+  
+  if (user.role === 'ADMIN') return { label: 'Admin', color: 'red' };
+  if (user.verified && user.isExpert) return { label: 'Expert', color: 'purple' };
+  if (user.verified) return { label: 'Member', color: 'green' };
+  
+  return { label: 'New', color: 'gray' };
 };
