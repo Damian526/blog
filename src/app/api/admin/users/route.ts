@@ -85,6 +85,8 @@ export async function PUT(request: Request) {
       case 'reject':
         updateData.status = UserStatus.PENDING;
         updateData.isExpert = false;
+        updateData.verificationReason = null;
+        updateData.portfolioUrl = null;
         break;
       default:
         return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
@@ -100,6 +102,9 @@ export async function PUT(request: Request) {
         email: true,
         status: true,
         isExpert: true,
+        role: true,
+        verificationReason: true,
+        portfolioUrl: true,
       },
     });
 
