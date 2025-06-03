@@ -1,98 +1,11 @@
 import { useState } from 'react';
-import styled from 'styled-components';
-
-const FormContainer = styled.form`
-  margin-top: 2.5rem;
-  padding: 2rem;
-  background: #ffffff;
-  border-radius: 12px;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  
-  @media (max-width: 768px) {
-    padding: 1.5rem;
-  }
-`;
-
-const FormLabel = styled.label`
-  display: block;
-  font-weight: 600;
-  font-size: 1.125rem;
-  color: #1e293b;
-  margin-bottom: 1rem;
-  
-  @media (max-width: 768px) {
-    font-size: 1rem;
-  }
-`;
-
-const TextArea = styled.textarea`
-  width: 100%;
-  min-height: 120px;
-  padding: 1rem;
-  border: 2px solid #e2e8f0;
-  border-radius: 8px;
-  font-size: 1.05rem;
-  line-height: 1.6;
-  resize: vertical;
-  font-family: inherit;
-  transition: border-color 0.2s ease;
-  margin-bottom: 1.25rem;
-
-  &:focus {
-    outline: none;
-    border-color: #6366f1;
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
-  }
-
-  &::placeholder {
-    color: #9ca3af;
-  }
-  
-  @media (max-width: 768px) {
-    font-size: 0.95rem;
-    min-height: 100px;
-    padding: 0.75rem;
-  }
-`;
-
-const SubmitButton = styled.button`
-  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-  color: white;
-  border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 8px;
-  font-size: 0.95rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 4px rgba(99, 102, 241, 0.2);
-
-  &:hover:not(:disabled) {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(99, 102, 241, 0.3);
-  }
-
-  &:active {
-    transform: translateY(0);
-  }
-
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    transform: none;
-  }
-`;
-
-const ErrorMessage = styled.p`
-  color: #ef4444;
-  font-size: 0.875rem;
-  margin: 0.5rem 0;
-  padding: 0.5rem;
-  background-color: #fef2f2;
-  border: 1px solid #fecaca;
-  border-radius: 6px;
-`;
+import {
+  FormContainer,
+  FormLabel,
+  FormTextarea,
+  FormButton,
+  ErrorMessage,
+} from '@/components/ui/forms/FormComponents';
 
 interface AddCommentFormProps {
   postId: number;
@@ -140,19 +53,24 @@ export default function AddCommentForm({
   };
 
   return (
-    <FormContainer onSubmit={handleSubmit}>
+    <FormContainer onSubmit={handleSubmit} style={{ marginTop: '2.5rem' }}>
       <FormLabel htmlFor="content">Add Comment:</FormLabel>
-      <TextArea
+      <FormTextarea
         id="content"
         value={content}
         onChange={(e) => setContent(e.target.value)}
         placeholder="Share your thoughts..."
         disabled={isSubmitting}
+        style={{ minHeight: '120px', marginBottom: '1.25rem' }}
       />
       {error && <ErrorMessage>{error}</ErrorMessage>}
-      <SubmitButton type="submit" disabled={isSubmitting}>
+      <FormButton
+        type="submit"
+        disabled={isSubmitting}
+        style={{ width: '100%' }}
+      >
         {isSubmitting ? 'Posting...' : 'Post Comment'}
-      </SubmitButton>
+      </FormButton>
     </FormContainer>
   );
 }

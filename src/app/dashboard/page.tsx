@@ -7,6 +7,7 @@ import DashboardContent from '@/components/ui/DashboardContent';
 import LoginForm from '@/components/auth/LoginForm';
 import Modal from '@/components/ui/Modal';
 import PostList from '@/components/posts/PostList';
+import UserStatusCard from '@/components/ui/UserStatusCard';
 import {
   PostsSection,
   SectionTitle,
@@ -88,6 +89,7 @@ export default function Dashboard() {
     return (
       <div>
         <DashboardContent session={session} />
+        <UserStatusCard />
         <PostsSection>
           <SectionTitle>Your Posts</SectionTitle>
           {isLoading ? (
