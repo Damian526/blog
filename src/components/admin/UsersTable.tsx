@@ -60,36 +60,30 @@ const ActionButton = styled.button<{
   }
 `;
 
-const StatusBadge = styled.span<{ status: string }>`
-  padding: 0.375rem 0.75rem;
-  border-radius: 6px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
+const StatusBadge = styled.span<{ verified: boolean; isExpert: boolean }>`
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
 
-  ${({ status }) => {
-    switch (status) {
-      case 'PENDING':
-        return `background: #fef3c7; color: #d97706; border: 1px solid #fbbf24;`;
-      case 'APPROVED':
-        return `background: #d1fae5; color: #059669; border: 1px solid #34d399;`;
-      case 'VERIFIED':
-        return `background: #e0e7ff; color: #5b21b6; border: 1px solid #8b5cf6;`;
-      default:
-        return `background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1;`;
+  ${({ verified, isExpert }) => {
+    if (verified && isExpert) {
+      return `
+        background-color: #e3f2fd;
+        color: #1976d2;
+      `;
+    } else if (verified) {
+      return `
+        background-color: #e8f5e8;
+        color: #2e7d32;
+      `;
+    } else {
+      return `
+        background-color: #fff3e0;
+        color: #f57c00;
+      `;
     }
   }}
-`;
-
-const ExpertBadge = styled.span<{ isExpert: boolean }>`
-  padding: 0.25rem 0.5rem;
-  border-radius: 4px;
-  font-size: 0.75rem;
-  font-weight: 500;
-  ${({ isExpert }) =>
-    isExpert
-      ? `background: #dcfce7; color: #16a34a;`
-      : `background: #f1f5f9; color: #64748b;`}
 `;
 
 const ApplicationDetails = styled.div`
@@ -151,13 +145,14 @@ interface User {
   id: number;
   name: string;
   email: string;
-  status: string;
+  verified: boolean;
   isExpert: boolean;
+  verificationReason?: string | null;
+  portfolioUrl?: string | null;
   role: string;
   createdAt: string;
-  approvedAt: string | null;
-  verificationReason: string | null;
-  portfolioUrl: string | null;
+  approvedBy?: number | null;
+  approvedAt?: string | null;
 }
 
 export default function UsersTable() {
@@ -170,30 +165,24 @@ export default function UsersTable() {
     },
   );
 
-  const [filter, setFilter] = useState<'all' | 'pending' | 'applications'>(
-    'all',
-  );
+  const [filter, setFilter] = useState<
+    'all' | 'pending' | 'verification-requests'
+  >('all');
   const [processingUsers, setProcessingUsers] = useState<Set<number>>(
     new Set(),
   );
 
   const users = data?.users;
 
-  const filteredUsers = users?.filter((user) => {
-    switch (filter) {
-      case 'pending':
-        return user.status === 'PENDING';
-      case 'applications':
-        return user.verificationReason && user.status !== 'VERIFIED';
-      default:
-        return true;
+  const getFilteredUsers = () => {
+    if (filter === 'pending') {
+      return users.filter((user) => !user.verified && !user.verificationReason);
     }
-  });
-
-  const pendingApplicationsCount =
-    users?.filter(
-      (user) => user.verificationReason && user.status !== 'VERIFIED',
-    ).length || 0;
+    if (filter === 'verification-requests') {
+      return users.filter((user) => user.verificationReason && !user.verified);
+    }
+    return users;
+  };
 
   async function handleUserAction(
     userId: number,
@@ -304,32 +293,31 @@ export default function UsersTable() {
           active={filter === 'pending'}
           onClick={() => setFilter('pending')}
         >
-          Pending Approval ({users.filter((u) => u.status === 'PENDING').length}
-          )
+          Pending Approval (
+          {users.filter((u) => !u.verified && !u.verificationReason).length})
         </FilterButton>
         <FilterButton
-          active={filter === 'applications'}
-          onClick={() => setFilter('applications')}
+          active={filter === 'verification-requests'}
+          onClick={() => setFilter('verification-requests')}
         >
-          Expert Applications ({pendingApplicationsCount})
+          Expert Requests (
+          {users.filter((u) => u.verificationReason && !u.verified).length})
         </FilterButton>
       </FilterButtons>
 
       <Table>
         <thead>
           <tr>
-            <Th>User Info</Th>
-            <Th>Status</Th>
-            <Th>Expert</Th>
-            <Th>Role</Th>
+            <Th>Name</Th>
+            <Th>Email</Th>
+            <Th>Verification Status</Th>
             <Th>Actions</Th>
           </tr>
         </thead>
         <tbody>
-          {(filteredUsers || []).map((user) => {
-            const hasApplication =
-              user.verificationReason && user.status !== 'VERIFIED';
-            const isProcessing = processingUsers.has(user.id);
+          {getFilteredUsers().map((user) => {
+            const needsVerificationAction =
+              user.verificationReason && !user.verified;
 
             return (
               <Row key={user.id}>
@@ -342,7 +330,7 @@ export default function UsersTable() {
                     <small style={{ color: '#9ca3af' }}>ID: {user.id}</small>
                   </div>
 
-                  {hasApplication && (
+                  {user.verificationReason && (
                     <ApplicationDetails>
                       <ApplicationTitle>🎯 Expert Application</ApplicationTitle>
                       <ApplicationText>
@@ -363,15 +351,19 @@ export default function UsersTable() {
                     </ApplicationDetails>
                   )}
                 </Td>
+                <Td>{user.email}</Td>
                 <Td>
-                  <StatusBadge status={user.status}>{user.status}</StatusBadge>
+                  <StatusBadge
+                    verified={user.verified}
+                    isExpert={user.isExpert}
+                  >
+                    {user.verified && user.isExpert
+                      ? 'Verified Expert'
+                      : user.verified
+                        ? 'Verified'
+                        : 'Pending'}
+                  </StatusBadge>
                 </Td>
-                <Td>
-                  <ExpertBadge isExpert={user.isExpert}>
-                    {user.isExpert ? 'Yes' : 'No'}
-                  </ExpertBadge>
-                </Td>
-                <Td>{user.role}</Td>
                 <Td>
                   <div
                     style={{
@@ -380,45 +372,51 @@ export default function UsersTable() {
                       gap: '0.5rem',
                     }}
                   >
-                    {/* Expert Application Actions */}
-                    {hasApplication && (
-                      <div>
+                    {needsVerificationAction && (
+                      <>
                         <ActionButton
                           variant="approve"
                           onClick={() => handleUserAction(user.id, 'verify')}
-                          disabled={isProcessing}
+                          disabled={processingUsers.has(user.id)}
                         >
-                          {isProcessing ? 'Processing...' : 'Approve Expert'}
+                          ✅ Verify as Expert
+                        </ActionButton>
+                        <ActionButton
+                          variant="approve"
+                          onClick={() => handleUserAction(user.id, 'approve')}
+                          disabled={processingUsers.has(user.id)}
+                        >
+                          ✅ Approve Only
                         </ActionButton>
                         <ActionButton
                           variant="reject"
                           onClick={() => handleUserAction(user.id, 'reject')}
-                          disabled={isProcessing}
+                          disabled={processingUsers.has(user.id)}
                         >
-                          {isProcessing ? 'Processing...' : 'Reject App'}
+                          ❌ Reject
                         </ActionButton>
-                      </div>
+                      </>
                     )}
 
-                    {/* User Status Actions */}
-                    {user.status === 'PENDING' && !user.verificationReason && (
+                    {!user.verified && !user.verificationReason && (
                       <ActionButton
                         variant="approve"
                         onClick={() => handleUserAction(user.id, 'approve')}
-                        disabled={isProcessing}
+                        disabled={processingUsers.has(user.id)}
                       >
-                        {isProcessing ? 'Processing...' : 'Approve User'}
+                        ✅ Approve User
                       </ActionButton>
                     )}
 
-                    {/* Delete Action */}
                     {user.role !== 'ADMIN' && (
                       <ActionButton
                         variant="delete"
                         onClick={() => handleDelete(user.id)}
-                        disabled={isProcessing}
+                        disabled={processingUsers.has(user.id)}
                       >
-                        {isProcessing ? 'Deleting...' : 'Delete'}
+                        {processingUsers.has(user.id)
+                          ? 'Deleting...'
+                          : 'Delete'}
                       </ActionButton>
                     )}
                   </div>
@@ -429,7 +427,7 @@ export default function UsersTable() {
         </tbody>
       </Table>
 
-      {filteredUsers?.length === 0 && (
+      {getFilteredUsers().length === 0 && (
         <div style={{ textAlign: 'center', padding: '2rem', color: '#64748b' }}>
           No users found for the selected filter.
         </div>

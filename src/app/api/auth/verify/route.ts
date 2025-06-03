@@ -1,22 +1,19 @@
-import { PrismaClient, UserStatus } from '@prisma/client';
-import { NextResponse } from 'next/server';
+import { PrismaClient } from '@prisma/client';
+import { NextRequest, NextResponse } from 'next/server';
 
 const prisma = new PrismaClient();
 
-export async function GET(req: Request) {
+export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(req.url);
+    const { searchParams } = new URL(request.url);
     const token = searchParams.get('token');
 
     if (!token) {
       return NextResponse.json({ error: 'No token provided' }, { status: 400 });
     }
 
-    // Find the user based on token
     const user = await prisma.user.findFirst({
-      where: {
-        verificationToken: token,
-      },
+      where: { verificationToken: token },
     });
 
     if (!user) {
@@ -26,21 +23,18 @@ export async function GET(req: Request) {
       );
     }
 
-    // Update user to verified AND approved automatically
+    // Update user to be verified and clear token
     await prisma.user.update({
       where: { id: user.id },
       data: {
-        verified: true,
-        status: UserStatus.APPROVED, // 🎯 Auto-approve after email verification
-        verificationToken: null, // clear token
+        verified: true, // Automatically verify user after email verification
+        verificationToken: null,
       },
     });
 
-    return NextResponse.redirect(
-      `${process.env.NEXT_PUBLIC_API_URL}/email-verified`,
-    );
+    return NextResponse.json({ message: 'Email verified successfully' });
   } catch (error) {
-    console.error(error);
+    console.error('Email verification error:', error);
     return NextResponse.json({ error: 'Server error' }, { status: 500 });
   }
 }

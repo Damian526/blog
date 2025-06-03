@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import useSWR from 'swr';
 import styled from 'styled-components';
+import useSWR from 'swr';
 import { useSession } from 'next-auth/react';
 import ExpertApplicationForm from '@/components/ui/forms/ExpertApplicationForm';
 
@@ -135,11 +135,12 @@ interface UserData {
   id: number;
   name: string;
   email: string;
-  status: 'PENDING' | 'APPROVED' | 'VERIFIED';
-  role: 'USER' | 'ADMIN';
+  verified: boolean;
   isExpert: boolean;
   verificationReason?: string | null;
   portfolioUrl?: string | null;
+  role: string;
+  createdAt: string;
 }
 
 export default function UserStatusCard() {
@@ -182,42 +183,38 @@ export default function UserStatusCard() {
   }
 
   const getStatusVariant = () => {
-    if (userData.role === 'ADMIN') return 'admin';
-    if (userData.status === 'VERIFIED') return 'verified';
-    if (userData.status === 'APPROVED') return 'approved';
+    if (userData.verified && userData.isExpert) return 'verified';
+    if (userData.verified) return 'approved';
     return 'pending';
   };
 
   const getStatusLabel = () => {
-    if (userData.role === 'ADMIN') return '👑 Administrator';
-    if (userData.status === 'VERIFIED') return '⭐ Verified Expert';
-    if (userData.status === 'APPROVED') return '✅ Community Member';
+    if (userData.verified && userData.isExpert) return '⭐ Verified Expert';
+    if (userData.verified) return '✅ Community Member';
     return '⏳ Pending Approval';
   };
 
   const getStatusDescription = () => {
     if (userData.role === 'ADMIN') {
-      return 'You have full administrative access to manage the platform.';
+      return '🛡️ You have administrator privileges.';
     }
-    if (userData.status === 'VERIFIED') {
-      return 'You are a verified expert and can write articles and share your knowledge with the community.';
+    if (userData.verified && userData.isExpert) {
+      return 'You can write articles and participate in all discussions.';
     }
-    if (userData.status === 'APPROVED') {
-      return 'You are an approved community member and can participate in discussions and comment on posts.';
+    if (userData.verified) {
+      return 'You can participate in discussions and comment on posts.';
     }
-    return 'Your account is pending approval. You can browse content but cannot post or comment yet.';
+    return 'Your account is pending approval. You can view content but cannot participate yet.';
   };
 
-  const canApplyForExpert = () => {
+  const showVerificationPrompt = () => {
     return (
-      userData.status === 'APPROVED' &&
-      userData.role !== 'ADMIN' &&
-      !userData.verificationReason
-    ); // No pending application
+      userData.verified && !userData.isExpert && !userData.verificationReason
+    );
   };
 
-  const hasPendingApplication = () => {
-    return userData.verificationReason && userData.status !== 'VERIFIED';
+  const showApplicationStatus = () => {
+    return userData.verificationReason && !userData.verified;
   };
 
   return (
@@ -232,21 +229,27 @@ export default function UserStatusCard() {
 
         <StatusInfo>{getStatusDescription()}</StatusInfo>
 
-        {hasPendingApplication() && (
+        {showVerificationPrompt() && (
           <StatusInfo>
-            <strong>Expert Application Status:</strong> Your application is
-            under review. You will be notified once it has been processed.
+            💡 Want to write articles? Apply to become a verified expert!
           </StatusInfo>
         )}
 
-        {canApplyForExpert() && !showApplicationForm && (
+        {showApplicationStatus() && (
+          <StatusInfo>
+            <strong>Expert Application Status:</strong> Your application is
+            under review.
+          </StatusInfo>
+        )}
+
+        {showVerificationPrompt() && !showApplicationForm && (
           <ActionButton onClick={() => setShowApplicationForm(true)}>
             Apply to Become an Expert
           </ActionButton>
         )}
       </StatusCard>
 
-      {showApplicationForm && canApplyForExpert() && (
+      {showApplicationForm && showVerificationPrompt() && (
         <ExpertApplicationForm onSuccess={handleApplicationSuccess} />
       )}
     </>

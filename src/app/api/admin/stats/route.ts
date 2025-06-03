@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/prisma';
-import { userPermissions } from '@/lib/permissions';
+import { canModerate } from '@/lib/permissions';
 
 export async function GET() {
   try {
@@ -16,7 +16,7 @@ export async function GET() {
       where: { email: session.user.email },
     });
 
-    if (!userPermissions.canApproveUsers(currentUser)) {
+    if (!canModerate(currentUser)) {
       return NextResponse.json({ error: 'Not authorized' }, { status: 403 });
     }
 
@@ -24,15 +24,18 @@ export async function GET() {
     const totalUsers = await prisma.user.count();
 
     const pendingUsers = await prisma.user.count({
-      where: { status: 'PENDING' },
+      where: { verified: false },
     });
 
     const pendingApplications = await prisma.user.count({
       where: {
-        AND: [
-          { verificationReason: { not: null } },
-          { status: { not: 'VERIFIED' } },
-        ],
+        AND: [{ verificationReason: { not: null } }, { verified: false }],
+      },
+    });
+
+    const verifiedExperts = await prisma.user.count({
+      where: {
+        AND: [{ verified: true }, { isExpert: true }],
       },
     });
 
@@ -41,6 +44,7 @@ export async function GET() {
         total: totalUsers,
         pending: pendingUsers,
         applications: pendingApplications,
+        experts: verifiedExperts,
       },
     });
   } catch (error) {

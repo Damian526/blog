@@ -1,22 +1,20 @@
 // SIMPLE EXPLANATION: API for users to request verification as experts
 
-import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
+import { NextRequest, NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
-import prisma from '@/lib/prisma';
-import { UserStatus } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 
-export async function POST(request: Request) {
+const prisma = new PrismaClient();
+
+export async function POST(request: NextRequest) {
   try {
-    const { reason, portfolioUrl } = await request.json();
-
-    // Check if user is logged in
     const session = await getServerSession(authOptions);
+
     if (!session?.user?.email) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
-    // Get current user
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
     });
@@ -25,27 +23,22 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    // Check if user is already verified
-    if (user.status === UserStatus.VERIFIED) {
+    if (user.verified) {
       return NextResponse.json({ error: 'Already verified' }, { status: 400 });
     }
 
-    // Check if user is at least approved
-    if (user.status !== UserStatus.APPROVED) {
+    if (user.verificationReason) {
       return NextResponse.json(
-        {
-          error: 'Must be approved community member first',
-        },
+        { error: 'Verification request already pending' },
         { status: 400 },
       );
     }
 
-    // Basic validation
-    if (!reason || reason.length < 20) {
+    const { reason, portfolioUrl } = await request.json();
+
+    if (!reason) {
       return NextResponse.json(
-        {
-          error: 'Please provide a detailed reason (min 20 characters)',
-        },
+        { error: 'Verification reason is required' },
         { status: 400 },
       );
     }
@@ -60,9 +53,12 @@ export async function POST(request: Request) {
       select: {
         id: true,
         name: true,
-        status: true,
+        email: true,
+        verified: true,
+        isExpert: true,
         verificationReason: true,
         portfolioUrl: true,
+        createdAt: true,
       },
     });
 
@@ -71,11 +67,9 @@ export async function POST(request: Request) {
       user: updatedUser,
     });
   } catch (error) {
-    console.error('Error submitting verification request:', error);
+    console.error('Failed to submit verification request:', error);
     return NextResponse.json(
-      {
-        error: 'Failed to submit verification request',
-      },
+      { error: 'Failed to submit verification request' },
       { status: 500 },
     );
   }

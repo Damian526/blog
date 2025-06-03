@@ -1,86 +1,74 @@
 // SIMPLE EXPLANATION: This file contains simple functions to check what users can do
-// Based on their status and role
+// Based on their verified status and role
 
-import { User, UserStatus, Role } from '@prisma/client';
+import { User, Role } from '@prisma/client';
 
-// Simple permission checker functions
-export const userPermissions = {
-  // Can user read content?
-  canRead: (user?: User | null) => {
-    return true; // Everyone can read (even guests)
-  },
-
-  // Can user create discussions?
-  canCreateDiscussion: (user?: User | null) => {
-    if (!user) return false;
-    return (
-      user.status === UserStatus.APPROVED ||
-      user.status === UserStatus.VERIFIED ||
-      user.role === Role.ADMIN
-    );
-  },
-
-  // Can user write articles?
-  canWriteArticle: (user?: User | null) => {
-    if (!user) return false;
-    return user.status === UserStatus.VERIFIED || user.role === Role.ADMIN;
-  },
-
-  // Can user comment?
-  canComment: (user?: User | null) => {
-    if (!user) return false;
-    return (
-      user.status === UserStatus.APPROVED ||
-      user.status === UserStatus.VERIFIED ||
-      user.role === Role.ADMIN
-    );
-  },
-
-  // Is user admin?
-  isAdmin: (user?: User | null) => {
-    return user?.role === Role.ADMIN;
-  },
-
-  // Can user moderate content?
-  canModerate: (user?: User | null) => {
-    return user?.role === Role.ADMIN;
-  },
-
-  // Can user approve other users?
-  canApproveUsers: (user?: User | null) => {
-    return user?.role === Role.ADMIN;
-  },
-
-  // Can user edit their own content?
-  canEditOwn: (user?: User | null, authorId?: number) => {
-    if (!user || !authorId) return false;
-    return user.id === authorId || user.role === Role.ADMIN;
-  },
+// Who can create posts - verified users and admins
+export const canCreatePost = (user?: User | null): boolean => {
+  if (!user) return false;
+  return user.verified || user.role === Role.ADMIN;
 };
 
-// Simple status check functions
+// Who can create articles (expert content) - verified users and admins
+export const canCreateArticle = (user?: User | null): boolean => {
+  if (!user) return false;
+  return user.verified || user.role === Role.ADMIN;
+};
+
+// Who can create discussions - all verified users and admins
+export const canCreateDiscussion = (user?: User | null): boolean => {
+  if (!user) return false;
+  return user.verified || user.role === Role.ADMIN;
+};
+
+// Who can create comments - all verified users and admins
+export const canCreateComment = (user?: User | null): boolean => {
+  if (!user) return false;
+  return user.verified || user.role === Role.ADMIN;
+};
+
+// Who can view content - all users (no restrictions for viewing)
+export const canViewContent = (user?: User | null): boolean => {
+  return true; // Everyone can view
+};
+
+// Who can edit their own content
+export const canEditOwnContent = (
+  user?: User | null,
+  authorId?: number,
+): boolean => {
+  if (!user || !authorId) return false;
+  return user.id === authorId || user.role === Role.ADMIN;
+};
+
+// Who can moderate (approve/reject posts)
+export const canModerate = (user?: User | null): boolean => {
+  if (!user) return false;
+  return user.role === Role.ADMIN;
+};
+
+// Simple verification check functions
 export const userStatus = {
-  isPending: (user?: User | null) => user?.status === UserStatus.PENDING,
-  isApproved: (user?: User | null) => user?.status === UserStatus.APPROVED,
-  isVerified: (user?: User | null) => user?.status === UserStatus.VERIFIED,
-  isExpert: (user?: User | null) => user?.isExpert === true,
+  isPending: (user?: User | null) =>
+    !user?.verified && !user?.verificationReason,
+  isApproved: (user?: User | null) =>
+    user?.verified === false && !user?.verificationReason,
+  isVerified: (user?: User | null) => user?.verified === true,
 };
 
-// Simple role descriptions for UI
-export const roleLabels = {
-  [UserStatus.PENDING]: 'Pending Approval',
-  [UserStatus.APPROVED]: 'Community Member',
-  [UserStatus.VERIFIED]: 'Verified Expert',
-  [Role.ADMIN]: 'Administrator',
-  [Role.USER]: 'User',
-} as const;
+// Status labels for UI
+export const statusLabels = {
+  pending: 'Pending Approval',
+  approved: 'Community Member',
+  verified: 'Verified Expert',
+};
 
-// Get user display badge
-export const getUserBadge = (user: User) => {
-  if (user.role === Role.ADMIN) return { label: 'Admin', color: 'red' };
-  if (user.status === UserStatus.VERIFIED)
-    return { label: 'Expert', color: 'purple' };
-  if (user.status === UserStatus.APPROVED)
-    return { label: 'Member', color: 'green' };
-  return { label: 'New', color: 'gray' };
+// Get user badge/label
+export const getUserBadge = (user?: User | null): string => {
+  if (!user) return 'Guest';
+
+  if (user.verified) return '⭐ Verified Expert';
+  if (!user.verificationReason) return '✅ Community Member';
+
+  return '⏳ Pending Approval';
 };

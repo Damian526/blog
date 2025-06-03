@@ -1,47 +1,46 @@
-import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
+import { NextRequest, NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
-import prisma from '@/lib/prisma';
-import { userPermissions } from '@/lib/permissions';
-import { UserStatus } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 
-// GET - List users for admin
+const prisma = new PrismaClient();
+
+// GET - Fetch all users for admin
 export async function GET() {
   try {
-    // Check if user is admin
     const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
+    if (!session) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
-    const currentUser = await prisma.user.findUnique({
-      where: { email: session.user.email },
+    const user = await prisma.user.findUnique({
+      where: { email: session.user?.email as string },
     });
 
-    if (!userPermissions.canApproveUsers(currentUser)) {
+    if (!user || user.role !== 'ADMIN') {
       return NextResponse.json({ error: 'Not authorized' }, { status: 403 });
     }
 
-    // Get all users with basic info
     const users = await prisma.user.findMany({
       select: {
         id: true,
         name: true,
         email: true,
-        status: true,
-        isExpert: true,
+        verified: true,
         role: true,
-        createdAt: true,
-        approvedAt: true,
+        isExpert: true,
         verificationReason: true,
         portfolioUrl: true,
+        approvedBy: true,
+        approvedAt: true,
+        createdAt: true,
       },
       orderBy: { createdAt: 'desc' },
     });
 
     return NextResponse.json({ users });
   } catch (error) {
-    console.error('Error fetching users:', error);
+    console.error('Failed to fetch users:', error);
     return NextResponse.json(
       { error: 'Failed to fetch users' },
       { status: 500 },
@@ -49,50 +48,51 @@ export async function GET() {
   }
 }
 
-// PUT - Update user status
-export async function PUT(request: Request) {
+// PUT - Update user verified status
+export async function PUT(request: NextRequest) {
   try {
-    const { userId, action } = await request.json();
-
-    // Check if user is admin
     const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
+    if (!session) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
-    const currentUser = await prisma.user.findUnique({
-      where: { email: session.user.email },
+    const adminUser = await prisma.user.findUnique({
+      where: { email: session.user?.email as string },
     });
 
-    if (!userPermissions.canApproveUsers(currentUser)) {
+    if (!adminUser || adminUser.role !== 'ADMIN') {
       return NextResponse.json({ error: 'Not authorized' }, { status: 403 });
     }
 
-    // Perform the action
-    let updateData: any = {
-      approvedBy: currentUser!.id,
+    const { userId, action } = await request.json();
+
+    const updateData: {
+      approvedBy: number;
+      approvedAt: Date;
+      verified?: boolean;
+      isExpert?: boolean;
+      verificationReason?: string | null;
+      portfolioUrl?: string | null;
+    } = {
+      approvedBy: adminUser.id,
       approvedAt: new Date(),
     };
 
-    switch (action) {
-      case 'approve':
-        updateData.status = UserStatus.APPROVED;
-        break;
-      case 'verify':
-        updateData.status = UserStatus.VERIFIED;
-        updateData.isExpert = true;
-        break;
-      case 'reject':
-        updateData.status = UserStatus.PENDING;
-        updateData.isExpert = false;
-        updateData.verificationReason = null;
-        updateData.portfolioUrl = null;
-        break;
-      default:
-        return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
+    if (action === 'approve') {
+      updateData.verified = true;
+      updateData.isExpert = false;
+    } else if (action === 'verify') {
+      updateData.verified = true;
+      updateData.isExpert = true;
+    } else if (action === 'reject') {
+      updateData.verified = false;
+      updateData.isExpert = false;
+      updateData.verificationReason = null;
+      updateData.portfolioUrl = null;
+    } else {
+      return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
     }
 
-    // Update user
     const updatedUser = await prisma.user.update({
       where: { id: userId },
       data: updateData,
@@ -100,20 +100,20 @@ export async function PUT(request: Request) {
         id: true,
         name: true,
         email: true,
-        status: true,
-        isExpert: true,
+        verified: true,
         role: true,
+        isExpert: true,
         verificationReason: true,
         portfolioUrl: true,
+        approvedBy: true,
+        approvedAt: true,
+        createdAt: true,
       },
     });
 
-    return NextResponse.json({
-      user: updatedUser,
-      message: `User ${action}d successfully`,
-    });
+    return NextResponse.json(updatedUser);
   } catch (error) {
-    console.error('Error updating user:', error);
+    console.error('Failed to update user:', error);
     return NextResponse.json(
       { error: 'Failed to update user' },
       { status: 500 },

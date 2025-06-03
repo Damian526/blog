@@ -15,8 +15,7 @@ model User {
   password           String
   profilePicture     String?     // URL to profile picture stored in Supabase
   
-  // Simple status system
-  status             UserStatus  @default(PENDING)
+  // Simple verification system
   isExpert           Boolean     @default(false)  // Can write articles
   
   // Simple verification tracking (no separate table needed)
@@ -107,13 +106,6 @@ model Subcategory {
 enum Role {
   ADMIN
   USER
-}
-
-// Simple user status
-enum UserStatus {
-  PENDING    // Waiting admin approval (can only read)
-  APPROVED   // Can create discussions
-  VERIFIED   // Can write articles (isExpert = true)
 }
 
 // Simple post types
