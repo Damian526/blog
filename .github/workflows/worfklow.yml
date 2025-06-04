@@ -9,7 +9,7 @@ on:
 jobs:
   test:
     name: CI (Install → Prisma Generate → Build → Test)
-    runs-on: ubuntu-latest           # ← change here
+    runs-on: ubuntu-latest # ← change here
 
     steps:
       - name: Checkout code
@@ -37,12 +37,13 @@ jobs:
 
   deploy:
     name: Trigger Vercel production deploy
-    runs-on: ubuntu-latest           # ← stays on Ubuntu
+    runs-on: ubuntu-latest # ← stays on Ubuntu
     needs: test
     if: ${{ needs.test.result == 'success' }}
 
     steps:
       - name: Call Vercel deploy hook
+        if: ${{ env.VERCEL_DEPLOY_HOOK != '' }}
         run: |
           echo "Triggering production deploy…"
           curl -sf -X POST "$VERCEL_DEPLOY_HOOK"

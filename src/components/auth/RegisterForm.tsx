@@ -14,6 +14,7 @@ export default function RegisterForm() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
@@ -21,6 +22,12 @@ export default function RegisterForm() {
     e.preventDefault();
     setError('');
     setSuccess('');
+
+    // Check if passwords match
+    if (password !== confirmPassword) {
+      setError('Passwords do not match.');
+      return;
+    }
 
     try {
       const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -41,6 +48,7 @@ export default function RegisterForm() {
         );
       }
     } catch (err) {
+      console.error('Registration error:', err);
       setError('An error occurred while registering.');
     }
   }
@@ -68,6 +76,13 @@ export default function RegisterForm() {
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          required
+        />
+        <Input
+          type="password"
+          placeholder="Confirm Password"
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
           required
         />
         <Button type="submit">Register</Button>
