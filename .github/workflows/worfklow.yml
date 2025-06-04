@@ -1,0 +1,50 @@
+name: CI + Deploy to Vercel
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: CI (Install → Prisma Generate → Build → Test)
+    runs-on: ubuntu-latest           # ← change here
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20.x'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma Client
+        run: npx prisma generate
+
+      - name: Type-check (TypeScript)
+        run: npm run type-check
+
+      - name: Build Next.js
+        run: npm run build
+
+      - name: Run tests
+        run: npm test
+
+  deploy:
+    name: Trigger Vercel production deploy
+    runs-on: ubuntu-latest           # ← stays on Ubuntu
+    needs: test
+    if: ${{ needs.test.result == 'success' }}
+
+    steps:
+      - name: Call Vercel deploy hook
+        run: |
+          echo "Triggering production deploy…"
+          curl -sf -X POST "$VERCEL_DEPLOY_HOOK"
+        env:
+          VERCEL_DEPLOY_HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK }}
