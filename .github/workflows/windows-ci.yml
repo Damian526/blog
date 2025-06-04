@@ -24,6 +24,9 @@ jobs:
       - name: Install Dependencies
         run: npm install
 
+      - name: Generate Prisma Client
+        run: npx prisma generate
+
       - name: Run Type Checking
         run: npm run type-check
 
@@ -32,3 +35,17 @@ jobs:
 
       - name: Run Tests
         run: npm test
+
+deploy:
+  name: Trigger Vercel Production Deploy
+  needs: ci
+  runs-on: ubuntu-latest
+  if: ${{ needs.ci.result == 'success' }}
+
+  steps:
+    - name: Notify Vercel via Deploy Hook
+      run: |
+        echo "Triggering a production deploy on Vercel..."
+        curl -X POST "$VERCEL_DEPLOY_HOOK"
+      env:
+        VERCEL_DEPLOY_HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK }}
