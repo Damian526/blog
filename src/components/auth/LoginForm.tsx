@@ -169,6 +169,7 @@ export default function LoginForm() {
       const result = await signIn('credentials', {
         email,
         password,
+        rememberMe: rememberMe.toString(), // Pass rememberMe as string
         redirect: false,
       });
 

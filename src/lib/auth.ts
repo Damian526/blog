@@ -18,6 +18,7 @@ export const authOptions = {
           placeholder: 'test@example.com',
         },
         password: { label: 'Password', type: 'password' },
+        rememberMe: { label: 'Remember Me', type: 'text' },
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null;
@@ -46,6 +47,7 @@ export const authOptions = {
           email: user.email,
           role: user.role,
           verified: user.verified,
+          rememberMe: credentials.rememberMe === 'true',
         };
       },
     }),
@@ -53,13 +55,28 @@ export const authOptions = {
   secret: process.env.NEXTAUTH_SECRET,
   session: {
     strategy: 'jwt' as SessionStrategy,
+    maxAge: 30 * 24 * 60 * 60, // Maximum possible age (30 days)
   },
   callbacks: {
+    async signIn() {
+      return true;
+    },
     async jwt({ token, user }: { token: JWT; user?: User }) {
       if (user) {
         token.user = user;
         token.role = user.role;
         token.verified = true;
+        token.rememberMe = user.rememberMe;
+
+        // Set token expiration based on remember me preference
+        const now = Math.floor(Date.now() / 1000);
+        if (user.rememberMe) {
+          // 30 days for remember me
+          token.exp = now + 30 * 24 * 60 * 60;
+        } else {
+          // 8 hours when remember me is not checked
+          token.exp = now + 8 * 60 * 60;
+        }
       }
       return token;
     },
@@ -69,7 +86,33 @@ export const authOptions = {
         session.user.role = token.role;
         session.user.verified = token.verified;
       }
+
+      // Set session expiry based on token
+      if (token.exp && typeof token.exp === 'number') {
+        const now = Math.floor(Date.now() / 1000);
+        const timeLeft = token.exp - now;
+
+        // If token is expired or about to expire, invalidate session
+        if (timeLeft <= 0) {
+          return null;
+        }
+
+        // Set the session expiry to match the token expiry
+        session.expires = new Date(token.exp * 1000).toISOString();
+      }
+
       return session;
+    },
+  },
+  cookies: {
+    sessionToken: {
+      name: `next-auth.session-token`,
+      options: {
+        httpOnly: true,
+        sameSite: 'lax' as const,
+        path: '/',
+        secure: process.env.NODE_ENV === 'production',
+      },
     },
   },
 };
