@@ -154,7 +154,7 @@ const SocialButton = styled.button`
 `;
 
 export default function LoginForm() {
-  const [email, setEmail] = useState('');
+  const [emailOrUsername, setEmailOrUsername] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState('');
@@ -167,7 +167,7 @@ export default function LoginForm() {
 
     try {
       const result = await signIn('credentials', {
-        email,
+        emailOrUsername,
         password,
         rememberMe: rememberMe.toString(), // Pass rememberMe as string
         redirect: false,
@@ -176,7 +176,7 @@ export default function LoginForm() {
       if (result?.ok) {
         window.location.href = '/dashboard';
       } else {
-        setError('Invalid email or password. Please try again.');
+        setError('Invalid email/username or password. Please try again.');
       }
     } catch (err) {
       console.error('Login error:', err);
@@ -209,14 +209,14 @@ export default function LoginForm() {
       <FormContainer onSubmit={handleSubmit}>
         <InputGroup>
           <StyledInput
-            type="email"
-            placeholder="Enter your email address"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            type="text"
+            placeholder="Enter your email or username"
+            value={emailOrUsername}
+            onChange={(e) => setEmailOrUsername(e.target.value)}
             required
             disabled={isLoading}
           />
-          <InputLabel>Email Address</InputLabel>
+          <InputLabel>Email or Username</InputLabel>
         </InputGroup>
 
         <InputGroup>

@@ -5,8 +5,31 @@ import {
   canCreateDiscussion,
   getUserBadge,
 } from '@/lib/permissions';
-import { User, Role } from '@prisma/client';
+// import { User, Role } from '@prisma/client';
 import { NextResponse } from 'next/server';
+
+// Temporary type definitions to avoid Prisma client issues
+type User = {
+  id: number;
+  name: string;
+  email: string;
+  password: string;
+  profilePicture: string | null;
+  verified: boolean;
+  isExpert: boolean;
+  verificationReason: string | null;
+  portfolioUrl: string | null;
+  approvedBy: number | null;
+  approvedAt: Date | null;
+  createdAt: Date;
+  role: 'ADMIN' | 'USER';
+  verificationToken: string | null;
+};
+
+enum Role {
+  ADMIN = 'ADMIN',
+  USER = 'USER',
+}
 
 // Example users for testing
 const pendingUser: User = {
