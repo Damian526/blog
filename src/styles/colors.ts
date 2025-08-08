@@ -1,6 +1,6 @@
 /**
  * Global Color System
- * 
+ *
  * This file exports color constants that map to CSS custom properties
  * defined in GlobalStyle.ts. Use these constants in styled-components
  * and TypeScript files for consistent color usage across the project.
@@ -12,11 +12,11 @@ export const colors = {
   primaryHover: 'var(--primary-hover)',
   primaryLight: 'var(--primary-light)',
   primaryDark: 'var(--primary-dark)',
-  
+
   // Secondary colors
   secondary: 'var(--secondary-color)',
   accent: 'var(--accent-color)',
-  
+
   // Status colors
   success: 'var(--success-color)',
   successLight: 'var(--success-light)',
@@ -30,24 +30,24 @@ export const colors = {
   info: 'var(--info-color)',
   infoLight: 'var(--info-light)',
   infoDark: 'var(--info-dark)',
-  
+
   // Text colors
   textPrimary: 'var(--text-primary)',
   textSecondary: 'var(--text-secondary)',
   textMuted: 'var(--text-muted)',
   textLight: 'var(--text-light)',
-  
+
   // Background colors
   background: 'var(--background)',
   backgroundSecondary: 'var(--background-secondary)',
   backgroundTertiary: 'var(--background-tertiary)',
   backgroundDark: 'var(--background-dark)',
-  
+
   // Border colors
   border: 'var(--border-color)',
   borderLight: 'var(--border-light)',
   borderDark: 'var(--border-dark)',
-  
+
   // Semantic backgrounds (with transparency)
   primaryBg: 'var(--primary-bg)',
   primaryBorder: 'var(--primary-border)',
