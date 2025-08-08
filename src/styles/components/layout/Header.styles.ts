@@ -143,8 +143,8 @@ export const AdminButton = styled(PrimaryButton)`
   border-color: var(--warning-color);
 
   &:hover {
-    background: #d97706;
-    border-color: #d97706;
+    background: var(--warning-dark);
+    border-color: var(--warning-dark);
   }
 `;
 

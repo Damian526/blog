@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import { colors } from '../../colors';
 
 export const CommentItem = styled.div<{ $isReply?: boolean }>`
   display: flex;
@@ -6,23 +7,22 @@ export const CommentItem = styled.div<{ $isReply?: boolean }>`
   gap: 1.25rem;
   padding: ${({ $isReply }) => ($isReply ? '1.25rem' : '1.5rem')};
   border-radius: 12px;
-  background-color: ${({ $isReply }) => ($isReply ? '#f8fafc' : '#ffffff')};
+  background-color: ${({ $isReply }) =>
+    $isReply ? colors.backgroundSecondary : colors.background};
   margin-top: ${({ $isReply }) => ($isReply ? '1rem' : '2rem')};
   margin-left: ${({ $isReply }) => ($isReply ? '3rem' : '0')};
   border: ${({ $isReply }) =>
-    $isReply ? '1px solid #e2e8f0' : '1px solid #f1f5f9'};
-  box-shadow: ${({ $isReply }) =>
     $isReply
-      ? '0 1px 3px rgba(0, 0, 0, 0.05)'
-      : '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'};
+      ? `1px solid ${colors.border}`
+      : `1px solid ${colors.borderLight}`};
+  box-shadow: ${({ $isReply }) =>
+    $isReply ? 'var(--shadow-sm)' : 'var(--shadow-md)'};
   transition: all 0.2s ease-in-out;
   position: relative;
 
   &:hover {
     box-shadow: ${({ $isReply }) =>
-      $isReply
-        ? '0 2px 4px rgba(0, 0, 0, 0.08)'
-        : '0 8px 25px -5px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'};
+      $isReply ? '0 2px 4px rgba(0, 0, 0, 0.08)' : 'var(--shadow-lg)'};
     transform: translateY(-1px);
   }
 

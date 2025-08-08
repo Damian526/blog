@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import { colors } from '../../colors';
 
 export const Card = styled.div`
   margin: 0;
@@ -136,10 +137,10 @@ export const StatusBadge = styled.span<{
   white-space: nowrap;
   ${({ $status }) =>
     $status === 'published'
-      ? `background: rgba(16, 185, 129, 0.1); color: var(--success-color); border: 1px solid rgba(16, 185, 129, 0.2);`
+      ? `background: var(--success-bg); color: var(--success-color); border: 1px solid var(--success-border);`
       : $status === 'rejected'
-        ? `background: rgba(239, 68, 68, 0.1); color: var(--error-color); border: 1px solid rgba(239, 68, 68, 0.2);`
-        : `background: rgba(245, 158, 11, 0.1); color: var(--warning-color); border: 1px solid rgba(245, 158, 11, 0.2);`}
+        ? `background: var(--error-bg); color: var(--error-color); border: 1px solid var(--error-border);`
+        : `background: var(--warning-bg); color: var(--warning-color); border: 1px solid var(--warning-border);`}
 
   @media (max-width: 768px) {
     margin-left: 0;
@@ -168,12 +169,12 @@ export const CategoryTag = styled.span<{ color?: string }>`
   align-items: center;
   gap: var(--space-xs);
   padding: var(--space-xs) var(--space-sm);
-  background: rgba(37, 99, 235, 0.1);
+  background: var(--primary-bg);
   color: var(--primary-color);
   border-radius: var(--radius-md);
   font-size: var(--font-small);
   font-weight: 500;
-  border: 1px solid rgba(37, 99, 235, 0.2);
+  border: 1px solid var(--primary-border);
   transition: all 0.2s ease;
 
   &:hover {

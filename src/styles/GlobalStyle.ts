@@ -21,21 +21,47 @@ const GlobalStyle = createGlobalStyle`
     /* Modern color palette */
     --primary-color: #2563eb;
     --primary-hover: #1d4ed8;
+    --primary-light: #3b82f6;
+    --primary-dark: #1e40af;
     --secondary-color: #64748b;
     --accent-color: #06b6d4;
     --success-color: #10b981;
+    --success-light: #34d399;
+    --success-dark: #059669;
     --warning-color: #f59e0b;
+    --warning-light: #fbbf24;
+    --warning-dark: #d97706;
     --error-color: #ef4444;
+    --error-light: #f87171;
+    --error-dark: #dc2626;
+    --info-color: #06b6d4;
+    --info-light: #22d3ee;
+    --info-dark: #0891b2;
     
     /* Neutral colors */
     --text-primary: #1e293b;
     --text-secondary: #64748b;
     --text-muted: #94a3b8;
+    --text-light: #cbd5e1;
     --background: #ffffff;
     --background-secondary: #f8fafc;
     --background-tertiary: #f1f5f9;
+    --background-dark: #0f172a;
     --border-color: #e2e8f0;
     --border-light: #f1f5f9;
+    --border-dark: #334155;
+    
+    /* Semantic colors with transparency */
+    --primary-bg: rgba(37, 99, 235, 0.1);
+    --primary-border: rgba(37, 99, 235, 0.2);
+    --success-bg: rgba(16, 185, 129, 0.1);
+    --success-border: rgba(16, 185, 129, 0.2);
+    --warning-bg: rgba(245, 158, 11, 0.1);
+    --warning-border: rgba(245, 158, 11, 0.2);
+    --error-bg: rgba(239, 68, 68, 0.1);
+    --error-border: rgba(239, 68, 68, 0.2);
+    --info-bg: rgba(6, 182, 212, 0.1);
+    --info-border: rgba(6, 182, 212, 0.2);
     
     /* Shadows */
     --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);

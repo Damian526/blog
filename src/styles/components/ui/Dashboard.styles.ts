@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import { colors } from '../../colors';
 
 // Dashboard Content Styles
 export const DashboardHeader = styled.div`
@@ -66,12 +67,12 @@ export const UserBadge = styled.div`
   align-items: center;
   gap: var(--space-sm);
   padding: var(--space-sm) var(--space-md);
-  background: rgba(37, 99, 235, 0.1);
+  background: var(--primary-bg);
   color: var(--primary-color);
   border-radius: var(--radius-md);
   font-size: var(--font-small);
   font-weight: 600;
-  border: 1px solid rgba(37, 99, 235, 0.2);
+  border: 1px solid var(--primary-border);
   margin-bottom: var(--space-md);
 
   &::before {
@@ -115,8 +116,8 @@ export const ErrorState = styled.div`
   text-align: center;
   padding: var(--space-2xl);
   color: var(--error-color);
-  background: rgba(239, 68, 68, 0.1);
-  border: 1px solid rgba(239, 68, 68, 0.2);
+  background: var(--error-bg);
+  border: 1px solid var(--error-border);
   border-radius: var(--radius-md);
   font-size: var(--font-medium);
 `;

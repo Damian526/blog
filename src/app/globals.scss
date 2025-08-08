@@ -1,9 +1,9 @@
 body {
   margin: 0;
   font-family: Arial, sans-serif;
-  background-color: #f9f9f9;
+  background-color: var(--background-secondary);
 }
 
 h1 {
-  color: #0070f3;
+  color: var(--primary-color);
 }

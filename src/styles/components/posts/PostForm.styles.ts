@@ -1,14 +1,16 @@
 import styled from 'styled-components';
+import { colors } from '../../colors';
 
 export const Container = styled.div`
   max-width: 800px;
   margin: 0 auto;
-  padding: 20px;
+  padding: var(--space-lg);
 `;
 
 export const TitleHeading = styled.h1`
   text-align: center;
-  margin-bottom: 20px;
+  margin-bottom: var(--space-lg);
+  color: ${colors.textPrimary};
 `;
 
 export const Form = styled.form`
@@ -17,33 +19,52 @@ export const Form = styled.form`
 `;
 
 export const Label = styled.label`
-  margin-bottom: 10px;
-  font-weight: bold;
+  margin-bottom: var(--space-sm);
+  font-weight: 600;
+  color: ${colors.textPrimary};
 `;
 
 export const Input = styled.input`
-  margin-bottom: 20px;
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  font-size: 1rem;
+  margin-bottom: var(--space-lg);
+  padding: var(--space-sm) var(--space-md);
+  border: 1px solid ${colors.border};
+  border-radius: var(--radius-md);
+  font-size: var(--font-medium);
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+
+  &:focus {
+    outline: none;
+    border-color: ${colors.primary};
+    box-shadow: 0 0 0 3px ${colors.primaryBg};
+  }
 `;
 
 export const Button = styled.button`
-  background-color: #0070f3;
-  color: white;
-  padding: 10px 20px;
+  background-color: ${colors.primary};
+  color: ${colors.background};
+  padding: var(--space-sm) var(--space-lg);
   border: none;
-  border-radius: 5px;
+  border-radius: var(--radius-md);
   cursor: pointer;
-  font-size: 1rem;
+  font-size: var(--font-medium);
+  font-weight: 500;
+  transition: all 0.2s ease;
 
   &:hover {
-    background-color: #005bb5;
+    background-color: ${colors.primaryHover};
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+  }
+
+  &:active {
+    transform: translateY(0);
   }
 `;
 
 export const ErrorMessage = styled.p`
-  color: red;
-  font-size: 0.9rem;
+  color: ${colors.error};
+  font-size: var(--font-small);
+  margin-top: var(--space-xs);
 `;
