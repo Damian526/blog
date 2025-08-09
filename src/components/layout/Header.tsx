@@ -115,9 +115,13 @@ export default function Header() {
               <span>Welcome, {session.user.name || session.user.email}</span>
             </UserInfo>
             {session.user.role === 'ADMIN' && (
-              <AdminButton as={Link} href="/admin">Admin Panel</AdminButton>
+              <AdminButton as={Link} href="/admin">
+                Admin Panel
+              </AdminButton>
             )}
-            <PrimaryButton as={Link} href="/dashboard">Dashboard</PrimaryButton>
+            <PrimaryButton as={Link} href="/dashboard">
+              Dashboard
+            </PrimaryButton>
             <LogoutButton />
           </>
         ) : (
@@ -137,14 +141,27 @@ export default function Header() {
       <MobileMenu $isOpen={isMobileMenuOpen}>
         {session ? (
           <>
-            <UserInfo as={Link} href="/profile" onClick={closeMobileMenu} title="Go to Profile">
+            <UserInfo
+              as={Link}
+              href="/profile"
+              onClick={closeMobileMenu}
+              title="Go to Profile"
+            >
               {renderUserAvatar()}
               <span>Welcome, {session.user.name || session.user.email}</span>
             </UserInfo>
             {session.user.role === 'ADMIN' && (
-              <AdminButton as={Link} href="/admin" onClick={closeMobileMenu}>Admin Panel</AdminButton>
+              <AdminButton as={Link} href="/admin" onClick={closeMobileMenu}>
+                Admin Panel
+              </AdminButton>
             )}
-            <PrimaryButton as={Link} href="/dashboard" onClick={closeMobileMenu}>Dashboard</PrimaryButton>
+            <PrimaryButton
+              as={Link}
+              href="/dashboard"
+              onClick={closeMobileMenu}
+            >
+              Dashboard
+            </PrimaryButton>
             <LogoutButton onClick={closeMobileMenu} />
           </>
         ) : (
