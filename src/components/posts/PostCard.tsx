@@ -8,7 +8,6 @@ import {
   Content,
   Title,
   Meta,
-  Categories,
   CategoryTag,
   Actions,
   Footer,
@@ -18,7 +17,6 @@ import {
   StatusBadge,
   AuthorAvatar,
   ReadingTime,
-  GradientOverlay,
   CardHeader,
   TagsContainer,
 } from '@/styles/components/posts/PostCard.styles';
@@ -88,7 +86,14 @@ export default function PostCard({
     month: 'short',
     day: 'numeric',
   });
-  const categoryColors = ['#3498db', '#e67e22', '#9b59b6', '#27ae60', '#e74c3c', '#f39c12'];
+  const categoryColors = [
+    '#3498db',
+    '#e67e22',
+    '#9b59b6',
+    '#27ae60',
+    '#e74c3c',
+    '#f39c12',
+  ];
 
   // Calculate estimated reading time
   const wordCount = stripHtml(post.content || '').result.split(/\s+/).length;
@@ -98,7 +103,7 @@ export default function PostCard({
   const getInitials = (name: string) => {
     return name
       .split(' ')
-      .map(word => word[0])
+      .map((word) => word[0])
       .join('')
       .toUpperCase()
       .slice(0, 2);
@@ -162,14 +167,15 @@ export default function PostCard({
         <Title>{post.title}</Title>
 
         <Excerpt>
-          {stripHtml(post.content || 'No content available').result.slice(0, 120)}
+          {stripHtml(post.content || 'No content available').result.slice(
+            0,
+            120,
+          )}
           {post.content && stripHtml(post.content).result.length > 120 && '...'}
         </Excerpt>
 
         <Meta>
-          <AuthorAvatar>
-            {getInitials(post.author.name)}
-          </AuthorAvatar>
+          <AuthorAvatar>{getInitials(post.author.name)}</AuthorAvatar>
           <div className="metadata">
             <span className="author">{post.author.name}</span>
             <span className="separator">•</span>
@@ -188,22 +194,22 @@ export default function PostCard({
         {showActions && (
           <Footer>
             <Actions>
-              <ActionButton 
-                $variant="edit" 
-                onClick={(e) => { 
-                  e.preventDefault(); 
-                  e.stopPropagation(); 
+              <ActionButton
+                $variant="edit"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
                   window.location.href = `/posts/${post.id}/edit`;
                 }}
               >
                 <span>✏️</span>
                 Edit
               </ActionButton>
-              <ActionButton 
-                $variant="delete" 
-                onClick={(e) => { 
-                  e.preventDefault(); 
-                  e.stopPropagation(); 
+              <ActionButton
+                $variant="delete"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
                   handleDelete();
                 }}
               >
@@ -212,7 +218,7 @@ export default function PostCard({
               </ActionButton>
             </Actions>
             {!post.published && (
-              <ReadMore 
+              <ReadMore
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();

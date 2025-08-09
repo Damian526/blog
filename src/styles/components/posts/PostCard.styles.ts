@@ -7,7 +7,9 @@ export const Card = styled.div`
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.06);
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.04),
+    0 1px 3px rgba(0, 0, 0, 0.06);
   border: 1px solid var(--border-light);
   transition: all 0.2s ease;
   width: 100%;
@@ -18,7 +20,9 @@ export const Card = styled.div`
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08), 0 3px 10px rgba(0, 0, 0, 0.04);
+    box-shadow:
+      0 8px 25px rgba(0, 0, 0, 0.08),
+      0 3px 10px rgba(0, 0, 0, 0.04);
     border-color: var(--primary-color);
   }
 
@@ -54,7 +58,11 @@ export const Header = styled.div<{ imgUrl?: string }>`
 
 export const CardHeader = styled.div`
   height: 60px;
-  background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--primary-color) 0%,
+    var(--accent-color) 100%
+  );
   position: relative;
 
   @media (max-width: 768px) {
@@ -105,7 +113,9 @@ export const TagsContainer = styled.div<{ $overlay?: boolean }>`
   gap: 6px;
   flex-wrap: wrap;
 
-  ${({ $overlay }) => $overlay && `
+  ${({ $overlay }) =>
+    $overlay &&
+    `
     position: absolute;
     top: 12px;
     left: 12px;
@@ -123,12 +133,14 @@ export const CategoryTag = styled.span<{ color?: string }>`
   display: inline-flex;
   align-items: center;
   padding: 4px 8px;
-  background: ${({ color }) => color ? `${color}15` : 'rgba(37, 99, 235, 0.1)'};
+  background: ${({ color }) =>
+    color ? `${color}15` : 'rgba(37, 99, 235, 0.1)'};
   color: ${({ color }) => color || 'var(--primary-color)'};
   border-radius: 12px;
   font-size: 11px;
   font-weight: 600;
-  border: 1px solid ${({ color }) => color ? `${color}30` : 'rgba(37, 99, 235, 0.2)'};
+  border: 1px solid
+    ${({ color }) => (color ? `${color}30` : 'rgba(37, 99, 235, 0.2)')};
   white-space: nowrap;
   backdrop-filter: blur(4px);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
@@ -206,7 +218,7 @@ export const Meta = styled.div`
 
   @media (max-width: 480px) {
     gap: 8px;
-    
+
     .metadata {
       font-size: 13px;
       gap: 4px;
@@ -218,7 +230,11 @@ export const AuthorAvatar = styled.div`
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+  background: linear-gradient(
+    135deg,
+    var(--primary-color),
+    var(--accent-color)
+  );
   display: flex;
   align-items: center;
   justify-content: center;
@@ -239,15 +255,18 @@ export const StatusBadge = styled.span<{
   $status: 'published' | 'rejected' | 'pending';
   $overlay?: boolean;
 }>`
-  ${({ $overlay }) => $overlay ? `
+  ${({ $overlay }) =>
+    $overlay
+      ? `
     position: absolute;
     top: 12px;
     right: 12px;
     z-index: 10;
-  ` : `
+  `
+      : `
     margin-left: auto;
   `}
-  
+
   padding: 4px 12px;
   border-radius: 12px;
   font-size: 11px;
@@ -257,7 +276,7 @@ export const StatusBadge = styled.span<{
   white-space: nowrap;
   backdrop-filter: blur(8px);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  
+
   ${({ $status }) =>
     $status === 'published'
       ? `background: rgba(34, 197, 94, 0.9); color: white; border: 1px solid rgba(34, 197, 94, 0.3);`
@@ -266,7 +285,9 @@ export const StatusBadge = styled.span<{
         : `background: rgba(245, 158, 11, 0.9); color: white; border: 1px solid rgba(245, 158, 11, 0.3);`}
 
   @media (max-width: 768px) {
-    ${({ $overlay }) => !$overlay && `
+    ${({ $overlay }) =>
+      !$overlay &&
+      `
       margin-left: 0;
       margin-top: 4px;
       flex-basis: 100%;
@@ -380,7 +401,7 @@ export const ActionButton = styled.button<{ $variant: 'edit' | 'delete' }>`
 
   @media (max-width: 768px) {
     min-height: 40px;
-    
+
     &:hover {
       transform: none;
     }
