@@ -25,7 +25,7 @@ type StyledLinkProps = {
 
 export default function StyledLink({ href, children }: StyledLinkProps) {
   return (
-    <Link href={href} passHref>
+    <Link href={href}>
       <StyledAnchor>{children}</StyledAnchor>
     </Link>
   );

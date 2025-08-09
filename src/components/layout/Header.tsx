@@ -102,30 +102,22 @@ export default function Header() {
 
   return (
     <HeaderContainer>
-      <Link href="/" passHref legacyBehavior>
-        <AppName as="a" onClick={closeMobileMenu}>
-          WebDevSphere
-        </AppName>
-      </Link>
+      <AppName as={Link} href="/" onClick={closeMobileMenu}>
+        WebDevSphere
+      </AppName>
 
       {/* Desktop Navigation */}
       <DesktopButtonContainer>
         {session ? (
           <>
-            <Link href="/profile" passHref legacyBehavior>
-              <UserInfo as="a" title="Go to Profile">
-                {renderUserAvatar()}
-                <span>Welcome, {session.user.name || session.user.email}</span>
-              </UserInfo>
-            </Link>
+            <UserInfo as={Link} href="/profile" title="Go to Profile">
+              {renderUserAvatar()}
+              <span>Welcome, {session.user.name || session.user.email}</span>
+            </UserInfo>
             {session.user.role === 'ADMIN' && (
-              <Link href="/admin" passHref>
-                <AdminButton>Admin Panel</AdminButton>
-              </Link>
+              <AdminButton as={Link} href="/admin">Admin Panel</AdminButton>
             )}
-            <Link href="/dashboard" passHref>
-              <PrimaryButton>Dashboard</PrimaryButton>
-            </Link>
+            <PrimaryButton as={Link} href="/dashboard">Dashboard</PrimaryButton>
             <LogoutButton />
           </>
         ) : (
@@ -145,20 +137,14 @@ export default function Header() {
       <MobileMenu $isOpen={isMobileMenuOpen}>
         {session ? (
           <>
-            <Link href="/profile" passHref legacyBehavior>
-              <UserInfo as="a" onClick={closeMobileMenu} title="Go to Profile">
-                {renderUserAvatar()}
-                <span>Welcome, {session.user.name || session.user.email}</span>
-              </UserInfo>
-            </Link>
+            <UserInfo as={Link} href="/profile" onClick={closeMobileMenu} title="Go to Profile">
+              {renderUserAvatar()}
+              <span>Welcome, {session.user.name || session.user.email}</span>
+            </UserInfo>
             {session.user.role === 'ADMIN' && (
-              <Link href="/admin" passHref>
-                <AdminButton onClick={closeMobileMenu}>Admin Panel</AdminButton>
-              </Link>
+              <AdminButton as={Link} href="/admin" onClick={closeMobileMenu}>Admin Panel</AdminButton>
             )}
-            <Link href="/dashboard" passHref>
-              <PrimaryButton onClick={closeMobileMenu}>Dashboard</PrimaryButton>
-            </Link>
+            <PrimaryButton as={Link} href="/dashboard" onClick={closeMobileMenu}>Dashboard</PrimaryButton>
             <LogoutButton onClick={closeMobileMenu} />
           </>
         ) : (

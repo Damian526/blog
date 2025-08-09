@@ -16,6 +16,11 @@ import {
   Excerpt,
   ActionButton,
   StatusBadge,
+  AuthorAvatar,
+  ReadingTime,
+  GradientOverlay,
+  CardHeader,
+  TagsContainer,
 } from '@/styles/components/posts/PostCard.styles';
 
 interface Author {
@@ -78,59 +83,147 @@ export default function PostCard({
     statusType = 'rejected';
   }
 
-  const date = new Date(post.createdAt).toLocaleDateString();
-  const categoryColors = ['#e67e22', '#3498db', '#9b59b6', '#27ae60'];
+  const date = new Date(post.createdAt).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  });
+  const categoryColors = ['#3498db', '#e67e22', '#9b59b6', '#27ae60', '#e74c3c', '#f39c12'];
+
+  // Calculate estimated reading time
+  const wordCount = stripHtml(post.content || '').result.split(/\s+/).length;
+  const readingTime = Math.max(1, Math.ceil(wordCount / 200)); // 200 words per minute
+
+  // Get initials for avatar fallback
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(word => word[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
 
   return (
-    <Card>
-      {post.coverImageUrl && <Header imgUrl={post.coverImageUrl} />}
+    <Card as={Link} href={`/posts/${post.id}`}>
+      {post.coverImageUrl ? (
+        <Header imgUrl={post.coverImageUrl}>
+          {subcategories.length > 0 && (
+            <TagsContainer $overlay>
+              {subcategories.slice(0, 2).map((sub, i) => (
+                <CategoryTag
+                  key={sub.id}
+                  color={categoryColors[i % categoryColors.length]}
+                >
+                  {sub.name}
+                </CategoryTag>
+              ))}
+              {subcategories.length > 2 && (
+                <CategoryTag color="#64748b">
+                  +{subcategories.length - 2}
+                </CategoryTag>
+              )}
+            </TagsContainer>
+          )}
+          {showActions && (
+            <StatusBadge $status={statusType} $overlay>
+              {statusText}
+            </StatusBadge>
+          )}
+        </Header>
+      ) : (
+        <CardHeader>
+          {subcategories.length > 0 && (
+            <TagsContainer $overlay>
+              {subcategories.slice(0, 2).map((sub, i) => (
+                <CategoryTag
+                  key={sub.id}
+                  color={categoryColors[i % categoryColors.length]}
+                >
+                  {sub.name}
+                </CategoryTag>
+              ))}
+              {subcategories.length > 2 && (
+                <CategoryTag color="#64748b">
+                  +{subcategories.length - 2}
+                </CategoryTag>
+              )}
+            </TagsContainer>
+          )}
+          {showActions && (
+            <StatusBadge $status={statusType} $overlay>
+              {statusText}
+            </StatusBadge>
+          )}
+        </CardHeader>
+      )}
 
       <Content>
         <Title>{post.title}</Title>
 
-        <Meta>
-          <span>By {post.author.name}</span>
-          <span>•</span>
-          <span>{date}</span>
-          {showActions && (
-            <StatusBadge $status={statusType}>{statusText}</StatusBadge>
-          )}
-        </Meta>
-
-        {subcategories.length > 0 && (
-          <Categories>
-            {subcategories.map((sub, i) => (
-              <CategoryTag
-                key={sub.id}
-                color={categoryColors[i % categoryColors.length]}
-              >
-                {sub.name}
-              </CategoryTag>
-            ))}
-          </Categories>
-        )}
-
         <Excerpt>
-          {stripHtml(post.content || 'No content available').result.slice(
-            0,
-            140,
-          )}
-          …
+          {stripHtml(post.content || 'No content available').result.slice(0, 120)}
+          {post.content && stripHtml(post.content).result.length > 120 && '...'}
         </Excerpt>
 
-        <Footer>
-          <ReadMore href={`/posts/${post.id}`}>Read More →</ReadMore>
-          {showActions && (
+        <Meta>
+          <AuthorAvatar>
+            {getInitials(post.author.name)}
+          </AuthorAvatar>
+          <div className="metadata">
+            <span className="author">{post.author.name}</span>
+            <span className="separator">•</span>
+            <span className="date">{date}</span>
+            <span className="separator">•</span>
+            <ReadingTime>{readingTime} min read</ReadingTime>
+          </div>
+        </Meta>
+
+        {!showActions && (
+          <ReadMore onClick={(e) => e.stopPropagation()}>
+            Read more <span>→</span>
+          </ReadMore>
+        )}
+
+        {showActions && (
+          <Footer>
             <Actions>
-              <ActionButton $variant="edit">
-                <Link href={`/posts/${post.id}/edit`}>Edit</Link>
+              <ActionButton 
+                $variant="edit" 
+                onClick={(e) => { 
+                  e.preventDefault(); 
+                  e.stopPropagation(); 
+                  window.location.href = `/posts/${post.id}/edit`;
+                }}
+              >
+                <span>✏️</span>
+                Edit
               </ActionButton>
-              <ActionButton $variant="delete" onClick={handleDelete}>
+              <ActionButton 
+                $variant="delete" 
+                onClick={(e) => { 
+                  e.preventDefault(); 
+                  e.stopPropagation(); 
+                  handleDelete();
+                }}
+              >
+                <span>🗑️</span>
                 Delete
               </ActionButton>
             </Actions>
-          )}
-        </Footer>
+            {!post.published && (
+              <ReadMore 
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  window.location.href = `/posts/${post.id}`;
+                }}
+              >
+                Preview <span>👁️</span>
+              </ReadMore>
+            )}
+          </Footer>
+        )}
       </Content>
     </Card>
   );
