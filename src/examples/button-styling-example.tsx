@@ -1,6 +1,20 @@
+/**
+ * EXAMPLE FILE - NOT ACTUAL WORKING CODE
+ *
+ * This file demonstrates best practices for creating styled components
+ * with proper TypeScript integration and global color system usage.
+ *
+ * To use this pattern in your app:
+ * 1. Create separate Component.tsx and Component.styles.ts files
+ * 2. Import the styles file into your component
+ * 3. Follow the structure shown below
+ */
+
+// @ts-nocheck - This is an example file showing patterns, not working code
+
 // Button.tsx
 import React from 'react';
-import * as S from './Button.styles';
+// import * as S from './Button.styles';  // This would be the real import in an actual component
 
 interface ButtonProps {
   variant?: 'primary' | 'secondary' | 'danger';
@@ -18,14 +32,14 @@ export const Button: React.FC<ButtonProps> = ({
   onClick,
 }) => {
   return (
-    <S.StyledButton
+    <StyledButton
       $variant={variant}
       $size={size}
       disabled={disabled}
       onClick={onClick}
     >
       {children}
-    </S.StyledButton>
+    </StyledButton>
   );
 };
 
@@ -130,8 +144,28 @@ export const StyledButton = styled.button<StyledButtonProps>`
 `;
 
 /* 
-Usage Example:
+===========================================
+USAGE EXAMPLE IN REAL COMPONENTS:
+===========================================
 
+// src/components/ui/Button/Button.tsx
+import React from 'react';
+import * as S from './Button.styles';
+
+export const Button: React.FC<ButtonProps> = (props) => {
+  return <S.StyledButton {...props}>{props.children}</S.StyledButton>;
+};
+
+// src/components/ui/Button/Button.styles.ts  
+import styled from 'styled-components';
+import { colors } from '../../../styles/colors';
+
+export const StyledButton = styled.button`
+  background: ${colors.primary};
+  // ... rest of styles
+`;
+
+// Usage in your app:
 <Button variant="primary" size="large" onClick={handleClick}>
   Save Changes
 </Button>
@@ -143,4 +177,6 @@ Usage Example:
 <Button variant="danger" disabled>
   Delete Account
 </Button>
+
+===========================================
 */
