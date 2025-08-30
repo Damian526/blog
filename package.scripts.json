@@ -1,0 +1,14 @@
+{
+  "scripts": {
+    "dev": "cross-env NODE_ENV=development next dev -p 4006",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "type-check": "tsc --noEmit",
+    "deploy:preview": "yarn test && yarn build && vercel",
+    "deploy:production": "yarn test && yarn build && vercel --prod",
+    "predeploy": "yarn test && yarn type-check && yarn lint"
+  }
+}
