@@ -5,13 +5,13 @@ interface Post {
   title: string;
   content: string;
   createdAt: Date;
-  published: boolean; 
-  coverImageUrl?: string; 
+  published: boolean;
+  coverImageUrl?: string;
   author: {
-    id: number; 
+    id: number;
     name: string | null;
     email: string;
-    image?: string; 
+    image?: string;
   };
   subcategories?: {
     id: number;
@@ -43,6 +43,9 @@ export function usePost(postId: number | null) {
   const updatePost = async (updatedData: Partial<Post>) => {
     if (!post) return;
 
+    // ✅ Store original post before optimistic update
+    const originalPost = { ...post };
+
     // Optimistic update
     mutate({ ...post, ...updatedData }, false);
 
@@ -54,13 +57,15 @@ export function usePost(postId: number | null) {
       });
 
       if (!response.ok) throw new Error('Update failed');
+
+      // Revalidate to get fresh data from server
       mutate();
     } catch (error) {
-      mutate();
+      //  REVERT to original post on error
+      mutate(originalPost, false);
       throw error;
     }
   };
-
   const togglePublished = () => {
     if (!post) return;
     return updatePost({ published: !post.published });
@@ -71,8 +76,8 @@ export function usePost(postId: number | null) {
     error,
     isLoading,
     mutate,
-    updatePost, 
-    togglePublished, 
-    isPublished: post?.published || false, 
+    updatePost,
+    togglePublished,
+    isPublished: post?.published || false,
   };
 }
