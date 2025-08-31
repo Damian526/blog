@@ -237,11 +237,11 @@ describe('usePost Hook - Advanced Tests', () => {
       // This should not happen if error is thrown
       console.log("❌ Update should have failed but didn't");
     } catch (error) {
-      console.log('✅ Update failed as expected:', error.message);
+      console.log('✅ Update failed as expected:', error instanceof Error ? error.message : String(error));
     }
 
     console.log('📝 Checking that original data is restored...');
- console.log()
+
     // ✅ Give it time to revert and check multiple times
     await waitFor(
       () => {
