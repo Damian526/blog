@@ -1,22 +1,18 @@
-'use client';
-
 import { SWRConfig } from 'swr';
+import { ReactNode } from 'react';
 
 // ============================================
 // GLOBAL SWR CONFIGURATION
 // ============================================
 
-export default function SWRProvider({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+interface SWRProviderProps {
+  children: ReactNode;
+}
+
+export function SWRProvider({ children }: SWRProviderProps) {
   return (
     <SWRConfig
       value={{
-        // Remove default fetcher since our API client handles fetching
-        // fetcher: undefined, 
-        
         // Global error handler
         onError: (error, key) => {
           console.error(`SWR Error for key "${key}":`, error);
@@ -53,6 +49,18 @@ export default function SWRProvider({
         // Retry configuration
         errorRetryInterval: 5000,
         errorRetryCount: 3,
+        
+        // Global cache configuration
+        provider: () => new Map(), // Use default cache
+        
+        // Enable React 18 features
+        suspense: false, // You can enable this if you want to use Suspense
+        
+        // Compare function for data
+        compare: (a, b) => {
+          // Custom comparison logic if needed
+          return a === b;
+        },
         
         // Keep previous data while revalidating
         keepPreviousData: false,
