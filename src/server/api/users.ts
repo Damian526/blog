@@ -7,9 +7,6 @@ import { z } from 'zod';
 // ============================================
 
 export class UsersApi {
-  /**
-   * Get current user session
-   */
   static async getCurrentUser() {
     return apiClient.get(
       '/api/auth/session',
@@ -23,9 +20,6 @@ export class UsersApi {
     );
   }
 
-  /**
-   * Get user by ID
-   */
   static async getUser(id: number) {
     return apiClient.get(
       `/api/users/${id}`,
@@ -37,9 +31,6 @@ export class UsersApi {
     );
   }
 
-  /**
-   * Get user profile with additional data
-   */
   static async getUserProfile(id: number) {
     return apiClient.get(
       `/api/users/${id}/profile`,
@@ -62,9 +53,6 @@ export class UsersApi {
     );
   }
 
-  /**
-   * Get all users (admin only)
-   */
   static async getUsers(page: number = 1, limit: number = 10) {
     const searchParams = new URLSearchParams({
       page: page.toString(),
@@ -81,9 +69,6 @@ export class UsersApi {
     );
   }
 
-  /**
-   * Search users
-   */
   static async searchUsers(query: string, limit: number = 10) {
     const searchParams = new URLSearchParams({
       q: query,
@@ -100,9 +85,6 @@ export class UsersApi {
     );
   }
 
-  /**
-   * Update user profile
-   */
   static async updateUser(id: number, data: Partial<Pick<User, 'name' | 'image'>>) {
     const UpdateUserSchema = z.object({
       name: z.string().min(1).optional(),
@@ -121,9 +103,6 @@ export class UsersApi {
     );
   }
 
-  /**
-   * Update user role (admin only)
-   */
   static async updateUserRole(id: number, role: 'ADMIN' | 'USER') {
     return apiClient.patch(
       `/api/users/${id}/role`,
@@ -134,10 +113,6 @@ export class UsersApi {
       UserSchema
     );
   }
-
-  /**
-   * Delete user (admin only)
-   */
   static async deleteUser(id: number) {
     return apiClient.delete(
       `/api/users/${id}`,
@@ -147,9 +122,6 @@ export class UsersApi {
     );
   }
 
-  /**
-   * Get user statistics
-   */
   static async getUserStats(id: number) {
     return apiClient.get(
       `/api/users/${id}/stats`,

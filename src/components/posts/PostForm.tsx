@@ -42,6 +42,7 @@ export default function PostForm({
       Placeholder.configure({ placeholder: 'Click here to start writing…' }),
     ],
     content: post?.content || '',
+    immediatelyRender: false, // Fix SSR hydration mismatch
   });
 
   const handleAddImage = async () => {

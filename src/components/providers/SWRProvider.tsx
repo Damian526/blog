@@ -2,10 +2,6 @@
 
 import { SWRConfig } from 'swr';
 
-// ============================================
-// GLOBAL SWR CONFIGURATION
-// ============================================
-
 export default function SWRProvider({
   children,
 }: {
@@ -14,20 +10,13 @@ export default function SWRProvider({
   return (
     <SWRConfig
       value={{
-        // Remove default fetcher since our API client handles fetching
-        // fetcher: undefined, 
-        
-        // Global error handler
         onError: (error, key) => {
           console.error(`SWR Error for key "${key}":`, error);
-          
-          // You can add global error reporting here
-          // e.g., send to error tracking service like Sentry
         },
-        
+
         // Global loading configuration
         loadingTimeout: 3000,
-        
+
         // Global retry configuration
         shouldRetryOnError: (error) => {
           // Don't retry on 4xx errors (client errors)
@@ -36,24 +25,24 @@ export default function SWRProvider({
           }
           return true;
         },
-        
+
         // Global revalidation settings
         revalidateOnFocus: false,
         revalidateOnReconnect: true,
-        
+
         // Global deduplication interval (5 minutes)
         dedupingInterval: 300000,
-        
+
         // Focus throttle interval
         focusThrottleInterval: 5000,
-        
+
         // Global refresh interval (disabled by default)
         refreshInterval: 0,
-        
+
         // Retry configuration
         errorRetryInterval: 5000,
         errorRetryCount: 3,
-        
+
         // Keep previous data while revalidating
         keepPreviousData: false,
       }}

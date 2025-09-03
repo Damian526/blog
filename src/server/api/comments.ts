@@ -9,14 +9,8 @@ import {
 } from './types';
 import { z } from 'zod';
 
-// ============================================
-// COMMENTS API SERVICE
-// ============================================
-
 export class CommentsApi {
-  /**
-   * Get comments for a specific post
-   */
+
   static async getPostComments(postId: number, includeReplies: boolean = true) {
     const searchParams = new URLSearchParams();
     if (includeReplies) {
@@ -35,9 +29,6 @@ export class CommentsApi {
     );
   }
 
-  /**
-   * Get a single comment by ID
-   */
   static async getComment(id: number) {
     return apiClient.get(
       `/api/comments/${id}`,
@@ -49,9 +40,6 @@ export class CommentsApi {
     );
   }
 
-  /**
-   * Get comments by user
-   */
   static async getUserComments(userId: number, page: number = 1, limit: number = 10) {
     const searchParams = new URLSearchParams({
       page: page.toString(),
@@ -68,9 +56,6 @@ export class CommentsApi {
     );
   }
 
-  /**
-   * Get replies to a specific comment
-   */
   static async getCommentReplies(commentId: number) {
     return apiClient.get(
       `/api/comments/${commentId}/replies`,
@@ -82,9 +67,6 @@ export class CommentsApi {
     );
   }
 
-  /**
-   * Create a new comment
-   */
   static async createComment(data: CreateComment) {
     const validatedData = CreateCommentSchema.parse(data);
     
@@ -101,9 +83,6 @@ export class CommentsApi {
     );
   }
 
-  /**
-   * Reply to a comment
-   */
   static async replyToComment(parentId: number, postId: number, content: string) {
     const data: CreateComment = {
       content,
@@ -114,9 +93,6 @@ export class CommentsApi {
     return this.createComment(data);
   }
 
-  /**
-   * Update an existing comment
-   */
   static async updateComment(id: number, data: UpdateComment) {
     const validatedData = UpdateCommentSchema.parse(data);
     
@@ -130,9 +106,6 @@ export class CommentsApi {
     );
   }
 
-  /**
-   * Delete a comment
-   */
   static async deleteComment(id: number) {
     return apiClient.delete(
       `/api/comments/${id}`,
@@ -156,9 +129,6 @@ export class CommentsApi {
     );
   }
 
-  /**
-   * Get comment statistics
-   */
   static async getCommentStats(commentId: number) {
     return apiClient.get(
       `/api/comments/${commentId}/stats`,
@@ -179,27 +149,21 @@ export class CommentsApi {
 // CACHE INVALIDATION HELPERS
 // ============================================
 
-/**
- * Revalidate comments cache for a specific post
- */
+
 export async function revalidatePostComments(postId: number) {
   const { revalidateTag } = await import('next/cache');
   revalidateTag(CACHE_TAGS.POST_COMMENTS(postId));
   revalidateTag(CACHE_TAGS.COMMENTS);
 }
 
-/**
- * Revalidate specific comment cache
- */
+
 export async function revalidateComment(id: number) {
   const { revalidateTag } = await import('next/cache');
   revalidateTag(CACHE_TAGS.COMMENT(id));
   revalidateTag(CACHE_TAGS.COMMENTS);
 }
 
-/**
- * Revalidate all comments cache
- */
+
 export async function revalidateAllComments() {
   const { revalidateTag } = await import('next/cache');
   revalidateTag(CACHE_TAGS.COMMENTS);

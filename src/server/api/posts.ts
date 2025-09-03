@@ -16,9 +16,7 @@ import { z } from 'zod';
 // ============================================
 
 export class PostsApi {
-  /**
-   * Get all posts with optional filtering and pagination
-   */
+
   static async getPosts(filters: Partial<PostFilters> = {}) {
     // Validate and sanitize filters
     const validatedFilters = PostFiltersSchema.parse(filters);
@@ -58,9 +56,6 @@ export class PostsApi {
     );
   }
 
-  /**
-   * Get a single post by ID
-   */
   static async getPost(id: number) {
     return apiClient.get(
       `/api/posts/${id}`,
@@ -72,9 +67,6 @@ export class PostsApi {
     );
   }
 
-  /**
-   * Get posts by author
-   */
   static async getPostsByAuthor(authorId: number, filters: Partial<PostFilters> = {}) {
     return this.getPosts({
       ...filters,
@@ -82,9 +74,6 @@ export class PostsApi {
     });
   }
 
-  /**
-   * Get published posts only
-   */
   static async getPublishedPosts(filters: Partial<PostFilters> = {}) {
     return this.getPosts({
       ...filters,
@@ -92,9 +81,6 @@ export class PostsApi {
     });
   }
 
-  /**
-   * Search posts
-   */
   static async searchPosts(query: string, filters: Partial<PostFilters> = {}) {
     return this.getPosts({
       ...filters,
@@ -102,9 +88,6 @@ export class PostsApi {
     });
   }
 
-  /**
-   * Create a new post
-   */
   static async createPost(data: CreatePost) {
     const validatedData = CreatePostSchema.parse(data);
     
@@ -118,9 +101,6 @@ export class PostsApi {
     );
   }
 
-  /**
-   * Update an existing post
-   */
   static async updatePost(id: number, data: UpdatePost) {
     const validatedData = UpdatePostSchema.parse(data);
     
@@ -134,9 +114,6 @@ export class PostsApi {
     );
   }
 
-  /**
-   * Delete a post
-   */
   static async deletePost(id: number) {
     return apiClient.delete(
       `/api/posts/${id}`,
@@ -146,16 +123,10 @@ export class PostsApi {
     );
   }
 
-  /**
-   * Toggle post published status
-   */
   static async togglePublished(id: number, published: boolean) {
     return this.updatePost(id, { published });
   }
 
-  /**
-   * Get post statistics
-   */
   static async getPostStats(id: number) {
     return apiClient.get(
       `/api/posts/${id}/stats`,
