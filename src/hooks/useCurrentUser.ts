@@ -1,10 +1,5 @@
 import useSWR from 'swr';
-
-interface User {
-  name?: string;
-  email: string;
-  role?: 'ADMIN' | 'USER';
-}
+import { User } from '@/server/api';
 
 interface SessionData {
   user?: User;
@@ -16,13 +11,40 @@ export function useCurrentUser() {
     error,
     isLoading,
     mutate,
-  } = useSWR<SessionData>('/api/auth/session', {
-    revalidateOnFocus: false,
-    revalidateOnReconnect: true,
-    shouldRetryOnError: false,
-    // Session data can be cached for a reasonable time
-    dedupingInterval: 30000, // 30 seconds
-  });
+  } = useSWR<SessionData>(
+    'current-user',
+    async () => {
+      const { api } = await import('@/server/api');
+      return api.users.getCurrent();
+    },
+    {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: true,
+      shouldRetryOnError: false,
+      // Session data can be cached for a reasonable time
+      dedupingInterval: 30000, // 30 seconds
+    }
+  );
+
+  const updateUser = async (updateData: Partial<Pick<User, 'name' | 'image'>>) => {
+    if (!sessionData?.user) throw new Error('No user to update');
+
+    // Optimistic update
+    const originalSession = { ...sessionData };
+    mutate({
+      user: { ...sessionData.user, ...updateData }
+    }, false);
+
+    try {
+      const { api } = await import('@/server/api');
+      const updatedUser = await api.users.update(sessionData.user.id, updateData);
+      mutate({ user: updatedUser }, false);
+      return updatedUser;
+    } catch (error) {
+      mutate(originalSession, false); // Revert on error
+      throw error;
+    }
+  };
 
   return {
     user: sessionData?.user || null,
@@ -30,5 +52,6 @@ export function useCurrentUser() {
     error,
     isLoading,
     mutate,
+    updateUser,
   };
 }
