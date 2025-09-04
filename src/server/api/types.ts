@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 // ============================================
-// SHARED SCHEMAS FOR RUNTIME VALIDATION
+// CLEAN, SIMPLE SCHEMAS
 // ============================================
 
 export const UserSchema = z.object({
@@ -9,10 +9,10 @@ export const UserSchema = z.object({
   name: z.string().nullable(),
   email: z.string(),
   image: z.string().nullable(),
-  role: z.enum(['ADMIN', 'USER']).optional(),
+  role: z.enum(['ADMIN', 'USER']).default('USER'),
   emailVerified: z.boolean().optional(),
-  createdAt: z.coerce.date(),
-  updatedAt: z.coerce.date(),
+  createdAt: z.string().transform(str => new Date(str)),
+  updatedAt: z.string().transform(str => new Date(str)),
 });
 
 export const CategorySchema = z.object({
@@ -30,8 +30,8 @@ export const SubcategorySchema = z.object({
 export const CommentSchema = z.object({
   id: z.number(),
   content: z.string(),
-  createdAt: z.coerce.date(),
-  updatedAt: z.coerce.date(),
+  createdAt: z.string().transform(str => new Date(str)),
+  updatedAt: z.string().transform(str => new Date(str)),
   userId: z.number(),
   postId: z.number(),
   parentId: z.number().nullable(),
@@ -49,17 +49,44 @@ export const PostSchema = z.object({
   published: z.boolean(),
   declineReason: z.string().nullable(),
   coverImageUrl: z.string().nullable(),
-  createdAt: z.coerce.date(),
-  updatedAt: z.coerce.date(),
+  createdAt: z.string().transform(str => new Date(str)),
+  updatedAt: z.string().transform(str => new Date(str)),
   authorId: z.number(),
   author: UserSchema,
-  subcategories: z.array(SubcategorySchema).optional(),
+  subcategories: z.array(SubcategorySchema).optional().default([]),
   comments: z.array(CommentSchema).optional(),
   _count: z.object({
     comments: z.number(),
   }).optional(),
 });
 
+// Post summary schema for list views (matches what the API actually returns)
+export const PostSummarySchema = z.object({
+  id: z.number(),
+  title: z.string(),
+  content: z.string(),
+  published: z.boolean(),
+  createdAt: z.string(), // Keep as string (ISO format from API)
+  author: z.object({
+    id: z.number(),
+    name: z.string(),
+    email: z.string(),
+    image: z.string().nullable(), // This maps to profilePicture from DB
+    createdAt: z.string(), // Keep as string (ISO format from API)
+  }),
+  subcategories: z.array(z.object({
+    id: z.number(),
+    name: z.string(),
+    categoryId: z.number(),
+    category: z.object({
+      id: z.number(),
+      name: z.string(),
+    }).optional(),
+  })).default([]),
+  _count: z.object({
+    comments: z.number(),
+  }),
+});
 // ============================================
 // TYPESCRIPT TYPES (INFERRED FROM SCHEMAS)
 // ============================================
@@ -69,6 +96,7 @@ export type Category = z.infer<typeof CategorySchema>;
 export type Subcategory = z.infer<typeof SubcategorySchema>;
 export type Comment = z.infer<typeof CommentSchema>;
 export type Post = z.infer<typeof PostSchema>;
+export type PostSummary = z.infer<typeof PostSummarySchema>;
 
 // ============================================
 // API RESPONSE WRAPPERS

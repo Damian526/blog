@@ -42,19 +42,53 @@ export async function GET(request: Request) {
         content: true,
         published: true,
         createdAt: true,
-        author: { select: { name: true, email: true } },
+        author: { 
+          select: { 
+            id: true,
+            name: true, 
+            email: true,
+            profilePicture: true,
+            createdAt: true,
+          } 
+        },
         subcategories: {
           select: {
             id: true,
             name: true,
+            categoryId: true,
             category: { select: { id: true, name: true } },
+          },
+        },
+        _count: {
+          select: {
+            comments: true,
           },
         },
       },
     });
 
     return NextResponse.json(
-      posts.map((p) => ({ ...p, createdAt: p.createdAt.toISOString() })),
+      posts.map((post) => ({
+        ...post,
+        id: Number(post.id), // Ensure ID is number
+        createdAt: post.createdAt.toISOString(),
+        author: {
+          ...post.author,
+          id: Number(post.author.id), // Ensure author ID is number
+          image: post.author.profilePicture || null, // Map profilePicture to image, handle null
+          createdAt: post.author.createdAt.toISOString(),
+        },
+        subcategories: post.subcategories.map(subcat => ({
+          ...subcat,
+          id: Number(subcat.id), // Ensure subcategory ID is number
+          categoryId: Number(subcat.categoryId), // Ensure category ID is number
+          category: subcat.category ? {
+            ...subcat.category,
+            id: Number(subcat.category.id), // Ensure category ID is number
+          } : undefined,
+        })),
+        _count: post._count,
+      })),
     );
   } catch (error) {
     console.error('Error fetching posts:', error);

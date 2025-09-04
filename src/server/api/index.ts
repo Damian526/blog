@@ -2,69 +2,71 @@ export { apiClient, ApiError, CACHE_TAGS, CACHE_TIMES } from './client';
 
 export * from './types';
 
-export { PostsApi, revalidatePosts, revalidatePost, revalidateAllPosts } from './posts';
-export { CommentsApi, revalidatePostComments, revalidateComment, revalidateAllComments } from './comments';
-export { UsersApi, revalidateUser, revalidateAllUsers } from './users';
-export { CategoriesApi, revalidateCategories } from './categories';
+// Export all functions from each module
+export * from './posts';
+export * from './comments';
+export * from './users';
+export * from './categories';
 
-import { PostsApi } from './posts';
-import { CommentsApi } from './comments';
-import { UsersApi } from './users';
-import { CategoriesApi } from './categories';
+// Import functions for the convenience api object
+import * as postsApi from './posts';
+import * as commentsApi from './comments';
+import * as usersApi from './users';
+import * as categoriesApi from './categories';
 
 // Most commonly used functions for quick access
 export const api = {
   // Posts
   posts: {
-    getAll: PostsApi.getPosts,
-    getById: PostsApi.getPost,
-    getPublished: PostsApi.getPublishedPosts,
-    getByAuthor: PostsApi.getPostsByAuthor,
-    search: PostsApi.searchPosts,
-    create: PostsApi.createPost,
-    update: PostsApi.updatePost,
-    delete: PostsApi.deletePost,
-    togglePublished: PostsApi.togglePublished,
-    getStats: PostsApi.getPostStats,
+    getAll: postsApi.getPosts,
+    getById: postsApi.getPost,
+    getPublished: postsApi.getPublishedPosts,
+    getByAuthor: postsApi.getPostsByAuthor,
+    search: postsApi.searchPosts,
+    create: postsApi.createPost,
+    update: postsApi.updatePost,
+    delete: postsApi.deletePost,
+    togglePublished: postsApi.togglePublished,
+    getStats: postsApi.getPostStats,
   },
   
   comments: {
-    getByPost: CommentsApi.getPostComments,
-    getById: CommentsApi.getComment,
-    getByUser: CommentsApi.getUserComments,
-    getReplies: CommentsApi.getCommentReplies,
-    getThread: CommentsApi.getCommentThread,
-    create: CommentsApi.createComment,
-    reply: CommentsApi.replyToComment,
-    update: CommentsApi.updateComment,
-    delete: CommentsApi.deleteComment,
-    getStats: CommentsApi.getCommentStats,
+    getByPost: commentsApi.getPostComments,
+    getById: commentsApi.getComment,
+    getByUser: commentsApi.getUserComments,
+    getReplies: commentsApi.getCommentReplies,
+    getThread: commentsApi.getCommentThread,
+    create: commentsApi.createComment,
+    reply: commentsApi.replyToComment,
+    update: commentsApi.updateComment,
+    delete: commentsApi.deleteComment,
+    getStats: commentsApi.getCommentStats,
   },
   
   users: {
-    getCurrent: UsersApi.getCurrentUser,
-    getById: UsersApi.getUser,
-    getProfile: UsersApi.getUserProfile,
-    getAll: UsersApi.getUsers,
-    search: UsersApi.searchUsers,
-    update: UsersApi.updateUser,
-    updateRole: UsersApi.updateUserRole,
-    delete: UsersApi.deleteUser,
-    getStats: UsersApi.getUserStats,
+    getCurrent: usersApi.getCurrentUser,
+    getById: usersApi.getUser,
+    getProfile: usersApi.getUserProfile,
+    getAll: usersApi.getUsers,
+    search: usersApi.searchUsers,
+    update: usersApi.updateUser,
+    updateRole: usersApi.updateUserRole,
+    delete: usersApi.deleteUser,
+    getStats: usersApi.getUserStats,
   },
   
   // Categories
   categories: {
-    getAll: CategoriesApi.getCategories,
-    getById: CategoriesApi.getCategory,
-    getSubcategories: CategoriesApi.getSubcategories,
-    getCategorySubcategories: CategoriesApi.getCategorySubcategories,
-    create: CategoriesApi.createCategory,
-    createSubcategory: CategoriesApi.createSubcategory,
-    update: CategoriesApi.updateCategory,
-    updateSubcategory: CategoriesApi.updateSubcategory,
-    delete: CategoriesApi.deleteCategory,
-    deleteSubcategory: CategoriesApi.deleteSubcategory,
-    getStats: CategoriesApi.getCategoryStats,
+    getAll: categoriesApi.getCategories,
+    getById: categoriesApi.getCategory,
+    getSubcategories: categoriesApi.getSubcategories,
+    getCategorySubcategories: categoriesApi.getCategorySubcategories,
+    create: categoriesApi.createCategory,
+    createSubcategory: categoriesApi.createSubcategory,
+    update: categoriesApi.updateCategory,
+    updateSubcategory: categoriesApi.updateSubcategory,
+    delete: categoriesApi.deleteCategory,
+    deleteSubcategory: categoriesApi.deleteSubcategory,
+    getStats: categoriesApi.getCategoryStats,
   },
 };

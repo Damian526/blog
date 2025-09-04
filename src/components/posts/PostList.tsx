@@ -1,7 +1,7 @@
 'use client';
 
 import PostCard from './PostCard';
-import { Post } from '@/server/api';
+import { PostSummary } from '@/server/api';
 import {
   Container,
   PostsGrid,
@@ -9,7 +9,7 @@ import {
 } from '@/styles/components/posts/PostList.styles';
 
 interface PostListProps {
-  posts: Post[];
+  posts: PostSummary[];
   showActions?: boolean;
   onDelete?: (postId: number) => Promise<void>;
 }

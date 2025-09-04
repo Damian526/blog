@@ -1,5 +1,5 @@
 import useSWR from 'swr';
-import { Post, PostFilters, api } from '@/server/api';
+import { PostSummary, PostFilters, api } from '@/server/api';
 
 
 interface UsePostsOptions {
@@ -21,7 +21,7 @@ export function usePosts(options: UsePostsOptions = {}) {
     error,
     isLoading,
     mutate,
-  } = useSWR<Post[]>(
+  } = useSWR<PostSummary[]>(
     cacheKey,
     () => api.posts.getAll(filters),
     {
@@ -36,15 +36,20 @@ export function usePosts(options: UsePostsOptions = {}) {
   const createPost = async (postData: Parameters<typeof api.posts.create>[0]) => {
     // Optimistic update
     if (posts) {
-      const tempPost = {
+      const tempPost: PostSummary = {
         ...postData,
         id: Date.now(), // Temporary ID
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        authorId: 0, // Will be set by server
-        author: { id: 0, name: '', email: '', image: null },
+        createdAt: new Date().toISOString(), // ISO string format
+        author: { 
+          id: 0, 
+          name: '', 
+          email: '', 
+          image: null,
+          createdAt: new Date().toISOString(), // ISO string format
+        },
+        subcategories: [],
         _count: { comments: 0 },
-      } as Post;
+      };
       
       mutate([tempPost, ...posts], false);
     }
