@@ -1,5 +1,5 @@
 import useSWR from 'swr';
-import { Category, Subcategory } from '@/server/api';
+import { Category, Subcategory, api } from '@/server/api';
 
 interface CategoryWithSubcategories extends Category {
   subcategories: Subcategory[];
@@ -13,10 +13,7 @@ export function useCategories() {
     mutate,
   } = useSWR<CategoryWithSubcategories[]>(
     'categories',
-    async () => {
-      const { api } = await import('@/server/api');
-      return api.categories.getAll();
-    },
+    () => api.categories.getAll(),
     {
       revalidateOnFocus: false,
       revalidateOnReconnect: true,
@@ -28,7 +25,6 @@ export function useCategories() {
 
   const createCategory = async (name: string) => {
     try {
-      const { api } = await import('@/server/api');
       const newCategory = await api.categories.create(name);
       mutate(); // Revalidate to get fresh data
       return newCategory;
@@ -39,7 +35,6 @@ export function useCategories() {
 
   const createSubcategory = async (name: string, categoryId: number) => {
     try {
-      const { api } = await import('@/server/api');
       const newSubcategory = await api.categories.createSubcategory(name, categoryId);
       mutate(); // Revalidate to get fresh data
       return newSubcategory;
@@ -59,7 +54,6 @@ export function useCategories() {
     mutate(updatedCategories, false);
 
     try {
-      const { api } = await import('@/server/api');
       const updatedCategory = await api.categories.update(id, name);
       mutate(); // Revalidate to get fresh data
       return updatedCategory;
@@ -78,7 +72,6 @@ export function useCategories() {
     mutate(updatedCategories, false);
 
     try {
-      const { api } = await import('@/server/api');
       await api.categories.delete(id);
       mutate(); // Revalidate to get fresh data
     } catch (error) {

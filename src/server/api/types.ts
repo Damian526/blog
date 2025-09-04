@@ -47,6 +47,7 @@ export const PostSchema = z.object({
   title: z.string(),
   content: z.string(),
   published: z.boolean(),
+  declineReason: z.string().nullable(),
   coverImageUrl: z.string().nullable(),
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),

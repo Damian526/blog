@@ -1,5 +1,6 @@
 // app/page.tsx
 import HomePageContent from '@/components/pages/HomePageContent';
+import { api } from '@/server/api';
 
 // Force dynamic rendering for real-time data
 export const dynamic = 'force-dynamic';
@@ -34,30 +35,18 @@ export default async function Home({
   const catIds = csvToNums(params.categoryIds);
   const subIds = csvToNums(params.subcategoryIds);
 
-  // Build fetch URL
-  const url = new URL(`${process.env.NEXT_PUBLIC_API_URL}/api/posts`);
-  if (catIds.length) url.searchParams.set('categoryIds', catIds.join(','));
-  if (subIds.length) url.searchParams.set('subcategoryIds', subIds.join(','));
-
   let posts = [];
   let error = null;
 
   try {
-    const res = await fetch(url.toString(), {
-      next: { revalidate: 60 }, // Cache for 60 seconds
-      headers: {
-        'Content-Type': 'application/json',
-      },
+    // Use the centralized API with proper type safety and caching
+    posts = await api.posts.getPublished({
+      categoryIds: catIds.length ? catIds : undefined,
+      subcategoryIds: subIds.length ? subIds : undefined,
+      published: true,
     });
-
-    if (res.ok) {
-      posts = await res.json();
-    } else {
-      console.error('Fetch failed', res.status);
-      error = `Failed to load posts (${res.status})`;
-    }
   } catch (e) {
-    console.error('Fetch error', e);
+    console.error('API error', e);
     error = 'Failed to load posts. Please try again later.';
   }
 

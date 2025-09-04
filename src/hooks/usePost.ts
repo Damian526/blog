@@ -1,5 +1,5 @@
 import useSWR from 'swr';
-import { Post } from '@/server/api';
+import { Post, api } from '@/server/api';
 
 export function usePost(postId: number | null) {
   const {
@@ -9,9 +9,8 @@ export function usePost(postId: number | null) {
     mutate,
   } = useSWR<Post>(
     postId ? ['post', postId] : null,
-    async () => {
+    () => {
       if (!postId) return null;
-      const { api } = await import('@/server/api');
       return api.posts.getById(postId);
     },
     {
@@ -33,7 +32,6 @@ export function usePost(postId: number | null) {
     mutate({ ...post, ...updatedData }, false);
 
     try {
-      const { api } = await import('@/server/api');
       const updatedPost = await api.posts.update(postId, updatedData);
       
       // Update with the actual response from server
@@ -55,7 +53,6 @@ export function usePost(postId: number | null) {
     if (!postId) return;
     
     try {
-      const { api } = await import('@/server/api');
       await api.posts.delete(postId);
       mutate(undefined, false); // Clear the cache
     } catch (error) {

@@ -1,5 +1,5 @@
 import useSWR from 'swr';
-import { Comment, CreateComment, UpdateComment } from '@/server/api';
+import { Comment, CreateComment, UpdateComment, api } from '@/server/api';
 
 // ============================================
 // MAIN COMMENTS HOOK FOR POST COMMENTS
@@ -13,9 +13,8 @@ export function useComments(postId: number | null, includeReplies: boolean = tru
     mutate,
   } = useSWR<Comment[]>(
     postId ? ['comments', postId, includeReplies] : null,
-    async () => {
+    () => {
       if (!postId) return [];
-      const { api } = await import('@/server/api');
       return api.comments.getByPost(postId, includeReplies);
     },
     {
@@ -58,7 +57,6 @@ export function useComments(postId: number | null, includeReplies: boolean = tru
     }
 
     try {
-      const { api } = await import('@/server/api');
       const newComment = await api.comments.create(fullCommentData);
       mutate(); // Revalidate to get fresh data
       return newComment;
@@ -95,7 +93,6 @@ export function useComments(postId: number | null, includeReplies: boolean = tru
     mutate(updatedComments, false);
 
     try {
-      const { api } = await import('@/server/api');
       const updatedComment = await api.comments.update(commentId, updateData);
       mutate(); // Revalidate to get fresh data
       return updatedComment;
@@ -121,7 +118,6 @@ export function useComments(postId: number | null, includeReplies: boolean = tru
     mutate(updatedComments, false);
 
     try {
-      const { api } = await import('@/server/api');
       await api.comments.delete(commentId);
       mutate(); // Revalidate to get fresh data
     } catch (error) {
@@ -161,10 +157,9 @@ export function useComment(commentId: number | null) {
     mutate,
   } = useSWR<Comment>(
     commentId ? ['comment', commentId] : null,
-    async () => {
-      if (!commentId) return null;
-      const { api } = await import('@/server/api');
-      return api.comments.getById(commentId);
+    (): Promise<Comment | null> => {
+      if (!commentId) return Promise.resolve(null);
+      return api.comments.getById(commentId) as Promise<Comment>;
     },
     {
       revalidateOnFocus: false,
@@ -189,7 +184,6 @@ export function useComment(commentId: number | null) {
 
 // Instead of a hook, just export a function to fetch user comments when needed
 export async function fetchUserComments(userId: number, page: number = 1, limit: number = 10) {
-  const { api } = await import('@/server/api');
   return api.comments.getByUser(userId, page, limit);
 }
 

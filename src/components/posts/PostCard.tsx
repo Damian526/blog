@@ -2,6 +2,7 @@
 
 import { stripHtml } from 'string-strip-html';
 import Link from 'next/link';
+import { Post } from '@/server/api';
 import {
   Card,
   Header,
@@ -20,34 +21,6 @@ import {
   CardHeader,
   TagsContainer,
 } from '@/styles/components/posts/PostCard.styles';
-
-interface Author {
-  name: string;
-  email: string;
-}
-
-interface Category {
-  id: number;
-  name: string;
-}
-
-interface Subcategory {
-  id: number;
-  name: string;
-  category: Category;
-}
-
-interface Post {
-  id: number;
-  title: string;
-  content?: string;
-  published: boolean;
-  declineReason?: string;
-  createdAt: string;
-  author: Author;
-  subcategories?: Subcategory[];
-  coverImageUrl?: string; // optional header image URL
-}
 
 interface PostCardProps {
   post: Post;

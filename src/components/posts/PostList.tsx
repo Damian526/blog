@@ -1,26 +1,12 @@
 'use client';
 
 import PostCard from './PostCard';
+import { Post } from '@/server/api';
 import {
   Container,
   PostsGrid,
   EmptyState,
 } from '@/styles/components/posts/PostList.styles';
-
-// Interfaces
-interface Author {
-  name: string;
-  email: string;
-}
-
-interface Post {
-  id: number;
-  title: string;
-  content?: string;
-  published: boolean;
-  createdAt: string; // ISO string
-  author: Author;
-}
 
 interface PostListProps {
   posts: Post[];

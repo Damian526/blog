@@ -1,5 +1,5 @@
 import useSWR from 'swr';
-import { User } from '@/server/api';
+import { User, api } from '@/server/api';
 
 interface SessionData {
   user?: User;
@@ -13,10 +13,7 @@ export function useCurrentUser() {
     mutate,
   } = useSWR<SessionData>(
     'current-user',
-    async () => {
-      const { api } = await import('@/server/api');
-      return api.users.getCurrent();
-    },
+    () => api.users.getCurrent(),
     {
       revalidateOnFocus: false,
       revalidateOnReconnect: true,
@@ -36,7 +33,6 @@ export function useCurrentUser() {
     }, false);
 
     try {
-      const { api } = await import('@/server/api');
       const updatedUser = await api.users.update(sessionData.user.id, updateData);
       mutate({ user: updatedUser }, false);
       return updatedUser;

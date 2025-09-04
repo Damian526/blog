@@ -2,12 +2,13 @@
 
 import { useSession } from 'next-auth/react';
 import { useState, useEffect } from 'react';
-import useSWR from 'swr';
 import DashboardContent from '@/components/ui/DashboardContent';
 import LoginForm from '@/components/auth/LoginForm';
 import Modal from '@/components/ui/Modal';
 import PostList from '@/components/posts/PostList';
 import UserStatusCard from '@/components/ui/UserStatusCard';
+import { useCurrentUser, usePostsByAuthor } from '@/hooks';
+import { api } from '@/server/api';
 import {
   PostsSection,
   SectionTitle,
@@ -17,20 +18,17 @@ import {
   UnauthenticatedMessage,
 } from '@/styles/components/ui/Dashboard.styles';
 
-// Custom fetcher for SWR
-const fetcher = async (url: string) => {
-  const response = await fetch(url);
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error || 'Failed to fetch');
-  }
-  return response.json();
-};
-
 export default function Dashboard() {
   const { data: session, status } = useSession();
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [isClient, setIsClient] = useState(false);
+  
+  // Use our centralized hooks
+  const { user } = useCurrentUser();
+  const { posts, error, isLoading, mutate } = usePostsByAuthor(
+    user?.id || 0,
+    { enabled: !!user?.id }
+  );
 
   // Ensure we're on the client side
   useEffect(() => {
@@ -44,33 +42,9 @@ export default function Dashboard() {
     }
   }, [status, isClient]);
 
-  const {
-    data: posts,
-    error,
-    isLoading,
-    mutate,
-  } = useSWR(
-    // Only fetch if we have a session and are on client side
-    isClient && session ? '/api/user/posts' : null,
-    fetcher,
-    {
-      revalidateOnFocus: false,
-      revalidateOnReconnect: true,
-      shouldRetryOnError: false,
-    },
-  );
-
   const handleDelete = async (postId: number) => {
     try {
-      const response = await fetch(`/api/posts/${postId}`, {
-        method: 'DELETE',
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to delete the post.');
-      }
-
+      await api.posts.delete(postId);
       // Revalidate the posts list
       mutate();
     } catch (error) {

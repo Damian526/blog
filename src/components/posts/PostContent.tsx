@@ -1,6 +1,7 @@
 'use client';
 
 import RichText from '@/components/common/RichText';
+import { Post } from '@/server/api';
 import {
   PostContainer,
   PostTitle,
@@ -9,19 +10,7 @@ import {
 } from '@/styles/components/posts/Post.styles';
 
 interface PostContentProps {
-  post: {
-    id: number;
-    title: string;
-    content: string;
-    createdAt: Date;
-    author: {
-      name: string | null;
-      email: string;
-    };
-    _count: {
-      comments: number;
-    };
-  };
+  post: Post;
 }
 
 // This is a Server Component - no 'use client' directive

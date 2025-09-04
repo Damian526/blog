@@ -1,9 +1,6 @@
 import useSWR from 'swr';
-import { Post, PostFilters } from '@/server/api';
+import { Post, PostFilters, api } from '@/server/api';
 
-// ============================================
-// ENHANCED POSTS HOOK WITH NEW API LAYER
-// ============================================
 
 interface UsePostsOptions {
   filters?: Partial<PostFilters>;
@@ -26,11 +23,7 @@ export function usePosts(options: UsePostsOptions = {}) {
     mutate,
   } = useSWR<Post[]>(
     cacheKey,
-    async () => {
-      // Import the API on the client side
-      const { api } = await import('@/server/api');
-      return api.posts.getAll(filters);
-    },
+    () => api.posts.getAll(filters),
     {
       revalidateOnFocus: false,
       revalidateOnReconnect: true,
@@ -40,9 +33,7 @@ export function usePosts(options: UsePostsOptions = {}) {
     }
   );
 
-  const createPost = async (postData: Parameters<typeof import('@/server/api').api.posts.create>[0]) => {
-    const { api } = await import('@/server/api');
-    
+  const createPost = async (postData: Parameters<typeof api.posts.create>[0]) => {
     // Optimistic update
     if (posts) {
       const tempPost = {
@@ -94,9 +85,6 @@ export function usePublishedPosts(options: Omit<UsePostsOptions, 'filters'> & { 
   });
 }
 
-// ============================================
-// POSTS BY AUTHOR HOOK
-// ============================================
 
 export function usePostsByAuthor(authorId: number, options: Omit<UsePostsOptions, 'filters'> & { filters?: Omit<Partial<PostFilters>, 'authorId'> } = {}) {
   return usePosts({

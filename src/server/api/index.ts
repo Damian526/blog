@@ -1,28 +1,16 @@
-// ============================================
-// MAIN API EXPORTS
-// ============================================
-
-// API Client
 export { apiClient, ApiError, CACHE_TAGS, CACHE_TIMES } from './client';
 
-// Type Definitions & Schemas
 export * from './types';
 
-// API Services
 export { PostsApi, revalidatePosts, revalidatePost, revalidateAllPosts } from './posts';
 export { CommentsApi, revalidatePostComments, revalidateComment, revalidateAllComments } from './comments';
 export { UsersApi, revalidateUser, revalidateAllUsers } from './users';
 export { CategoriesApi, revalidateCategories } from './categories';
 
-// Import for internal use
 import { PostsApi } from './posts';
 import { CommentsApi } from './comments';
 import { UsersApi } from './users';
 import { CategoriesApi } from './categories';
-
-// ============================================
-// CONVENIENCE RE-EXPORTS FOR COMMON OPERATIONS
-// ============================================
 
 // Most commonly used functions for quick access
 export const api = {
@@ -40,7 +28,6 @@ export const api = {
     getStats: PostsApi.getPostStats,
   },
   
-  // Comments
   comments: {
     getByPost: CommentsApi.getPostComments,
     getById: CommentsApi.getComment,
@@ -54,7 +41,6 @@ export const api = {
     getStats: CommentsApi.getCommentStats,
   },
   
-  // Users
   users: {
     getCurrent: UsersApi.getCurrentUser,
     getById: UsersApi.getUser,
