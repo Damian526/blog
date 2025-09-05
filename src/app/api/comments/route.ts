@@ -6,7 +6,7 @@ import { revalidateTag } from 'next/cache';
 
 export async function POST(request: Request) {
   try {
-    const { content, postId } = await request.json();
+    const { content, postId, parentId } = await request.json();
 
     if (!content || !postId) {
       return NextResponse.json(
@@ -37,6 +37,7 @@ export async function POST(request: Request) {
         content,
         post: { connect: { id: postId } },
         author: { connect: { id: user.id } },
+        ...(parentId && { parent: { connect: { id: parentId } } }),
       },
       include: {
         author: {

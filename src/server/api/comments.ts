@@ -92,13 +92,20 @@ export async function replyToComment(
   postId: number,
   content: string,
 ) {
-  const data: CreateComment = {
+  const data = {
     content,
     postId,
     parentId,
   };
 
-  return createComment(data);
+  return apiClient.post(
+    '/api/comments/reply',
+    data,
+    {
+      cache: 'no-store', // No caching for mutations
+    },
+    CommentSchema,
+  );
 }
 
 export async function updateComment(id: number, data: UpdateComment) {
