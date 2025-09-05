@@ -19,6 +19,16 @@ export async function getCurrentUser() {
   );
 }
 
+export async function getCurrentUserProfile() {
+  return apiClient.get(
+    '/api/user/profile',
+    {
+      cache: 'no-store', // Always get fresh profile data
+    },
+    UserSchema
+  );
+}
+
 export async function getUser(id: number) {
   return apiClient.get(
     `/api/users/${id}`,

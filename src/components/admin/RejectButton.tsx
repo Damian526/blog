@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { api } from '@/server/api';
 
 export default function RejectButton({ postId }: { postId: number }) {
   const router = useRouter();
@@ -10,15 +11,7 @@ export default function RejectButton({ postId }: { postId: number }) {
 
   async function handleReject() {
     try {
-      const res = await fetch('/api/admin/posts/reject', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ postId, reason }),
-      });
-
-      if (!res.ok) {
-        throw new Error('Failed to reject post');
-      }
+      await api.admin.rejectPost(postId, reason);
 
       // Refresh the page so we see updated status
       router.refresh();

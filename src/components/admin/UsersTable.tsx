@@ -3,6 +3,7 @@
 import useSWR from 'swr';
 import { useState } from 'react';
 import styled from 'styled-components';
+import { api, User } from '@/server/api';
 import {
   Container,
   Title,
@@ -141,23 +142,10 @@ const FilterButton = styled.button<{ active?: boolean }>`
   }
 `;
 
-interface User {
-  id: number;
-  name: string;
-  email: string;
-  verified: boolean;
-  isExpert: boolean;
-  verificationReason?: string | null;
-  portfolioUrl?: string | null;
-  role: string;
-  createdAt: string;
-  approvedBy?: number | null;
-  approvedAt?: string | null;
-}
-
 export default function UsersTable() {
-  const { data, error, isLoading, mutate } = useSWR<{ users: User[] }>(
-    '/api/admin/users',
+  const { data: users, error, isLoading, mutate } = useSWR<User[]>(
+    'admin-users',
+    () => api.admin.getUsers(),
     {
       revalidateOnFocus: true,
       revalidateOnReconnect: true,
@@ -172,9 +160,9 @@ export default function UsersTable() {
     new Set(),
   );
 
-  const users = data?.users;
-
   const getFilteredUsers = () => {
+    if (!users) return [];
+    
     if (filter === 'pending') {
       return users.filter((user) => !user.verified && !user.verificationReason);
     }
@@ -202,16 +190,12 @@ export default function UsersTable() {
     setProcessingUsers((prev) => new Set(prev.add(userId)));
 
     try {
-      const res = await fetch('/api/admin/users', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, action }),
-      });
-
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || `Failed to ${action} user`);
+      if (action === 'approve') {
+        await api.admin.approveUser(userId);
+      } else if (action === 'reject') {
+        await api.admin.rejectUser(userId);
       }
+      // Note: 'verify' action might need a separate API function
 
       // Revalidate the users list to get fresh data
       mutate();
@@ -236,16 +220,7 @@ export default function UsersTable() {
     setProcessingUsers((prev) => new Set(prev.add(userId)));
 
     try {
-      const res = await fetch('/api/admin/users', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId }),
-      });
-
-      if (!res.ok) {
-        throw new Error('Failed to delete user');
-      }
-
+      await api.admin.deleteUser(userId);
       mutate();
     } catch (error) {
       console.error('Error deleting user:', error);

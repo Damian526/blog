@@ -6,6 +6,7 @@ import useSWR from 'swr';
 import styled from 'styled-components';
 import { uploadImage } from '@/lib/supabase';
 import Image from 'next/image';
+import { api, User } from '@/server/api';
 
 const FormContainer = styled.div`
   background: var(--background);
@@ -248,16 +249,6 @@ const UserInfo = styled.div`
   }
 `;
 
-interface User {
-  id: number;
-  name: string;
-  email: string;
-  profilePicture?: string;
-  role: string;
-  verified: boolean;
-  createdAt: string;
-}
-
 export default function ProfileForm() {
   const { data: session, update } = useSession();
   const [formData, setFormData] = useState({
@@ -279,7 +270,7 @@ export default function ProfileForm() {
     data: user,
     error,
     mutate,
-  } = useSWR<User>('/api/user/profile', {
+  } = useSWR<User>('current-user-profile', () => api.users.getCurrentProfile(), {
     revalidateOnFocus: false,
     revalidateOnReconnect: true,
   });

@@ -32,7 +32,22 @@ export async function GET() {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    return NextResponse.json(user);
+    // Format the response to match our Zod schema
+    const formattedUser = {
+      id: Number(user.id),
+      name: user.name || '',
+      email: user.email,
+      image: user.profilePicture,
+      profilePicture: user.profilePicture,
+      role: user.role,
+      isExpert: user.isExpert,
+      verificationReason: user.verificationReason,
+      portfolioUrl: user.portfolioUrl,
+      verified: user.verified,
+      createdAt: user.createdAt.toISOString(),
+    };
+
+    return NextResponse.json(formattedUser);
   } catch (error) {
     console.error('Error fetching user profile:', error);
     return NextResponse.json(

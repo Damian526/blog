@@ -3,6 +3,7 @@
 import styled from 'styled-components';
 import Link from 'next/link';
 import useSWR from 'swr';
+import { api } from '@/server/api';
 
 const AdminContainer = styled.div`
   max-width: 800px;
@@ -104,7 +105,7 @@ export default function AdminPanel() {
     data: stats,
     error,
     isLoading,
-  } = useSWR<AdminStatsData>('/api/admin/stats', {
+  } = useSWR('admin-stats', () => api.admin.getStats(), {
     revalidateOnFocus: false,
     revalidateOnReconnect: true,
     shouldRetryOnError: false,

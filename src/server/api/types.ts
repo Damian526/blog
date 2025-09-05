@@ -12,6 +12,10 @@ export const UserSchema = z.object({
   role: z.enum(['ADMIN', 'USER']).default('USER'),
   emailVerified: z.boolean().optional(),
   verified: z.boolean().optional(),
+  profilePicture: z.string().nullable().optional(),
+  isExpert: z.boolean().optional(),
+  verificationReason: z.string().nullable().optional(),
+  portfolioUrl: z.string().nullable().optional(),
   createdAt: z.string(),
 });
 
