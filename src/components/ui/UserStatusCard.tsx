@@ -4,6 +4,7 @@ import { useState } from 'react';
 import styled from 'styled-components';
 import useSWR from 'swr';
 import { useSession } from 'next-auth/react';
+import { api } from '@/server/api';
 import ExpertApplicationForm from '@/components/ui/forms/ExpertApplicationForm';
 
 const StatusCard = styled.div`
@@ -152,7 +153,7 @@ export default function UserStatusCard() {
     error,
     isLoading,
     mutate,
-  } = useSWR<UserData>(session ? '/api/user/profile' : null, {
+  } = useSWR(session ? 'user-profile' : null, () => api.users.getProfile(), {
     revalidateOnFocus: false,
     revalidateOnReconnect: true,
     shouldRetryOnError: false,

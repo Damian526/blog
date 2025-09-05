@@ -414,19 +414,7 @@ export default function ProfileForm() {
         updateData.newPassword = formData.newPassword;
       }
 
-      const response = await fetch('/api/user/profile', {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(updateData),
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.error || 'Failed to update profile');
-      }
+      const response = await api.users.updateCurrentProfile(updateData);
 
       setMessage({ type: 'success', text: 'Profile updated successfully!' });
 
@@ -446,8 +434,8 @@ export default function ProfileForm() {
         });
       }
 
-      // If email changed, we need to wait a bit for the session to update
-      // then refresh the SWR cache
+      // Refresh the SWR cache with new data
+      mutate(response);
       if (emailChanged) {
         setTimeout(() => {
           mutate();

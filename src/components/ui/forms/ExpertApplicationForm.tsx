@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useSession } from 'next-auth/react';
+import { api } from '@/server/api';
 import {
   FormContainer,
   FormHeader,
@@ -64,22 +65,10 @@ export default function ExpertApplicationForm({
     }
 
     try {
-      const response = await fetch('/api/user/request-verification', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          reason: formData.reason.trim(),
-          portfolioUrl: formData.portfolioUrl.trim() || null,
-        }),
+      await api.auth.requestVerification({
+        verificationReason: formData.reason.trim(),
+        portfolioUrl: formData.portfolioUrl.trim() || undefined,
       });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to submit application');
-      }
 
       setSuccess(
         'Your expert application has been submitted successfully! Our team will review it soon.',

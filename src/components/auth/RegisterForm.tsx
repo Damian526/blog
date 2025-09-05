@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { api } from '@/server/api';
 import {
   Title,
   FormContainer,
@@ -164,26 +165,14 @@ export default function RegisterForm() {
     }
 
     try {
-      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
-      const res = await fetch(`${API_BASE_URL}/api/auth/register`, {
-        method: 'POST',
-        body: JSON.stringify({ name, email, password }),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-      const data = await res.json();
-
-      if (!res.ok) {
-        setError(data.error || 'Failed to register.');
-      } else {
-        setSuccess(
-          'Registration successful! Check your email to verify your account.',
-        );
-      }
-    } catch (err) {
+      const result = await api.auth.register({ name, email, password });
+      
+      setSuccess(
+        'Registration successful! Check your email to verify your account.',
+      );
+    } catch (err: any) {
       console.error('Registration error:', err);
-      setError('An error occurred while registering.');
+      setError(err.message || 'An error occurred while registering.');
     }
   }
 

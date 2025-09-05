@@ -6,6 +6,7 @@ import StarterKit from '@tiptap/starter-kit';
 import ImageExtension from '@tiptap/extension-image';
 import Placeholder from '@tiptap/extension-placeholder';
 import { uploadImage } from '@/lib/supabase';
+import { api } from '@/server/api';
 
 import EditorSection from '@/components/posts/EditorSection';
 import CategorySelector from './CategorySelector';
@@ -33,7 +34,6 @@ export default function PostForm({
   );
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
   const editor = useEditor({
     extensions: [
@@ -68,36 +68,26 @@ export default function PostForm({
       setError('Title and Content are required.');
       return;
     }
-    if (selectedMainCategories.length === 0) {
-      setError('Select at least one main category.');
-      return;
-    }
     if (selectedSubcategories.length === 0) {
       setError('Select at least one subcategory.');
       return;
     }
 
     try {
-      const url = post?.id
-        ? `${API_BASE_URL}/api/posts/${post.id}`
-        : `${API_BASE_URL}/api/posts`;
-      const method = post?.id ? 'PATCH' : 'POST';
       const html = editor.getHTML();
+      
+      const postData = {
+        title,
+        content: html,
+        subcategoryIds: selectedSubcategories, // Only send subcategories as backend expects
+      };
 
-      const res = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title,
-          content: html,
-          mainCategoryIds: selectedMainCategories,
-          subcategoryIds: selectedSubcategories,
-        }),
-      });
-
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error || 'Failed to save.');
+      if (post?.id) {
+        // Update existing post
+        await api.posts.update(post.id, postData);
+      } else {
+        // Create new post
+        await api.posts.create(postData);
       }
 
       router.push(onSuccessRedirect);

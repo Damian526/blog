@@ -8,6 +8,7 @@ export * from './comments';
 export * from './users';
 export * from './categories';
 export * from './admin';
+export * from './auth';
 
 // Import functions for the convenience api object
 import * as postsApi from './posts';
@@ -15,6 +16,7 @@ import * as commentsApi from './comments';
 import * as usersApi from './users';
 import * as categoriesApi from './categories';
 import * as adminApi from './admin';
+import * as authApi from './auth';
 
 // Most commonly used functions for quick access
 export const api = {
@@ -48,6 +50,7 @@ export const api = {
   users: {
     getCurrent: usersApi.getCurrentUser,
     getCurrentProfile: usersApi.getCurrentUserProfile,
+    updateCurrentProfile: usersApi.updateCurrentUserProfile,
     getById: usersApi.getUser,
     getProfile: usersApi.getUserProfile,
     getAll: usersApi.getUsers,
@@ -84,5 +87,11 @@ export const api = {
     updateUserRole: adminApi.adminUpdateUserRole,
     publishPost: adminApi.publishPost,
     rejectPost: adminApi.rejectPost,
+  },
+
+  // Auth
+  auth: {
+    register: authApi.register,
+    requestVerification: authApi.requestVerification,
   },
 };

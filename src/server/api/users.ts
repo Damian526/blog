@@ -29,6 +29,23 @@ export async function getCurrentUserProfile() {
   );
 }
 
+export async function updateCurrentUserProfile(data: {
+  name?: string;
+  email?: string;
+  profilePicture?: string;
+  currentPassword?: string;
+  newPassword?: string;
+}) {
+  return apiClient.patch(
+    '/api/user/profile',
+    data,
+    {
+      cache: 'no-store',
+    },
+    UserSchema
+  );
+}
+
 export async function getUser(id: number) {
   return apiClient.get(
     `/api/users/${id}`,
