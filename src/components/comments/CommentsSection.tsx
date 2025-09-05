@@ -182,9 +182,40 @@ export default function CommentsSection({ postId }: CommentsSectionProps) {
 
   const handleEdit = async (commentId: number, updatedContent: string) => {
     try {
+      // Optimistic update: Update the local data immediately
+      const optimisticUpdate = (currentComments: Comment[] | undefined) => {
+        if (!currentComments) return currentComments;
+        
+        return currentComments.map(comment => {
+          if (comment.id === commentId) {
+            return { ...comment, content: updatedContent };
+          }
+          // Also check replies
+          if (comment.replies) {
+            return {
+              ...comment,
+              replies: comment.replies.map(reply => 
+                reply.id === commentId 
+                  ? { ...reply, content: updatedContent }
+                  : reply
+              )
+            };
+          }
+          return comment;
+        });
+      };
+
+      // Apply optimistic update immediately
+      mutate(optimisticUpdate, false);
+      
+      // Make the API call
       await api.comments.update(commentId, { content: updatedContent });
+      
+      // Revalidate to ensure data consistency
       mutate();
     } catch (err: any) {
+      // Revert on error
+      mutate();
       alert(err.message || 'Failed to update comment');
     }
   };

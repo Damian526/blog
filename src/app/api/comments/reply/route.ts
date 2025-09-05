@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { revalidateTag } from 'next/cache';
 
 export async function POST(request: Request) {
   try {
@@ -78,6 +79,11 @@ export async function POST(request: Request) {
         createdAt: reply.author.createdAt.toISOString(),
       },
     };
+
+    // Invalidate cache for parent comment, post comments, and general comments
+    revalidateTag(`comment-${parentId}`);
+    revalidateTag(`post-${postId}-comments`);
+    revalidateTag('comments');
 
     return NextResponse.json(formattedReply, { status: 201 });
   } catch (error) {
