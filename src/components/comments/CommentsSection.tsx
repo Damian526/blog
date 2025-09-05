@@ -7,6 +7,8 @@ import EditableComment from '@/components/comments/EditableComment';
 import AddCommentForm from '@/components/comments/AddCommentForm';
 import ReplyForm from '@/components/comments/ReplyForm';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
+import { Comment } from '@/server/api/types';
+import { api } from '@/server/api';
 
 const CommentsContainer = styled.div`
   margin-top: 0;
@@ -139,18 +141,6 @@ const LoadingMessage = styled.div`
   font-size: 1rem;
 `;
 
-interface Comment {
-  id: number;
-  content: string;
-  createdAt: string;
-  parentId?: number | null;
-  author: {
-    name: string;
-    email: string;
-  };
-  replies?: Comment[];
-}
-
 interface CommentsSectionProps {
   postId: number;
 }
@@ -161,51 +151,41 @@ export default function CommentsSection({ postId }: CommentsSectionProps) {
     error,
     isLoading,
     mutate,
-  } = useSWR<Comment[]>(postId ? `/api/comments?postId=${postId}` : null);
+  } = useSWR<Comment[]>(
+    postId ? `comments-${postId}` : null,
+    () => postId ? api.comments.getByPost(postId) : null
+  );
 
   const { user: currentUser } = useCurrentUser();
   const [replyingTo, setReplyingTo] = useState<number | null>(null);
 
   const currentUserEmail = currentUser?.email || null;
 
+  console.log('CommentsSection:', { postId, comments, error, isLoading });
+
   if (isLoading) return <LoadingMessage>Loading comments...</LoadingMessage>;
-  if (error) return <LoadingMessage>Failed to load comments</LoadingMessage>;
+  if (error) {
+    console.error('Comments error:', error);
+    return <LoadingMessage>Failed to load comments: {error.message}</LoadingMessage>;
+  }
 
   const handleDelete = async (commentId: number) => {
     if (confirm('Are you sure you want to delete this comment?')) {
       try {
-        const res = await fetch(`/api/comments?commentId=${commentId}`, {
-          method: 'DELETE',
-        });
-
-        if (!res.ok) {
-          const data = await res.json();
-          throw new Error(data.error || 'Failed to delete comment');
-        }
-
+        await api.comments.delete(commentId);
         mutate();
       } catch (err: any) {
-        alert(err.message);
+        alert(err.message || 'Failed to delete comment');
       }
     }
   };
 
   const handleEdit = async (commentId: number, updatedContent: string) => {
     try {
-      const res = await fetch('/api/comments', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ commentId, content: updatedContent }),
-      });
-
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || 'Failed to update comment');
-      }
-
+      await api.comments.update(commentId, { content: updatedContent });
       mutate();
     } catch (err: any) {
-      alert(err.message);
+      alert(err.message || 'Failed to update comment');
     }
   };
 

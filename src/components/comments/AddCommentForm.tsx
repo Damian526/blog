@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { api } from '@/server/api';
 import {
   FormContainer,
   FormLabel,
@@ -32,21 +33,15 @@ export default function AddCommentForm({
     }
 
     try {
-      const res = await fetch('/api/comments', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content: content.trim(), postId }),
+      await api.comments.create({
+        content: content.trim(),
+        postId,
       });
-
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || 'Failed to create comment');
-      }
 
       setContent('');
       onCommentAdded();
     } catch (err: any) {
-      setError(err.message);
+      setError(err.message || 'Failed to create comment');
     } finally {
       setIsSubmitting(false);
     }

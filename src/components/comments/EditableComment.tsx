@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { Comment } from '@/server/api/types';
 import {
   CommentItem,
   Avatar,
@@ -15,16 +16,7 @@ import {
 } from '@/styles/components/comments/EditableComment.styles';
 
 interface EditableCommentProps {
-  comment: {
-    id: number;
-    content: string;
-    createdAt: string;
-    parentId?: number | null;
-    author: {
-      name: string;
-      email: string;
-    };
-  };
+  comment: Comment;
   currentUserEmail: string | null;
   onDelete: (commentId: number) => void;
   onEdit: (commentId: number, updatedContent: string) => void;
@@ -39,7 +31,7 @@ export default function EditableComment({
   onReplyClick,
 }: EditableCommentProps) {
   const [isEditing, setIsEditing] = useState(false);
-  const [editContent, setEditContent] = useState(comment.content);
+  const [editContent, setEditContent] = useState(comment.content || '');
   const [isSaving, setIsSaving] = useState(false);
 
   const handleSave = async () => {
@@ -57,7 +49,7 @@ export default function EditableComment({
   };
 
   const handleCancel = () => {
-    setEditContent(comment.content);
+    setEditContent(comment.content || '');
     setIsEditing(false);
   };
 
@@ -131,7 +123,7 @@ export default function EditableComment({
           </>
         ) : (
           <>
-            <Content>{comment.content}</Content>
+            <Content>{comment.content || '[No content]'}</Content>
             <CommentActions>
               {isOwner && (
                 <>

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import styled from 'styled-components';
+import { api } from '@/server/api';
 import {
   FormTextarea,
   FormButton,
@@ -58,26 +59,13 @@ export default function ReplyForm({
     }
 
     try {
-      const res = await fetch('/api/comments/reply', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          content: replyContent.trim(),
-          postId,
-          parentId,
-        }),
-      });
-
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || 'Failed to post reply');
-      }
+      await api.comments.reply(parentId, postId, replyContent.trim());
 
       setReplyContent('');
       onReplyAdded();
       onCancel?.();
     } catch (err: any) {
-      setError(err.message);
+      setError(err.message || 'Failed to post reply');
     } finally {
       setIsSubmitting(false);
     }
