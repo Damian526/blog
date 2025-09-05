@@ -73,8 +73,9 @@ export async function GET(request: Request) {
         id: Number(post.id), // Ensure ID is number
         createdAt: post.createdAt.toISOString(),
         author: {
-          ...post.author,
           id: Number(post.author.id), // Ensure author ID is number
+          name: post.author.name, // name is required in DB
+          email: post.author.email,
           image: post.author.profilePicture || null, // Map profilePicture to image, handle null
           createdAt: post.author.createdAt.toISOString(),
         },

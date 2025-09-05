@@ -49,9 +49,37 @@ export async function POST(request: Request) {
         parentId,
         authorId: user.id,
       },
+      include: {
+        author: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            profilePicture: true,
+            createdAt: true,
+          },
+        },
+      },
     });
 
-    return NextResponse.json(reply, { status: 201 });
+    const formattedReply = {
+      id: Number(reply.id),
+      content: reply.content,
+      postId: reply.postId ? Number(reply.postId) : null,
+      discussionId: reply.discussionId ? Number(reply.discussionId) : null,
+      parentId: reply.parentId ? Number(reply.parentId) : null,
+      authorId: Number(reply.authorId),
+      createdAt: reply.createdAt.toISOString(),
+      author: {
+        id: Number(reply.author.id),
+        name: reply.author.name, // name is required in DB
+        email: reply.author.email,
+        image: reply.author.profilePicture || null,
+        createdAt: reply.author.createdAt.toISOString(),
+      },
+    };
+
+    return NextResponse.json(formattedReply, { status: 201 });
   } catch (error) {
     console.error('Error replying to comment:', error);
     return NextResponse.json(

@@ -14,12 +14,14 @@ import { z } from 'zod';
 // ============================================
 
 export async function getPostComments(postId: number, includeReplies: boolean = true) {
-  const searchParams = new URLSearchParams();
+  const searchParams = new URLSearchParams({
+    postId: postId.toString(),
+  });
   if (includeReplies) {
     searchParams.set('includeReplies', 'true');
   }
   
-  const endpoint = `/api/posts/${postId}/comments?${searchParams.toString()}`;
+  const endpoint = `/api/comments?${searchParams.toString()}`;
   
   return apiClient.get(
     endpoint,

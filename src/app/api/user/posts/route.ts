@@ -22,14 +22,18 @@ export async function GET(req: Request) {
         declineReason: true,
         author: {
           select: {
+            id: true,
             name: true,
             email: true,
+            profilePicture: true,
+            createdAt: true,
           },
         },
         subcategories: {
           select: {
             id: true,
             name: true,
+            categoryId: true,
             category: {
               select: {
                 id: true,
@@ -41,7 +45,30 @@ export async function GET(req: Request) {
       },
     });
 
-    return NextResponse.json(userPosts);
+    // Format the response to ensure consistent data types
+    const formattedPosts = userPosts.map((post) => ({
+      ...post,
+      id: Number(post.id),
+      createdAt: post.createdAt.toISOString(),
+      author: {
+        id: Number(post.author.id),
+        name: post.author.name, // name is required in DB
+        email: post.author.email,
+        image: post.author.profilePicture || null,
+        createdAt: post.author.createdAt.toISOString(),
+      },
+      subcategories: post.subcategories.map(subcat => ({
+        ...subcat,
+        id: Number(subcat.id),
+        categoryId: Number(subcat.categoryId),
+        category: subcat.category ? {
+          ...subcat.category,
+          id: Number(subcat.category.id),
+        } : undefined,
+      })),
+    }));
+
+    return NextResponse.json(formattedPosts);
   } catch (error) {
     console.error('Error fetching user posts:', error);
     return NextResponse.json(

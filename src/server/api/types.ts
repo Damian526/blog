@@ -6,13 +6,13 @@ import { z } from 'zod';
 
 export const UserSchema = z.object({
   id: z.number(),
-  name: z.string().nullable(),
+  name: z.string(), 
   email: z.string(),
-  image: z.string().nullable(),
+  image: z.string().nullable(), 
   role: z.enum(['ADMIN', 'USER']).default('USER'),
   emailVerified: z.boolean().optional(),
-  createdAt: z.string().transform(str => new Date(str)),
-  updatedAt: z.string().transform(str => new Date(str)),
+  verified: z.boolean().optional(),
+  createdAt: z.string(),
 });
 
 export const CategorySchema = z.object({
@@ -29,13 +29,19 @@ export const SubcategorySchema = z.object({
 
 export const CommentSchema = z.object({
   id: z.number(),
-  content: z.string(),
-  createdAt: z.string().transform(str => new Date(str)),
-  updatedAt: z.string().transform(str => new Date(str)),
-  userId: z.number(),
-  postId: z.number(),
+  content: z.string().nullable(),
+  createdAt: z.string(), 
+  authorId: z.number(),
+  postId: z.number().nullable(),
+  discussionId: z.number().nullable(),
   parentId: z.number().nullable(),
-  author: UserSchema,
+  author: z.object({
+    id: z.number(),
+    name: z.string(), 
+    email: z.string(),
+    image: z.string().nullable(),
+    createdAt: z.string(), 
+  }),
   replies: z.array(z.lazy(() => CommentSchema)).optional(),
   _count: z.object({
     replies: z.number(),
@@ -48,31 +54,34 @@ export const PostSchema = z.object({
   content: z.string(),
   published: z.boolean(),
   declineReason: z.string().nullable(),
-  coverImageUrl: z.string().nullable(),
-  createdAt: z.string().transform(str => new Date(str)),
-  updatedAt: z.string().transform(str => new Date(str)),
+  createdAt: z.string(), 
   authorId: z.number(),
-  author: UserSchema,
-  subcategories: z.array(SubcategorySchema).optional().default([]),
+  author: z.object({
+    id: z.number(),
+    name: z.string(), 
+    email: z.string(),
+    image: z.string().nullable(),
+    createdAt: z.string(), 
+  }),
+  subcategories: z.array(SubcategorySchema).default([]),
   comments: z.array(CommentSchema).optional(),
   _count: z.object({
     comments: z.number(),
-  }).optional(),
+  }),
 });
 
-// Post summary schema for list views (matches what the API actually returns)
 export const PostSummarySchema = z.object({
   id: z.number(),
   title: z.string(),
   content: z.string(),
   published: z.boolean(),
-  createdAt: z.string(), // Keep as string (ISO format from API)
+  createdAt: z.string(),
   author: z.object({
     id: z.number(),
     name: z.string(),
     email: z.string(),
-    image: z.string().nullable(), // This maps to profilePicture from DB
-    createdAt: z.string(), // Keep as string (ISO format from API)
+    image: z.string().nullable(),
+    createdAt: z.string(), 
   }),
   subcategories: z.array(z.object({
     id: z.number(),
@@ -130,7 +139,6 @@ export const CreatePostSchema = z.object({
   title: z.string().min(1, 'Title is required'),
   content: z.string().min(1, 'Content is required'),
   published: z.boolean().default(false),
-  coverImageUrl: z.string().url().optional().or(z.literal('')),
   subcategoryIds: z.array(z.number()).optional(),
 });
 

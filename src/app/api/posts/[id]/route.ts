@@ -20,7 +20,23 @@ export async function GET(
       where: { id: postId },
       include: {
         author: {
-          select: { name: true, email: true },
+          select: { 
+            id: true,
+            name: true, 
+            email: true,
+            profilePicture: true,
+            createdAt: true,
+          },
+        },
+        subcategories: {
+          select: {
+            id: true,
+            name: true,
+            categoryId: true,
+            category: { 
+              select: { id: true, name: true } 
+            },
+          },
         },
         _count: {
           select: { comments: true },
@@ -32,7 +48,35 @@ export async function GET(
       return NextResponse.json({ error: 'Post not found' }, { status: 404 });
     }
 
-    return NextResponse.json(post);
+    // Format the response to match our schema
+    const formattedPost = {
+      id: Number(post.id),
+      title: post.title,
+      content: post.content || null,
+      published: post.published,
+      authorId: Number(post.authorId),
+      createdAt: post.createdAt.toISOString(),
+      declineReason: post.declineReason || null,
+      author: {
+        id: Number(post.author.id),
+        name: post.author.name, // name is required in DB, so no need for fallback
+        email: post.author.email,
+        image: post.author.profilePicture || null,
+        createdAt: post.author.createdAt.toISOString(),
+      },
+      subcategories: post.subcategories.map(subcat => ({
+        id: Number(subcat.id),
+        name: subcat.name,
+        categoryId: Number(subcat.categoryId),
+        category: subcat.category ? {
+          id: Number(subcat.category.id),
+          name: subcat.category.name,
+        } : undefined,
+      })),
+      _count: post._count,
+    };
+
+    return NextResponse.json(formattedPost);
   } catch (error) {
     console.error('Error fetching post:', error);
     return NextResponse.json(
@@ -97,17 +141,59 @@ export async function PATCH(request: Request) {
       where: { id: postId },
       data: updateData,
       include: {
+        author: {
+          select: { 
+            id: true,
+            name: true, 
+            email: true,
+            profilePicture: true,
+            createdAt: true,
+          },
+        },
         subcategories: {
           select: {
             id: true,
             name: true,
-            category: { select: { id: true, name: true } },
+            categoryId: true,
+            category: { 
+              select: { id: true, name: true } 
+            },
           },
+        },
+        _count: {
+          select: { comments: true },
         },
       },
     });
 
-    return NextResponse.json(updatedPost);
+    // Format the response to match our schema
+    const formattedPost = {
+      ...updatedPost,
+      id: Number(updatedPost.id),
+      authorId: Number(updatedPost.authorId),
+      createdAt: updatedPost.createdAt.toISOString(),
+      updatedAt: updatedPost.createdAt.toISOString(), // Use createdAt since updatedAt doesn't exist
+      coverImageUrl: null, // Field doesn't exist in DB
+      declineReason: updatedPost.declineReason || null,
+      author: {
+        ...updatedPost.author,
+        id: Number(updatedPost.author.id),
+        image: updatedPost.author.profilePicture || null,
+        createdAt: updatedPost.author.createdAt.toISOString(),
+        updatedAt: updatedPost.author.createdAt.toISOString(), // Use createdAt since updatedAt doesn't exist
+      },
+      subcategories: updatedPost.subcategories.map(subcat => ({
+        ...subcat,
+        id: Number(subcat.id),
+        categoryId: Number(subcat.categoryId),
+        category: subcat.category ? {
+          ...subcat.category,
+          id: Number(subcat.category.id),
+        } : undefined,
+      })),
+    };
+
+    return NextResponse.json(formattedPost);
   } catch (error) {
     console.error('Error updating post:', error);
     return NextResponse.json(

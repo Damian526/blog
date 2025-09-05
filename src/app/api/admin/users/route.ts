@@ -38,7 +38,16 @@ export async function GET() {
       orderBy: { createdAt: 'desc' },
     });
 
-    return NextResponse.json({ users });
+    // Format the response to ensure consistent data types
+    const formattedUsers = users.map((user) => ({
+      ...user,
+      id: Number(user.id),
+      approvedBy: user.approvedBy ? Number(user.approvedBy) : null,
+      createdAt: user.createdAt.toISOString(),
+      approvedAt: user.approvedAt ? user.approvedAt.toISOString() : null,
+    }));
+
+    return NextResponse.json({ users: formattedUsers });
   } catch (error) {
     console.error('Failed to fetch users:', error);
     return NextResponse.json(
