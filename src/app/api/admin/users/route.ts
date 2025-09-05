@@ -40,14 +40,21 @@ export async function GET() {
 
     // Format the response to ensure consistent data types
     const formattedUsers = users.map((user) => ({
-      ...user,
       id: Number(user.id),
+      name: user.name || '',
+      email: user.email,
+      image: null, // Admin endpoint doesn't return profilePicture, but Zod schema expects image
+      role: user.role,
+      verified: user.verified || false,
+      isExpert: user.isExpert || false,
+      verificationReason: user.verificationReason,
+      portfolioUrl: user.portfolioUrl,
       approvedBy: user.approvedBy ? Number(user.approvedBy) : null,
-      createdAt: user.createdAt.toISOString(),
       approvedAt: user.approvedAt ? user.approvedAt.toISOString() : null,
+      createdAt: user.createdAt.toISOString(),
     }));
 
-    return NextResponse.json({ users: formattedUsers });
+    return NextResponse.json(formattedUsers); // Return array directly, not wrapped in object
   } catch (error) {
     console.error('Failed to fetch users:', error);
     return NextResponse.json(

@@ -16,6 +16,8 @@ export const UserSchema = z.object({
   isExpert: z.boolean().optional(),
   verificationReason: z.string().nullable().optional(),
   portfolioUrl: z.string().nullable().optional(),
+  approvedBy: z.number().nullable().optional(),
+  approvedAt: z.string().nullable().optional(),
   createdAt: z.string(),
 });
 

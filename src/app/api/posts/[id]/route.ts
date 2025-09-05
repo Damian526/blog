@@ -168,29 +168,30 @@ export async function PATCH(request: Request) {
 
     // Format the response to match our schema
     const formattedPost = {
-      ...updatedPost,
       id: Number(updatedPost.id),
-      authorId: Number(updatedPost.authorId),
-      createdAt: updatedPost.createdAt.toISOString(),
-      updatedAt: updatedPost.createdAt.toISOString(), // Use createdAt since updatedAt doesn't exist
-      coverImageUrl: null, // Field doesn't exist in DB
+      title: updatedPost.title,
+      content: updatedPost.content,
+      published: updatedPost.published,
       declineReason: updatedPost.declineReason || null,
+      createdAt: updatedPost.createdAt.toISOString(),
+      authorId: Number(updatedPost.authorId),
       author: {
-        ...updatedPost.author,
         id: Number(updatedPost.author.id),
+        name: updatedPost.author.name,
+        email: updatedPost.author.email,
         image: updatedPost.author.profilePicture || null,
         createdAt: updatedPost.author.createdAt.toISOString(),
-        updatedAt: updatedPost.author.createdAt.toISOString(), // Use createdAt since updatedAt doesn't exist
       },
       subcategories: updatedPost.subcategories.map(subcat => ({
-        ...subcat,
         id: Number(subcat.id),
+        name: subcat.name,
         categoryId: Number(subcat.categoryId),
         category: subcat.category ? {
-          ...subcat.category,
           id: Number(subcat.category.id),
+          name: subcat.category.name,
         } : undefined,
       })),
+      _count: updatedPost._count,
     };
 
     return NextResponse.json(formattedPost);

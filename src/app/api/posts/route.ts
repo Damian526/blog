@@ -145,11 +145,60 @@ export async function POST(request: Request) {
         },
       },
       include: {
-        subcategories: true,
+        author: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            profilePicture: true,
+            createdAt: true,
+          },
+        },
+        subcategories: {
+          select: {
+            id: true,
+            name: true,
+            categoryId: true,
+            category: { select: { id: true, name: true } },
+          },
+        },
+        _count: {
+          select: {
+            comments: true,
+          },
+        },
       },
     });
 
-    return NextResponse.json(post);
+    // Format the response to match our Zod schema
+    const formattedPost = {
+      id: Number(post.id),
+      title: post.title,
+      content: post.content,
+      published: post.published,
+      declineReason: null,
+      createdAt: post.createdAt.toISOString(),
+      authorId: Number(post.authorId),
+      author: {
+        id: Number(post.author.id),
+        name: post.author.name,
+        email: post.author.email,
+        image: post.author.profilePicture || null,
+        createdAt: post.author.createdAt.toISOString(),
+      },
+      subcategories: post.subcategories.map(subcat => ({
+        id: Number(subcat.id),
+        name: subcat.name,
+        categoryId: Number(subcat.categoryId),
+        category: subcat.category ? {
+          id: Number(subcat.category.id),
+          name: subcat.category.name,
+        } : undefined,
+      })),
+      _count: post._count,
+    };
+
+    return NextResponse.json(formattedPost);
   } catch (error) {
     console.error('Error creating post with subcategories:', error);
     return NextResponse.json(
