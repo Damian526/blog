@@ -7,23 +7,34 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom';
 
+// Mock the API
+jest.mock('@/server/api', () => ({
+  api: {
+    comments: {
+      getByPost: jest.fn(),
+      create: jest.fn(),
+      update: jest.fn(),
+      delete: jest.fn(),
+    },
+    users: {
+      getCurrentUser: jest.fn(),
+    },
+  },
+}));
+
 // Mock the hooks
 jest.mock('@/hooks/useCurrentUser', () => ({
-  __esModule: true,
-  default: jest.fn(),
+  useCurrentUser: jest.fn(),
 }));
 
 jest.mock('@/hooks/useComments', () => ({
-  __esModule: true,
-  default: jest.fn(),
+  useComments: jest.fn(),
 }));
 
-// Mock fetch for API calls
-global.fetch = jest.fn();
-
-import Comments from '@/components/comments/Comment';
+import CommentsSection from '@/components/comments/CommentsSection';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
-import useComments from '@/hooks/useComments';
+import { useComments } from '@/hooks/useComments';
+import { api } from '@/server/api';
 
 // Mock data
 const mockUser = {
@@ -60,7 +71,7 @@ const mockComments = [
 
 describe('Comments Component - Advanced Tests', () => {
   let user: ReturnType<typeof userEvent.setup>;
-  let mockAddComment: jest.Mock;
+  let mockCreateComment: jest.Mock;
   let mockDeleteComment: jest.Mock;
   let mockMutate: jest.Mock;
 
@@ -68,9 +79,20 @@ describe('Comments Component - Advanced Tests', () => {
     user = userEvent.setup({ delay: null });
 
     // Mock functions
-    mockAddComment = jest.fn();
+    mockCreateComment = jest.fn();
     mockDeleteComment = jest.fn();
     mockMutate = jest.fn();
+
+    // Mock API functions
+    (api.comments.create as jest.Mock).mockResolvedValue({
+      id: 3,
+      content: 'This is a new comment',
+      createdAt: new Date().toISOString(),
+      author: mockUser,
+      postId: 1,
+    });
+
+    (api.comments.delete as jest.Mock).mockResolvedValue({ success: true });
 
     // Default mock implementations
     (useCurrentUser as jest.Mock).mockReturnValue({
@@ -83,7 +105,7 @@ describe('Comments Component - Advanced Tests', () => {
       comments: mockComments,
       isLoading: false,
       error: null,
-      addComment: mockAddComment,
+      createComment: mockCreateComment,
       deleteComment: mockDeleteComment,
       mutate: mockMutate,
       commentCount: mockComments.length,
@@ -99,7 +121,7 @@ describe('Comments Component - Advanced Tests', () => {
   it('renders existing comments correctly', () => {
     console.log('🧪 Testing comments rendering...');
 
-    render(<Comments postId={1} />);
+    render(<CommentsSection postId={1} />);
 
     console.log('📝 Checking comment count display...');
     expect(screen.getByText('2 Comments')).toBeInTheDocument();
@@ -142,7 +164,7 @@ describe('Comments Component - Advanced Tests', () => {
 
     mockAddComment.mockResolvedValueOnce(newComment);
 
-    render(<Comments postId={1} />);
+    render(<CommentsSection postId={1} />);
 
     const commentInput = screen.getByPlaceholderText(/write a comment/i);
     const submitButton = screen.getByRole('button', { name: /post comment/i });
@@ -176,7 +198,7 @@ describe('Comments Component - Advanced Tests', () => {
   it('prevents submission of empty comments', async () => {
     console.log('🧪 Testing form validation...');
 
-    render(<Comments postId={1} />);
+    render(<CommentsSection postId={1} />);
 
     const submitButton = screen.getByRole('button', { name: /post comment/i });
 
@@ -196,7 +218,7 @@ describe('Comments Component - Advanced Tests', () => {
   it('enforces character limit for comments', async () => {
     console.log('🧪 Testing character limit validation...');
 
-    render(<Comments postId={1} />);
+    render(<CommentsSection postId={1} />);
 
     const commentInput = screen.getByPlaceholderText(/write a comment/i);
     const longComment = 'x'.repeat(1001); // Assuming 1000 char limit
@@ -228,7 +250,7 @@ describe('Comments Component - Advanced Tests', () => {
       isLoading: false,
     });
 
-    render(<Comments postId={1} />);
+    render(<CommentsSection postId={1} />);
 
     console.log('📝 Checking comments are still visible...');
     expect(
@@ -262,7 +284,7 @@ describe('Comments Component - Advanced Tests', () => {
       commentCount: 0,
     });
 
-    render(<Comments postId={1} />);
+    render(<CommentsSection postId={1} />);
 
     console.log('📝 Checking loading spinner is shown...');
     expect(screen.getByTestId('comments-loading')).toBeInTheDocument();
@@ -288,7 +310,7 @@ describe('Comments Component - Advanced Tests', () => {
       commentCount: 0,
     });
 
-    render(<Comments postId={1} />);
+    render(<CommentsSection postId={1} />);
 
     console.log('📝 Checking error message is displayed...');
     expect(screen.getByText(/failed to load comments/i)).toBeInTheDocument();
@@ -308,7 +330,7 @@ describe('Comments Component - Advanced Tests', () => {
     // Mock failed comment submission
     mockAddComment.mockRejectedValueOnce(new Error('Submission failed'));
 
-    render(<Comments postId={1} />);
+    render(<CommentsSection postId={1} />);
 
     const commentInput = screen.getByPlaceholderText(/write a comment/i);
     const submitButton = screen.getByRole('button', { name: /post comment/i });
@@ -350,7 +372,7 @@ describe('Comments Component - Advanced Tests', () => {
         ),
     );
 
-    render(<Comments postId={1} />);
+    render(<CommentsSection postId={1} />);
 
     const commentInput = screen.getByPlaceholderText(/write a comment/i);
     const submitButton = screen.getByRole('button', { name: /post comment/i });
@@ -398,7 +420,7 @@ describe('Comments Component - Advanced Tests', () => {
 
     mockDeleteComment.mockResolvedValueOnce({});
 
-    render(<Comments postId={1} />);
+    render(<CommentsSection postId={1} />);
 
     console.log("📝 Finding user's own comment...");
     const userComment = screen.getByText('My own comment that I can delete');
@@ -427,7 +449,7 @@ describe('Comments Component - Advanced Tests', () => {
   it('updates comment list when new comments are added by others', async () => {
     console.log('🧪 Testing real-time comment updates...');
 
-    const { rerender } = render(<Comments postId={1} />);
+    const { rerender } = render(<CommentsSection postId={1} />);
 
     console.log('📝 Initially showing 2 comments...');
     expect(screen.getByText('2 Comments')).toBeInTheDocument();
@@ -458,7 +480,7 @@ describe('Comments Component - Advanced Tests', () => {
       commentCount: updatedComments.length,
     });
 
-    rerender(<Comments postId={1} />);
+    rerender(<CommentsSection postId={1} />);
 
     console.log('📝 Checking updated comment count...');
     expect(screen.getByText('3 Comments')).toBeInTheDocument();
@@ -475,7 +497,7 @@ describe('Comments Component - Advanced Tests', () => {
   it('supports keyboard navigation and accessibility', async () => {
     console.log('🧪 Testing accessibility features...');
 
-    render(<Comments postId={1} />);
+    render(<CommentsSection postId={1} />);
 
     console.log('📝 Checking form has proper labels...');
     const commentInput = screen.getByLabelText(/comment/i);

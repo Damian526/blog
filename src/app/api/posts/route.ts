@@ -198,7 +198,7 @@ export async function POST(request: Request) {
       _count: post._count,
     };
 
-    return NextResponse.json(formattedPost);
+    return NextResponse.json(formattedPost, { status: 201 });
   } catch (error) {
     console.error('Error creating post with subcategories:', error);
     return NextResponse.json(
