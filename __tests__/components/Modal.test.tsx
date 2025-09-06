@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import Modal from '@/components/ui/Modal';
 
@@ -162,7 +162,7 @@ describe('Modal Component', () => {
     expect(modal).toHaveAttribute('aria-modal', 'true');
   });
 
-  it('focuses on modal when opened', () => {
+  it('focuses on modal when opened', async () => {
     render(
       <Modal isOpen={true} onClose={mockOnClose}>
         <div>Modal Content</div>
@@ -170,6 +170,10 @@ describe('Modal Component', () => {
     );
 
     const modal = screen.getByRole('dialog');
-    expect(modal).toHaveFocus();
+    
+    // Wait for focus to be applied (due to setTimeout/requestAnimationFrame)
+    await waitFor(() => {
+      expect(modal).toHaveFocus();
+    });
   });
 });

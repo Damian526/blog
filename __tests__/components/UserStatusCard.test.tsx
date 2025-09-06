@@ -18,11 +18,11 @@ jest.mock('@/server/api', () => ({
 jest.mock('next-auth/react');
 jest.mock('swr');
 jest.mock('@/components/ui/forms/ExpertApplicationForm', () => {
-  return function MockExpertApplicationForm({ onSubmit, onCancel }: any) {
+  return function MockExpertApplicationForm({ onSuccess }: any) {
     return (
       <div data-testid="expert-form">
-        <button onClick={() => onSubmit('test data')}>Submit Application</button>
-        <button onClick={onCancel}>Cancel</button>
+        <button onClick={() => onSuccess()}>Submit Application</button>
+        <button onClick={() => onSuccess()}>Cancel</button>
       </div>
     );
   };
@@ -53,10 +53,18 @@ describe('UserStatusCard Component', () => {
     });
   });
 
-  describe('User Role Display', () => {
-    it('displays USER status correctly', () => {
+  describe('User Status Display', () => {
+    it('displays pending approval status for unverified user', () => {
       mockUseSWR.mockReturnValue({
-        data: { role: 'USER', isEmailVerified: true },
+        data: { 
+          id: 1,
+          name: 'John Doe',
+          email: 'john@example.com',
+          verified: false,
+          isExpert: false,
+          role: 'USER',
+          createdAt: '2024-01-01T00:00:00Z'
+        },
         error: null,
         isLoading: false,
         mutate: jest.fn(),
@@ -65,12 +73,21 @@ describe('UserStatusCard Component', () => {
       render(<UserStatusCard />);
 
       expect(screen.getByText('Account Status')).toBeInTheDocument();
-      expect(screen.getByText(/regular user/i)).toBeInTheDocument();
+      expect(screen.getByText('⏳ Pending Approval')).toBeInTheDocument();
+      expect(screen.getByText(/pending approval.*cannot participate yet/i)).toBeInTheDocument();
     });
 
-    it('displays EXPERT status correctly', () => {
+    it('displays community member status for verified user', () => {
       mockUseSWR.mockReturnValue({
-        data: { role: 'EXPERT', isEmailVerified: true },
+        data: { 
+          id: 1,
+          name: 'John Doe',
+          email: 'john@example.com',
+          verified: true,
+          isExpert: false,
+          role: 'USER',
+          createdAt: '2024-01-01T00:00:00Z'
+        },
         error: null,
         isLoading: false,
         mutate: jest.fn(),
@@ -78,12 +95,21 @@ describe('UserStatusCard Component', () => {
 
       render(<UserStatusCard />);
 
-      expect(screen.getByText(/expert user/i)).toBeInTheDocument();
+      expect(screen.getByText('✅ Community Member')).toBeInTheDocument();
+      expect(screen.getByText(/participate in discussions/i)).toBeInTheDocument();
     });
 
-    it('displays ADMIN status correctly', () => {
+    it('displays verified expert status for expert user', () => {
       mockUseSWR.mockReturnValue({
-        data: { role: 'ADMIN', isEmailVerified: true },
+        data: { 
+          id: 1,
+          name: 'John Doe',
+          email: 'john@example.com',
+          verified: true,
+          isExpert: true,
+          role: 'EXPERT',
+          createdAt: '2024-01-01T00:00:00Z'
+        },
         error: null,
         isLoading: false,
         mutate: jest.fn(),
@@ -91,14 +117,21 @@ describe('UserStatusCard Component', () => {
 
       render(<UserStatusCard />);
 
-      expect(screen.getByText(/administrator/i)).toBeInTheDocument();
+      expect(screen.getByText('⭐ Verified Expert')).toBeInTheDocument();
+      expect(screen.getByText(/write articles and participate/i)).toBeInTheDocument();
     });
-  });
 
-  describe('Email Verification Status', () => {
-    it('shows verified email status', () => {
+    it('displays admin privileges for admin user', () => {
       mockUseSWR.mockReturnValue({
-        data: { role: 'USER', isEmailVerified: true },
+        data: { 
+          id: 1,
+          name: 'John Doe',
+          email: 'john@example.com',
+          verified: true,
+          isExpert: true,
+          role: 'ADMIN',
+          createdAt: '2024-01-01T00:00:00Z'
+        },
         error: null,
         isLoading: false,
         mutate: jest.fn(),
@@ -106,30 +139,22 @@ describe('UserStatusCard Component', () => {
 
       render(<UserStatusCard />);
 
-      expect(screen.getByText(/email verified/i)).toBeInTheDocument();
-      expect(screen.getByText('✅')).toBeInTheDocument();
-    });
-
-    it('shows unverified email status with verify button', () => {
-      mockUseSWR.mockReturnValue({
-        data: { role: 'USER', isEmailVerified: false },
-        error: null,
-        isLoading: false,
-        mutate: jest.fn(),
-      });
-
-      render(<UserStatusCard />);
-
-      expect(screen.getByText(/email not verified/i)).toBeInTheDocument();
-      expect(screen.getByText('❌')).toBeInTheDocument();
-      expect(screen.getByText(/verify email/i)).toBeInTheDocument();
+      expect(screen.getByText(/administrator privileges/i)).toBeInTheDocument();
     });
   });
 
   describe('Expert Application', () => {
-    it('shows apply for expert button for regular users', () => {
+    it('shows apply for expert button for verified community members', () => {
       mockUseSWR.mockReturnValue({
-        data: { role: 'USER', isEmailVerified: true },
+        data: { 
+          id: 1,
+          name: 'John Doe',
+          email: 'john@example.com',
+          verified: true,
+          isExpert: false,
+          role: 'USER',
+          createdAt: '2024-01-01T00:00:00Z'
+        },
         error: null,
         isLoading: false,
         mutate: jest.fn(),
@@ -137,12 +162,42 @@ describe('UserStatusCard Component', () => {
 
       render(<UserStatusCard />);
 
-      expect(screen.getByText(/apply for expert status/i)).toBeInTheDocument();
+      expect(screen.getByText(/apply to become a verified expert/i)).toBeInTheDocument();
+      expect(screen.getByText('Apply to Become an Expert')).toBeInTheDocument();
+    });
+
+    it('does not show apply button for unverified users', () => {
+      mockUseSWR.mockReturnValue({
+        data: { 
+          id: 1,
+          name: 'John Doe',
+          email: 'john@example.com',
+          verified: false,
+          isExpert: false,
+          role: 'USER',
+          createdAt: '2024-01-01T00:00:00Z'
+        },
+        error: null,
+        isLoading: false,
+        mutate: jest.fn(),
+      });
+
+      render(<UserStatusCard />);
+
+      expect(screen.queryByText('Apply to Become an Expert')).not.toBeInTheDocument();
     });
 
     it('does not show apply button for experts or admins', () => {
       mockUseSWR.mockReturnValue({
-        data: { role: 'EXPERT', isEmailVerified: true },
+        data: { 
+          id: 1,
+          name: 'John Doe',
+          email: 'john@example.com',
+          verified: true,
+          isExpert: true,
+          role: 'EXPERT',
+          createdAt: '2024-01-01T00:00:00Z'
+        },
         error: null,
         isLoading: false,
         mutate: jest.fn(),
@@ -150,12 +205,20 @@ describe('UserStatusCard Component', () => {
 
       render(<UserStatusCard />);
 
-      expect(screen.queryByText(/apply for expert status/i)).not.toBeInTheDocument();
+      expect(screen.queryByText('Apply to Become an Expert')).not.toBeInTheDocument();
     });
 
     it('opens expert application form when apply button is clicked', async () => {
       mockUseSWR.mockReturnValue({
-        data: { role: 'USER', isEmailVerified: true },
+        data: { 
+          id: 1,
+          name: 'John Doe',
+          email: 'john@example.com',
+          verified: true,
+          isExpert: false,
+          role: 'USER',
+          createdAt: '2024-01-01T00:00:00Z'
+        },
         error: null,
         isLoading: false,
         mutate: jest.fn(),
@@ -163,7 +226,7 @@ describe('UserStatusCard Component', () => {
 
       render(<UserStatusCard />);
 
-      const applyButton = screen.getByText(/apply for expert status/i);
+      const applyButton = screen.getByText('Apply to Become an Expert');
       fireEvent.click(applyButton);
 
       await waitFor(() => {
@@ -171,9 +234,18 @@ describe('UserStatusCard Component', () => {
       });
     });
 
-    it('closes expert application form when cancel is clicked', async () => {
+    it('shows application status when user has applied', () => {
       mockUseSWR.mockReturnValue({
-        data: { role: 'USER', isEmailVerified: true },
+        data: { 
+          id: 1,
+          name: 'John Doe',
+          email: 'john@example.com',
+          verified: false,
+          isExpert: false,
+          verificationReason: 'I am a software engineer',
+          role: 'USER',
+          createdAt: '2024-01-01T00:00:00Z'
+        },
         error: null,
         isLoading: false,
         mutate: jest.fn(),
@@ -181,106 +253,12 @@ describe('UserStatusCard Component', () => {
 
       render(<UserStatusCard />);
 
-      // Open form
-      const applyButton = screen.getByText(/apply for expert status/i);
-      fireEvent.click(applyButton);
-
-      await waitFor(() => {
-        expect(screen.getByTestId('expert-form')).toBeInTheDocument();
-      });
-
-      // Close form
-      const cancelButton = screen.getByText('Cancel');
-      fireEvent.click(cancelButton);
-
-      await waitFor(() => {
-        expect(screen.queryByTestId('expert-form')).not.toBeInTheDocument();
-      });
+      expect(screen.getByText('Expert Application Status:')).toBeInTheDocument();
+      expect(screen.getByText('Your application is under review.')).toBeInTheDocument();
     });
   });
 
-  describe('Email Verification', () => {
-    const mockFetch = jest.fn();
-
-    beforeEach(() => {
-      global.fetch = mockFetch;
-    });
-
-    afterEach(() => {
-      jest.restoreAllMocks();
-    });
-
-    it('sends verification email when verify button is clicked', async () => {
-      mockUseSWR.mockReturnValue({
-        data: { role: 'USER', isEmailVerified: false },
-        error: null,
-        isLoading: false,
-        mutate: jest.fn(),
-      });
-
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ message: 'Verification email sent' }),
-      });
-
-      render(<UserStatusCard />);
-
-      const verifyButton = screen.getByText(/verify email/i);
-      fireEvent.click(verifyButton);
-
-      await waitFor(() => {
-        expect(mockFetch).toHaveBeenCalledWith('/api/auth/send-verification', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-        });
-      });
-    });
-
-    it('shows success message after sending verification email', async () => {
-      mockUseSWR.mockReturnValue({
-        data: { role: 'USER', isEmailVerified: false },
-        error: null,
-        isLoading: false,
-        mutate: jest.fn(),
-      });
-
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ message: 'Verification email sent' }),
-      });
-
-      render(<UserStatusCard />);
-
-      const verifyButton = screen.getByText(/verify email/i);
-      fireEvent.click(verifyButton);
-
-      await waitFor(() => {
-        expect(screen.getByText(/verification email sent/i)).toBeInTheDocument();
-      });
-    });
-
-    it('handles verification email error', async () => {
-      mockUseSWR.mockReturnValue({
-        data: { role: 'USER', isEmailVerified: false },
-        error: null,
-        isLoading: false,
-        mutate: jest.fn(),
-      });
-
-      mockFetch.mockRejectedValueOnce(new Error('Network error'));
-
-      render(<UserStatusCard />);
-
-      const verifyButton = screen.getByText(/verify email/i);
-      fireEvent.click(verifyButton);
-
-      await waitFor(() => {
-        expect(screen.getByText(/failed to send verification email/i)).toBeInTheDocument();
-      });
-    });
-  });
-
-  describe('Loading States', () => {
+  describe('Loading and Error States', () => {
     it('shows loading state', () => {
       mockUseSWR.mockReturnValue({
         data: undefined,
@@ -291,7 +269,7 @@ describe('UserStatusCard Component', () => {
 
       render(<UserStatusCard />);
 
-      expect(screen.getByText(/loading/i)).toBeInTheDocument();
+      expect(screen.getByText(/loading your status/i)).toBeInTheDocument();
     });
 
     it('shows error state', () => {
@@ -304,7 +282,7 @@ describe('UserStatusCard Component', () => {
 
       render(<UserStatusCard />);
 
-      expect(screen.getByText(/error loading user status/i)).toBeInTheDocument();
+      expect(screen.getByText(/unable to load status information/i)).toBeInTheDocument();
     });
   });
 
@@ -323,9 +301,17 @@ describe('UserStatusCard Component', () => {
   });
 
   describe('Accessibility', () => {
-    it('has proper button roles and labels', () => {
+    it('has proper account status display', () => {
       mockUseSWR.mockReturnValue({
-        data: { role: 'USER', isEmailVerified: false },
+        data: { 
+          id: 1,
+          name: 'John Doe',
+          email: 'john@example.com',
+          verified: true,
+          isExpert: false,
+          role: 'USER',
+          createdAt: '2024-01-01T00:00:00Z'
+        },
         error: null,
         isLoading: false,
         mutate: jest.fn(),
@@ -333,13 +319,21 @@ describe('UserStatusCard Component', () => {
 
       render(<UserStatusCard />);
 
-      expect(screen.getByRole('button', { name: /verify email/i })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /apply for expert status/i })).toBeInTheDocument();
+      expect(screen.getByText('Account Status')).toBeInTheDocument();
+      expect(screen.getByText('✅ Community Member')).toBeInTheDocument();
     });
 
-    it('has proper status indicators with text and icons', () => {
+    it('has proper apply button when applicable', () => {
       mockUseSWR.mockReturnValue({
-        data: { role: 'USER', isEmailVerified: true },
+        data: { 
+          id: 1,
+          name: 'John Doe',
+          email: 'john@example.com',
+          verified: true,
+          isExpert: false,
+          role: 'USER',
+          createdAt: '2024-01-01T00:00:00Z'
+        },
         error: null,
         isLoading: false,
         mutate: jest.fn(),
@@ -347,8 +341,7 @@ describe('UserStatusCard Component', () => {
 
       render(<UserStatusCard />);
 
-      expect(screen.getByText('✅')).toBeInTheDocument();
-      expect(screen.getByText(/email verified/i)).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /apply to become an expert/i })).toBeInTheDocument();
     });
   });
 });

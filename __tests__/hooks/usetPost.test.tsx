@@ -6,26 +6,25 @@ import { renderHook, waitFor } from '@testing-library/react';
 import { SWRConfig } from 'swr';
 import { usePost } from '@/hooks/usePost';
 
-// Mock fetch globally
-global.fetch = jest.fn();
+// Mock the API
+jest.mock('@/server/api', () => ({
+  api: {
+    posts: {
+      getById: jest.fn(),
+      update: jest.fn(),
+    },
+  },
+}));
 
-// ✅ Create a proper fetcher function for SWR
-const fetcher = async (url: string) => {
-  const response = await fetch(url);
-  if (!response.ok) {
-    throw new Error('An error occurred while fetching the data.');
-  }
-  return response.json();
-};
+import { api } from '@/server/api';
 
-// ✅ Helper to wrap hook with SWR provider - with fetcher
+// ✅ Helper to wrap hook with SWR provider
 const wrapper = ({ children }: { children: React.ReactNode }) => (
   <SWRConfig
     value={{
-      fetcher,
       dedupingInterval: 0,
       provider: () => new Map(),
-      errorRetryCount: 0, // ✅ Don't retry on errors
+      errorRetryCount: 0,
       revalidateOnFocus: false,
       revalidateOnReconnect: false,
     }}
@@ -39,19 +38,26 @@ describe('usePost Hook - Advanced Tests', () => {
     id: 1,
     title: 'Test Post',
     content: 'This is test content',
-    createdAt: new Date('2024-01-15'),
+    excerpt: 'This is test content excerpt',
+    createdAt: '2024-01-15T00:00:00.000Z', // ISO string format
+    updatedAt: '2024-01-15T00:00:00.000Z',
     published: true,
+    publishedAt: '2024-01-15T00:00:00.000Z',
     coverImageUrl: 'https://example.com/image.jpg',
+    authorId: 1, // Required field
+    declineReason: null, // Required field (nullable)
     author: {
       id: 1,
       name: 'John Doe',
       email: 'john@example.com',
       image: 'https://example.com/avatar.jpg',
+      createdAt: '2024-01-15T00:00:00.000Z', // Required field
     },
     subcategories: [
       {
         id: 1,
         name: 'React',
+        categoryId: 1, // Required field
         category: { id: 1, name: 'Frontend' },
       },
     ],
@@ -89,10 +95,7 @@ describe('usePost Hook - Advanced Tests', () => {
     console.log('🧪 Testing successful post fetching...');
 
     // ✅ Mock successful API response
-    (fetch as jest.Mock).mockResolvedValueOnce({
-      ok: true,
-      json: async () => mockPost,
-    });
+    (api.posts.getById as jest.Mock).mockResolvedValueOnce(mockPost);
 
     const { result } = renderHook(() => usePost(1), { wrapper });
 
@@ -120,7 +123,7 @@ describe('usePost Hook - Advanced Tests', () => {
     expect(result.current.error).toBeUndefined();
 
     console.log('📝 Verifying API was called correctly...');
-    expect(fetch).toHaveBeenCalledWith('/api/posts/1');
+    expect(api.posts.getById).toHaveBeenCalledWith(1);
 
     console.log('✅ Post fetching works correctly!');
   });
@@ -130,7 +133,7 @@ describe('usePost Hook - Advanced Tests', () => {
     console.log('🧪 Testing error handling...');
 
     // ✅ Mock API error - reject the promise
-    (fetch as jest.Mock).mockRejectedValueOnce(new Error('Network error'));
+    (api.posts.getById as jest.Mock).mockRejectedValueOnce(new Error('Network error'));
 
     const { result } = renderHook(() => usePost(1), { wrapper });
 
@@ -156,10 +159,7 @@ describe('usePost Hook - Advanced Tests', () => {
     console.log('🧪 Testing post update functionality...');
 
     // ✅ Mock initial fetch
-    (fetch as jest.Mock).mockResolvedValueOnce({
-      ok: true,
-      json: async () => mockPost,
-    });
+    (api.posts.getById as jest.Mock).mockResolvedValueOnce(mockPost);
 
     const { result } = renderHook(() => usePost(1), { wrapper });
 
@@ -177,20 +177,13 @@ describe('usePost Hook - Advanced Tests', () => {
     const updateData = { title: 'Updated Title' };
 
     // ✅ Mock update API call
-    (fetch as jest.Mock).mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ ...mockPost, ...updateData }),
-    });
+    (api.posts.update as jest.Mock).mockResolvedValueOnce({ ...mockPost, ...updateData });
 
     console.log('📝 Calling updatePost...');
     await result.current.updatePost(updateData);
 
     console.log('📝 Verifying update API call...');
-    expect(fetch).toHaveBeenCalledWith('/api/posts/1', {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(updateData),
-    });
+    expect(api.posts.update).toHaveBeenCalledWith(1, updateData);
 
     console.log('✅ Post update works correctly!');
   });

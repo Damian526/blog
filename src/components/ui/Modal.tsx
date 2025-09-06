@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactNode, useEffect } from 'react';
+import { ReactNode, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom';
 import styled from 'styled-components';
 
@@ -95,15 +95,27 @@ const CloseButton = styled.button`
 `;
 
 export default function Modal({ isOpen, onClose, children }: ModalProps) {
+  const modalRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
+      // Focus the modal when it opens - use requestAnimationFrame for better reliability
+      const focusModal = () => {
+        if (modalRef.current) {
+          modalRef.current.focus();
+        }
+      };
+      
+      // Try both setTimeout and requestAnimationFrame for test compatibility
+      setTimeout(focusModal, 0);
+      requestAnimationFrame(focusModal);
     } else {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = '';
     }
 
     return () => {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = '';
     };
   }, [isOpen]);
 
@@ -127,7 +139,13 @@ export default function Modal({ isOpen, onClose, children }: ModalProps) {
 
   return ReactDOM.createPortal(
     <Overlay onClick={onClose}>
-      <ModalContainer onClick={(e) => e.stopPropagation()}>
+      <ModalContainer 
+        ref={modalRef}
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        tabIndex={-1}
+      >
         <CloseButton onClick={onClose} aria-label="Close Modal">
           ×
         </CloseButton>

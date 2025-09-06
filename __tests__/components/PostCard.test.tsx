@@ -27,11 +27,20 @@ jest.mock('@/styles/components/posts/PostCard.styles', () => {
           console.log(
             `Rendering mock for styled component: ${prop.toString()} and children: ${children}`,
           );
+          
+          // Filter out styled-components specific props (starting with $)
+          const cleanProps = Object.entries(props).reduce((acc, [key, value]) => {
+            if (!key.startsWith('$')) {
+              acc[key] = value;
+            }
+            return acc;
+          }, {} as any);
+          
           return React.createElement(
             'div',
             {
               'data-component': prop.toString(),
-              ...props,
+              ...cleanProps,
             },
             children,
           );
