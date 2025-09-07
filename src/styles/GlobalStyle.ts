@@ -258,6 +258,41 @@ const GlobalStyle = createGlobalStyle`
   .ProseMirror p:first-child { margin-top: 0; }
   .ProseMirror p:last-child { margin-bottom: 0; }
 
+  /* Ensure all images in the editor are responsive and contained */
+  .ProseMirror img {
+    max-width: 100% !important;
+    height: auto !important;
+    border-radius: var(--radius-lg);
+    margin: var(--space-md) 0;
+    box-shadow: var(--shadow-md);
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    display: block;
+    
+    /* Ensure images don't break out of container */
+    box-sizing: border-box;
+    object-fit: contain;
+  }
+
+  .ProseMirror img:hover {
+    transform: scale(1.02);
+    box-shadow: var(--shadow-lg);
+  }
+
+  /* Mobile-specific image constraints */
+  @media (max-width: 768px) {
+    .ProseMirror img {
+      max-width: calc(100vw - 32px) !important;
+      margin: var(--space-sm) auto;
+      transform: none !important; /* Disable hover effects on mobile */
+    }
+    
+    .ProseMirror img:hover {
+      transform: none;
+      box-shadow: var(--shadow-md);
+    }
+  }
+
   .toolbar-btn {
     background: var(--background-tertiary);
     border: 1px solid var(--border-color);
