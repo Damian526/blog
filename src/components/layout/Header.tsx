@@ -2,8 +2,7 @@
 
 import { useState } from 'react';
 import { useSession } from 'next-auth/react';
-import useSWR from 'swr';
-import { api } from '@/server/api';
+import { useCurrentUser } from '@/hooks/useCurrentUser';
 import LoginButton from '@/components/auth/LoginButton';
 import RegisterButton from '@/components/auth/RegisterButton';
 import LogoutButton from '@/components/auth/LogoutButton';
@@ -36,17 +35,8 @@ export default function Header() {
   const { data: session, status } = useSession();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  // Fetch user profile data to get profile picture
-  const { data: userProfile, error: profileError } = useSWR(
-    session?.user?.email ? 'user-profile' : null,
-    () => api.users.getProfile(),
-    {
-      revalidateOnFocus: false,
-      revalidateOnReconnect: true,
-      shouldRetryOnError: false,
-      errorRetryCount: 2,
-    },
-  );
+  // Get user profile data using our hook
+  const { user: userProfile, error: profileError } = useCurrentUser();
 
   if (status === 'loading') {
     return (

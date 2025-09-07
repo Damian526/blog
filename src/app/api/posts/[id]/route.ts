@@ -52,18 +52,18 @@ export async function GET(
     const formattedPost = {
       id: Number(post.id),
       title: post.title,
-      content: post.content || null,
+      content: post.content || '',
       published: post.published,
       authorId: Number(post.authorId),
       createdAt: post.createdAt.toISOString(),
       declineReason: post.declineReason || null,
-      author: {
+      author: post.author ? {
         id: Number(post.author.id),
-        name: post.author.name, // name is required in DB, so no need for fallback
+        name: post.author.name,
         email: post.author.email,
         image: post.author.profilePicture || null,
         createdAt: post.author.createdAt.toISOString(),
-      },
+      } : null,
       subcategories: post.subcategories.map(subcat => ({
         id: Number(subcat.id),
         name: subcat.name,

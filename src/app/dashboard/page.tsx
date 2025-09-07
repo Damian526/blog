@@ -7,7 +7,8 @@ import LoginForm from '@/components/auth/LoginForm';
 import Modal from '@/components/ui/Modal';
 import PostList from '@/components/posts/PostList';
 import UserStatusCard from '@/components/ui/UserStatusCard';
-import { useCurrentUser, usePostsByAuthor } from '@/hooks';
+import { useCurrentUser } from '@/hooks/useCurrentUser';
+import { usePostsByAuthor } from '@/hooks/usePosts';
 import { api } from '@/server/api';
 import {
   PostsSection,
@@ -25,10 +26,7 @@ export default function Dashboard() {
   
   // Use our centralized hooks
   const { user } = useCurrentUser();
-  const { posts, error, isLoading, mutate } = usePostsByAuthor(
-    user?.id || 0,
-    { enabled: !!user?.id }
-  );
+  const { posts, error, isLoading, refetch } = usePostsByAuthor(user?.id || 0);
 
   // Ensure we're on the client side
   useEffect(() => {
@@ -46,7 +44,7 @@ export default function Dashboard() {
     try {
       await api.posts.delete(postId);
       // Revalidate the posts list
-      mutate();
+      refetch();
     } catch (error) {
       console.error('Error deleting post:', error);
       alert('Failed to delete the post. Please try again.');

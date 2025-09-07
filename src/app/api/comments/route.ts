@@ -63,7 +63,7 @@ export async function POST(request: Request) {
       createdAt: newComment.createdAt.toISOString(),
       author: {
         id: Number(newComment.author.id),
-        name: newComment.author.name, // name is required in DB
+        name: newComment.author.name || null, // Handle null names
         email: newComment.author.email,
         image: newComment.author.profilePicture || null,
         createdAt: newComment.author.createdAt.toISOString(),
@@ -135,7 +135,7 @@ export async function GET(request: Request) {
       createdAt: comment.createdAt.toISOString(),
       author: {
         id: Number(comment.author.id),
-        name: comment.author.name, // name is required in DB
+        name: comment.author.name || null, // Handle null names
         email: comment.author.email,
         image: comment.author.profilePicture || null,
         createdAt: comment.author.createdAt.toISOString(),
@@ -150,7 +150,7 @@ export async function GET(request: Request) {
         createdAt: reply.createdAt.toISOString(),
         author: {
           id: Number(reply.author.id),
-          name: reply.author.name, // name is required in DB
+          name: reply.author.name || null, // Handle null names
           email: reply.author.email,
           image: reply.author.profilePicture || null,
           createdAt: reply.author.createdAt.toISOString(),

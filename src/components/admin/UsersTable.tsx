@@ -1,9 +1,9 @@
 'use client';
 
-import useSWR from 'swr';
 import { useState } from 'react';
 import styled from 'styled-components';
-import { api, User } from '@/server/api';
+import { useAdminUsers } from '@/hooks/useAdmin';
+import { User } from '@/server/api';
 import {
   Container,
   Title,
@@ -143,15 +143,18 @@ const FilterButton = styled.button<{ active?: boolean }>`
 `;
 
 export default function UsersTable() {
-  const { data: users, error, isLoading, mutate } = useSWR<User[]>(
-    'admin-users',
-    () => api.admin.getUsers(),
-    {
-      revalidateOnFocus: true,
-      revalidateOnReconnect: true,
-      shouldRetryOnError: false,
-    },
-  );
+  const { 
+    users, 
+    error, 
+    isLoading, 
+    approveUser,
+    isApproving,
+    rejectUser,
+    isRejecting,
+    updateUserRole,
+    isUpdatingRole,
+    refetch 
+  } = useAdminUsers();
 
   const [filter, setFilter] = useState<
     'all' | 'pending' | 'verification-requests'
@@ -191,14 +194,11 @@ export default function UsersTable() {
 
     try {
       if (action === 'approve') {
-        await api.admin.approveUser(userId);
+        await approveUser(userId);
       } else if (action === 'reject') {
-        await api.admin.rejectUser(userId);
+        await rejectUser({ userId, reason: 'Rejected by admin' });
       }
       // Note: 'verify' action might need a separate API function
-
-      // Revalidate the users list to get fresh data
-      mutate();
     } catch (error) {
       console.error(`Error ${action}ing user:`, error);
       alert(
@@ -221,7 +221,6 @@ export default function UsersTable() {
 
     try {
       await api.admin.deleteUser(userId);
-      mutate();
     } catch (error) {
       console.error('Error deleting user:', error);
       alert('Failed to delete user');

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
-import useSWR from 'swr';
+import { useCurrentUser } from '@/hooks/useCurrentUser';
 import styled from 'styled-components';
 import { uploadImage } from '@/lib/supabase';
 import Image from 'next/image';
@@ -264,16 +264,14 @@ export default function ProfileForm() {
     type: 'success' | 'error';
     text: string;
   } | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
 
   const {
-    data: user,
+    user,
     error,
-    mutate,
-  } = useSWR<User>('current-user-profile', () => api.users.getCurrentProfile(), {
-    revalidateOnFocus: false,
-    revalidateOnReconnect: true,
-  });
+    updateProfile,
+    isUpdating,
+    refetch,
+  } = useCurrentUser();
 
   useEffect(() => {
     if (user) {
@@ -354,7 +352,6 @@ export default function ProfileForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
     setMessage(null);
 
     // Validation
@@ -363,7 +360,6 @@ export default function ProfileForm() {
       formData.newPassword !== formData.confirmPassword
     ) {
       setMessage({ type: 'error', text: 'New passwords do not match' });
-      setIsLoading(false);
       return;
     }
 
@@ -372,7 +368,6 @@ export default function ProfileForm() {
         type: 'error',
         text: 'Current password is required to change password',
       });
-      setIsLoading(false);
       return;
     }
 
@@ -381,7 +376,6 @@ export default function ProfileForm() {
         type: 'error',
         text: 'New password must be at least 6 characters long',
       });
-      setIsLoading(false);
       return;
     }
 
@@ -414,7 +408,7 @@ export default function ProfileForm() {
         updateData.newPassword = formData.newPassword;
       }
 
-      const response = await api.users.updateCurrentProfile(updateData);
+      await updateProfile(updateData);
 
       setMessage({ type: 'success', text: 'Profile updated successfully!' });
 
@@ -433,25 +427,12 @@ export default function ProfileForm() {
           email: updateData.email || user?.email,
         });
       }
-
-      // Refresh the SWR cache with new data
-      mutate(response);
-      if (emailChanged) {
-        setTimeout(() => {
-          mutate();
-        }, 1000);
-      } else {
-        // Refresh user data immediately if email didn't change
-        mutate();
-      }
     } catch (error) {
       setMessage({
         type: 'error',
         text:
           error instanceof Error ? error.message : 'Failed to update profile',
       });
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -498,7 +479,7 @@ export default function ProfileForm() {
               <UploadButton
                 type="button"
                 onClick={handleImageUpload}
-                disabled={isUploadingImage || isLoading}
+                disabled={isUploadingImage || isUpdating}
               >
                 {isUploadingImage ? 'Uploading...' : 'Upload Photo'}
               </UploadButton>
@@ -506,7 +487,7 @@ export default function ProfileForm() {
                 <RemoveButton
                   type="button"
                   onClick={handleRemoveImage}
-                  disabled={isLoading}
+                  disabled={isUpdating}
                 >
                   Remove
                 </RemoveButton>
@@ -610,12 +591,12 @@ export default function ProfileForm() {
               setProfilePicture(user.profilePicture || null);
               setMessage(null);
             }}
-            disabled={isLoading}
+            disabled={isUpdating}
           >
             Reset
           </Button>
-          <Button type="submit" disabled={isLoading || isUploadingImage}>
-            {isLoading ? 'Updating...' : 'Update Profile'}
+          <Button type="submit" disabled={isUpdating || isUploadingImage}>
+            {isUpdating ? 'Updating...' : 'Update Profile'}
           </Button>
         </ButtonGroup>
       </Form>

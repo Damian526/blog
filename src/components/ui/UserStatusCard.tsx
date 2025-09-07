@@ -2,9 +2,8 @@
 
 import { useState } from 'react';
 import styled from 'styled-components';
-import useSWR from 'swr';
 import { useSession } from 'next-auth/react';
-import { api } from '@/server/api';
+import { useCurrentUser } from '@/hooks/useCurrentUser';
 import ExpertApplicationForm from '@/components/ui/forms/ExpertApplicationForm';
 
 const StatusCard = styled.div`
@@ -149,19 +148,15 @@ export default function UserStatusCard() {
   const [showApplicationForm, setShowApplicationForm] = useState(false);
 
   const {
-    data: userData,
+    user: userData,
     error,
     isLoading,
-    mutate,
-  } = useSWR(session ? 'user-profile' : null, () => api.users.getProfile(), {
-    revalidateOnFocus: false,
-    revalidateOnReconnect: true,
-    shouldRetryOnError: false,
-  });
+    refetch,
+  } = useCurrentUser();
 
   const handleApplicationSuccess = () => {
     setShowApplicationForm(false);
-    mutate(); // Refresh user data
+    refetch(); // Refresh user data
   };
 
   if (!session) return null;

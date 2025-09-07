@@ -1,14 +1,13 @@
 'use client';
 
-import useSWR from 'swr';
 import styled from 'styled-components';
 import { useState } from 'react';
 import EditableComment from '@/components/comments/EditableComment';
 import AddCommentForm from '@/components/comments/AddCommentForm';
 import ReplyForm from '@/components/comments/ReplyForm';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
+import { useComments } from '@/hooks/useComments';
 import { Comment } from '@/server/api/types';
-import { api } from '@/server/api';
 
 const CommentsContainer = styled.div`
   margin-top: 0;
@@ -147,14 +146,17 @@ interface CommentsSectionProps {
 
 export default function CommentsSection({ postId }: CommentsSectionProps) {
   const {
-    data: comments,
+    comments,
     error,
     isLoading,
-    mutate,
-  } = useSWR<Comment[]>(
-    postId ? `comments-${postId}` : null,
-    () => postId ? api.comments.getByPost(postId) : null
-  );
+    createComment,
+    isCreating,
+    updateComment,
+    isUpdating,
+    deleteComment,
+    isDeleting,
+    refetch,
+  } = useComments(postId);
 
   const { user: currentUser } = useCurrentUser();
   const [replyingTo, setReplyingTo] = useState<number | null>(null);
@@ -172,8 +174,7 @@ export default function CommentsSection({ postId }: CommentsSectionProps) {
   const handleDelete = async (commentId: number) => {
     if (confirm('Are you sure you want to delete this comment?')) {
       try {
-        await api.comments.delete(commentId);
-        mutate();
+        await deleteComment(commentId);
       } catch (err: any) {
         alert(err.message || 'Failed to delete comment');
       }
@@ -182,46 +183,14 @@ export default function CommentsSection({ postId }: CommentsSectionProps) {
 
   const handleEdit = async (commentId: number, updatedContent: string) => {
     try {
-      // Optimistic update: Update the local data immediately
-      const optimisticUpdate = (currentComments: Comment[] | undefined) => {
-        if (!currentComments) return currentComments;
-        
-        return currentComments.map(comment => {
-          if (comment.id === commentId) {
-            return { ...comment, content: updatedContent };
-          }
-          // Also check replies
-          if (comment.replies) {
-            return {
-              ...comment,
-              replies: comment.replies.map(reply => 
-                reply.id === commentId 
-                  ? { ...reply, content: updatedContent }
-                  : reply
-              )
-            };
-          }
-          return comment;
-        });
-      };
-
-      // Apply optimistic update immediately
-      mutate(optimisticUpdate, false);
-      
-      // Make the API call
-      await api.comments.update(commentId, { content: updatedContent });
-      
-      // Revalidate to ensure data consistency
-      mutate();
+      await updateComment({ id: commentId, content: updatedContent });
     } catch (err: any) {
-      // Revert on error
-      mutate();
       alert(err.message || 'Failed to update comment');
     }
   };
 
   const handleReplyAdded = () => {
-    mutate();
+    refetch();
     setReplyingTo(null);
   };
 
@@ -282,7 +251,7 @@ export default function CommentsSection({ postId }: CommentsSectionProps) {
         )}
       </CommentsList>
 
-      <AddCommentForm postId={postId} onCommentAdded={() => mutate()} />
+      <AddCommentForm postId={postId} onCommentAdded={() => refetch()} />
     </CommentsContainer>
   );
 }
