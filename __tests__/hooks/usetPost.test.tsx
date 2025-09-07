@@ -83,12 +83,13 @@ describe('usePost Hook - Advanced Tests', () => {
     expect(result.current.post).toBe(null);
     expect(result.current.error).toBeUndefined();
     expect(result.current.isLoading).toBe(false);
-    expect(result.current.isPublished).toBe(false);
+    // Fix: Check post.published instead of isPublished since that property doesn't exist
+    expect(result.current.post?.published).toBeUndefined();
 
     console.log('📝 Checking functions exist...');
     expect(typeof result.current.updatePost).toBe('function');
     expect(typeof result.current.togglePublished).toBe('function');
-    expect(typeof result.current.mutate).toBe('function');
+    expect(typeof result.current.refetch).toBe('function');
 
     console.log('✅ Initial state is correct!');
   });
@@ -122,7 +123,8 @@ describe('usePost Hook - Advanced Tests', () => {
 
     console.log('📝 Checking fetched data...');
     expect(result.current.post).toEqual(mockPost);
-    expect(result.current.isPublished).toBe(true);
+    // Fix: Check post.published instead of isPublished since that property doesn't exist
+    expect(result.current.post?.published).toBe(true);
     expect(result.current.error).toBeUndefined();
 
     console.log('📝 Verifying API was called correctly...');
@@ -245,11 +247,15 @@ describe('usePost Hook - Advanced Tests', () => {
     });
 
     console.log('📝 Checking initial published status...');
-    expect(result.current.isPublished).toBe(false);
+    // Fix: Check post.published instead of isPublished since that property doesn't exist
+    expect(result.current.post?.published).toBe(false);
 
-    // ✅ Mock successful toggle
+    // ✅ Mock successful toggle - this will be called by the update API
     const publishedPost = { ...unpublishedPost, published: true };
     (api.posts.update as jest.Mock).mockResolvedValueOnce(publishedPost);
+    
+    // ✅ Mock the refetch call to return the updated data
+    (api.posts.getById as jest.Mock).mockResolvedValueOnce(publishedPost);
 
     console.log('📝 Calling togglePublished...');
     await act(async () => {
@@ -259,7 +265,6 @@ describe('usePost Hook - Advanced Tests', () => {
     // ✅ Verify the published status changed
     await waitFor(() => {
       expect(result.current.post?.published).toBe(true);
-      expect(result.current.isPublished).toBe(true);
     });
 
     console.log('✅ Publish toggle works correctly!');

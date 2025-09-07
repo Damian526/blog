@@ -91,7 +91,7 @@ describe('useCategories Hook', () => {
     expect(result.current.isLoading).toBe(false);
   });
 
-  it('provides mutate functionality for cache revalidation', () => {
+  it('provides refetch functionality for cache revalidation', () => {
     const mockMutate = jest.fn();
     const mockResponse = createMockSWRResponse(mockCategories);
     mockResponse.mutate = mockMutate;
@@ -99,7 +99,7 @@ describe('useCategories Hook', () => {
 
     const { result } = renderHook(() => useCategories());
 
-    result.current.mutate();
+    result.current.refetch();
 
     expect(mockMutate).toHaveBeenCalledTimes(1);
   });
@@ -109,11 +109,10 @@ describe('useCategories Hook', () => {
 
     renderHook(() => useCategories());
 
-    expect(mockUseSWR).toHaveBeenCalledWith('/api/categories', {
+    expect(mockUseSWR).toHaveBeenCalledWith('categories', expect.any(Function), {
       revalidateOnFocus: false,
       revalidateOnReconnect: true,
-      shouldRetryOnError: false,
-      dedupingInterval: 60000,
+      dedupingInterval: 3600000,
     });
   });
 
