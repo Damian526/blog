@@ -107,6 +107,7 @@ class ApiClient {
           const result = schema.safeParse(data);
           if (!result.success) {
             console.error('API Response validation failed:', result.error);
+            console.error('Actual API response data:', JSON.stringify(data, null, 2));
             throw new ApiError(
               'Invalid response format from server',
               500,

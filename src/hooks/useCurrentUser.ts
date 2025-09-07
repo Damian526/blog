@@ -1,53 +1,60 @@
-import useSWR from 'swr';
-import { User, api } from '@/server/api';
+// ============================================
+// USER HOOKS
+// ============================================
 
-interface SessionData {
-  user?: User;
-}
+import useSWR from 'swr';
+import { api } from '@/server/api';
+import { useMutation } from './useMutation';
+import type { User } from '@/server/api/types';
 
 export function useCurrentUser() {
-  const {
-    data: sessionData,
-    error,
-    isLoading,
-    mutate,
-  } = useSWR<SessionData>(
+  const { data, error, isLoading, mutate } = useSWR(
     'current-user',
     () => api.users.getCurrent(),
     {
       revalidateOnFocus: false,
       revalidateOnReconnect: true,
       shouldRetryOnError: false,
-      // Session data can be cached for a reasonable time
-      dedupingInterval: 30000, // 30 seconds
+      dedupingInterval: 30000,
     }
   );
 
-  const updateUser = async (updateData: Partial<Pick<User, 'name' | 'image'>>) => {
-    if (!sessionData?.user) throw new Error('No user to update');
-
-    // Optimistic update
-    const originalSession = { ...sessionData };
-    mutate({
-      user: { ...sessionData.user, ...updateData }
-    }, false);
-
-    try {
-      const updatedUser = await api.users.update(sessionData.user.id, updateData);
-      mutate({ user: updatedUser }, false);
-      return updatedUser;
-    } catch (error) {
-      mutate(originalSession, false); // Revert on error
-      throw error;
+  const updateProfile = useMutation(
+    (profileData: { name?: string; email?: string; profilePicture?: string }) =>
+      api.users.updateCurrentProfile(profileData),
+    {
+      revalidate: () => mutate(),
     }
-  };
+  );
 
   return {
-    user: sessionData?.user || null,
-    isLoggedIn: !!sessionData?.user,
+    user: data?.user || null,
     error,
     isLoading,
-    mutate,
-    updateUser,
+    updateProfile: updateProfile.mutate,
+    isUpdating: updateProfile.isLoading,
+    refetch: mutate,
+    isAuthenticated: !!data?.user,
   };
 }
+
+export function useUser(userId: number | null) {
+  const { data, error, isLoading, mutate } = useSWR(
+    userId ? ['user', userId] : null,
+    () => api.users.getById(userId!),
+    {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: true,
+    }
+  );
+
+  return {
+    user: data || null,
+    error,
+    isLoading,
+    refetch: mutate,
+  };
+}
+
+// Legacy alias for backward compatibility
+export { useCurrentUser as useAuth };

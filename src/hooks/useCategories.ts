@@ -1,94 +1,36 @@
-import useSWR from 'swr';
-import { Category, Subcategory, api } from '@/server/api';
+// ============================================
+// CATEGORIES HOOKS
+// ============================================
 
-interface CategoryWithSubcategories extends Category {
-  subcategories: Subcategory[];
-}
+import useSWR from 'swr';
+import { api } from '@/server/api';
+import { useMutation } from './useMutation';
+import type { Category } from '@/server/api/types';
 
 export function useCategories() {
-  const {
-    data: categories,
-    error,
-    isLoading,
-    mutate,
-  } = useSWR<CategoryWithSubcategories[]>(
+  const { data, error, isLoading, mutate } = useSWR(
     'categories',
     () => api.categories.getAll(),
     {
       revalidateOnFocus: false,
       revalidateOnReconnect: true,
-      shouldRetryOnError: false,
-      // Categories don't change often, so we can cache them longer
-      dedupingInterval: 300000, // 5 minutes
+      dedupingInterval: 3600000, // 1 hour - categories don't change often
     }
   );
 
-  const createCategory = async (name: string) => {
-    try {
-      const newCategory = await api.categories.create(name);
-      mutate(); // Revalidate to get fresh data
-      return newCategory;
-    } catch (error) {
-      throw error;
+  const createCategory = useMutation(
+    (name: string) => api.categories.create(name),
+    {
+      revalidate: () => mutate(),
     }
-  };
-
-  const createSubcategory = async (name: string, categoryId: number) => {
-    try {
-      const newSubcategory = await api.categories.createSubcategory(name, categoryId);
-      mutate(); // Revalidate to get fresh data
-      return newSubcategory;
-    } catch (error) {
-      throw error;
-    }
-  };
-
-  const updateCategory = async (id: number, name: string) => {
-    if (!categories) return;
-
-    // Optimistic update
-    const originalCategories = [...categories];
-    const updatedCategories = categories.map(cat => 
-      cat.id === id ? { ...cat, name } : cat
-    );
-    mutate(updatedCategories, false);
-
-    try {
-      const updatedCategory = await api.categories.update(id, name);
-      mutate(); // Revalidate to get fresh data
-      return updatedCategory;
-    } catch (error) {
-      mutate(originalCategories, false); // Revert on error
-      throw error;
-    }
-  };
-
-  const deleteCategory = async (id: number) => {
-    if (!categories) return;
-
-    // Optimistic update
-    const originalCategories = [...categories];
-    const updatedCategories = categories.filter(cat => cat.id !== id);
-    mutate(updatedCategories, false);
-
-    try {
-      await api.categories.delete(id);
-      mutate(); // Revalidate to get fresh data
-    } catch (error) {
-      mutate(originalCategories, false); // Revert on error
-      throw error;
-    }
-  };
+  );
 
   return {
-    categories: categories || [],
+    categories: data || [],
     error,
     isLoading,
-    mutate,
-    createCategory,
-    createSubcategory,
-    updateCategory,
-    deleteCategory,
-    refetch: () => mutate(),
+    createCategory: createCategory.mutate,
+    isCreating: createCategory.isLoading,
+    refetch: mutate,
   };
 }

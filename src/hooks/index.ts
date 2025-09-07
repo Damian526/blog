@@ -1,10 +1,25 @@
-export { useCurrentUser } from './useCurrentUser';
+// ============================================
+// HOOKS BARREL EXPORTS - CLEAN & ORGANIZED
+// ============================================
 
-export { usePost } from './usePost';
-export { usePosts, usePublishedPosts, usePostsByAuthor, usePostsSearch } from './usePosts';
+// Core hooks
+export * from './useMutation';
 
-export { useComments, useComment, useUserComments, fetchUserComments } from './useComments';
+// Posts hooks
+export * from './usePosts';
+export * from './usePost';
 
-export { useCategories } from './useCategories';
+// Comments hooks
+export * from './useComments';
 
+// User hooks
+export * from './useCurrentUser';
+
+// Categories hooks
+export * from './useCategories';
+
+// Admin hooks
+export * from './useAdmin';
+
+// Legacy compatibility
 export { useCurrentUser as useAuth } from './useCurrentUser';

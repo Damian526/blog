@@ -1,73 +1,71 @@
+// ============================================
+// SINGLE POST HOOKS
+// ============================================
+
 import useSWR from 'swr';
-import { Post, api } from '@/server/api';
+import { api } from '@/server/api';
+import { useMutation } from './useMutation';
+import { useComments } from './useComments';
+import type { 
+  Post, 
+  UpdatePost 
+} from '@/server/api/types';
 
 export function usePost(postId: number | null) {
-  const {
-    data: post,
-    error,
-    isLoading,
-    mutate,
-  } = useSWR<Post>(
+  const { data, error, isLoading, mutate } = useSWR(
     postId ? ['post', postId] : null,
-    () => {
-      if (!postId) return null;
-      return api.posts.getById(postId);
-    },
+    () => api.posts.getById(postId!),
     {
       revalidateOnFocus: false,
       revalidateOnReconnect: true,
-      shouldRetryOnError: false,
-      // Cache posts for 5 minutes
-      dedupingInterval: 300000,
     }
   );
 
-  const updatePost = async (updatedData: Partial<Post>) => {
-    if (!post || !postId) return;
-
-    // ✅ Store original post before optimistic update
-    const originalPost = { ...post };
-
-    // Optimistic update
-    mutate({ ...post, ...updatedData }, false);
-
-    try {
-      const updatedPost = await api.posts.update(postId, updatedData);
-      
-      // Update with the actual response from server
-      mutate(updatedPost, false);
-      return updatedPost;
-    } catch (error) {
-      // REVERT to original post on error
-      mutate(originalPost, false);
-      throw error;
+  const updatePost = useMutation(
+    (updateData: UpdatePost) => api.posts.update(postId!, updateData),
+    {
+      revalidate: () => mutate(),
     }
-  };
+  );
 
-  const togglePublished = async () => {
-    if (!post) return;
-    return updatePost({ published: !post.published });
-  };
-
-  const deletePost = async () => {
-    if (!postId) return;
-    
-    try {
-      await api.posts.delete(postId);
-      mutate(undefined, false); // Clear the cache
-    } catch (error) {
-      throw error;
+  const deletePost = useMutation(
+    () => api.posts.delete(postId!),
+    {
+      onSuccess: () => mutate(undefined, false),
     }
-  };
+  );
 
   return {
-    post: post || null,
+    post: data || null,
     error,
     isLoading,
-    mutate,
-    updatePost,
-    togglePublished,
-    deletePost,
-    isPublished: post?.published || false,
+    updatePost: updatePost.mutate,
+    isUpdating: updatePost.isLoading,
+    deletePost: deletePost.mutate,
+    isDeleting: deletePost.isLoading,
+    refetch: mutate,
+    togglePublished: () => updatePost.mutate({ published: !data?.published }),
+  };
+}
+
+// ============================================
+// COMPOUND HOOKS FOR COMPLEX SCENARIOS
+// ============================================
+
+export function usePostWithComments(postId: number | null) {
+  const postData = usePost(postId);
+  const commentsData = useComments(postId);
+
+  return {
+    post: postData.post,
+    comments: commentsData.comments,
+    isLoading: postData.isLoading || commentsData.isLoading,
+    error: postData.error || commentsData.error,
+    updatePost: postData.updatePost,
+    createComment: commentsData.createComment,
+    refetch: () => {
+      postData.refetch();
+      commentsData.refetch();
+    },
   };
 }
