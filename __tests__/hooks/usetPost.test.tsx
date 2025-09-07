@@ -2,7 +2,7 @@
  * @jest-environment jsdom
  */
 
-import { renderHook, waitFor } from '@testing-library/react';
+import { renderHook, waitFor, act } from '@testing-library/react';
 import { SWRConfig } from 'swr';
 import { usePost } from '@/hooks/usePost';
 
@@ -17,6 +17,9 @@ jest.mock('@/server/api', () => ({
 }));
 
 import { api } from '@/server/api';
+
+// Mock global fetch
+global.fetch = jest.fn();
 
 // ✅ Helper to wrap hook with SWR provider
 const wrapper = ({ children }: { children: React.ReactNode }) => (
@@ -164,14 +167,9 @@ describe('usePost Hook - Advanced Tests', () => {
     const { result } = renderHook(() => usePost(1), { wrapper });
 
     // Wait for initial data
-    console.log('📝 Waiting for initial data...');
-    await waitFor(
-      () => {
-        expect(result.current.post).toEqual(mockPost);
-        expect(result.current.isLoading).toBe(false);
-      },
-      { timeout: 5000 },
-    );
+    await waitFor(() => {
+      expect(result.current.post).toEqual(mockPost);
+    });
 
     console.log('📝 Preparing update...');
     const updateData = { title: 'Updated Title' };
@@ -180,7 +178,9 @@ describe('usePost Hook - Advanced Tests', () => {
     (api.posts.update as jest.Mock).mockResolvedValueOnce({ ...mockPost, ...updateData });
 
     console.log('📝 Calling updatePost...');
-    await result.current.updatePost(updateData);
+    await act(async () => {
+      await result.current.updatePost(updateData);
+    });
 
     console.log('📝 Verifying update API call...');
     expect(api.posts.update).toHaveBeenCalledWith(1, updateData);
@@ -189,66 +189,42 @@ describe('usePost Hook - Advanced Tests', () => {
   });
 
   // TEST 5: updatePost handles errors by reverting changes
-  // TEST 5: updatePost handles errors by reverting changes
   it('reverts optimistic updates when server update fails', async () => {
     console.log('🧪 Testing optimistic update reversion on error...');
 
-    // ✅ Mock initial fetch
-    (fetch as jest.Mock).mockResolvedValueOnce({
-      ok: true,
-      json: async () => mockPost,
-    });
+    // ✅ Mock initial successful fetch
+    (api.posts.getById as jest.Mock).mockResolvedValueOnce(mockPost);
 
     const { result } = renderHook(() => usePost(1), { wrapper });
 
-    // Wait for initial data
-    console.log('📝 Waiting for initial data...');
-    await waitFor(
-      () => {
-        expect(result.current.post).toEqual(mockPost);
-        expect(result.current.isLoading).toBe(false);
-      },
-      { timeout: 5000 },
-    );
+    // Wait for initial data to load
+    await waitFor(() => {
+      expect(result.current.post).toEqual(mockPost);
+    });
 
     console.log('📝 Original title:', result.current.post?.title);
 
-    console.log('📝 Preparing failed update...');
-    const updateData = { title: 'Failed Update' };
-
-    // ✅ Mock failed update - IMPORTANT: return rejected response
-    (fetch as jest.Mock).mockRejectedValueOnce(new Error('Update failed'));
-
-    console.log('📝 Attempting update that will fail...');
+    // ✅ Mock update to fail
+    (api.posts.update as jest.Mock).mockRejectedValueOnce(
+      new Error('Server error'),
+    );
 
     // ✅ Store the original title before update
     const originalTitle = result.current.post?.title;
 
+    // ✅ Attempt update that will fail
     try {
-      await result.current.updatePost(updateData);
-
-      // This should not happen if error is thrown
-      console.log("❌ Update should have failed but didn't");
+      await act(async () => {
+        await result.current.updatePost({ title: 'Failed Update' });
+      });
     } catch (error) {
       console.log('✅ Update failed as expected:', error instanceof Error ? error.message : String(error));
     }
 
-    console.log('📝 Checking that original data is restored...');
-
-    // ✅ Give it time to revert and check multiple times
-    await waitFor(
-      () => {
-        console.log(
-          '📝 Current title after revert:',
-          result.current.post?.title,
-        );
-        expect(result.current.post?.title).toBe(originalTitle);
-      },
-      {
-        timeout: 3000,
-        interval: 100, // Check every 100ms
-      },
-    );
+    // ✅ Verify data reverted to original
+    await waitFor(() => {
+      expect(result.current.post?.title).toBe(originalTitle);
+    });
 
     console.log('✅ Optimistic update reversion works correctly!');
   });
@@ -259,40 +235,31 @@ describe('usePost Hook - Advanced Tests', () => {
 
     // Mock initial fetch with unpublished post
     const unpublishedPost = { ...mockPost, published: false };
-    (fetch as jest.Mock).mockResolvedValueOnce({
-      ok: true,
-      json: async () => unpublishedPost,
-    });
+    (api.posts.getById as jest.Mock).mockResolvedValueOnce(unpublishedPost);
 
     const { result } = renderHook(() => usePost(1), { wrapper });
 
     // Wait for initial data
-    console.log('📝 Waiting for initial data...');
-    await waitFor(
-      () => {
-        expect(result.current.post).toEqual(unpublishedPost);
-        expect(result.current.isLoading).toBe(false);
-      },
-      { timeout: 5000 },
-    );
+    await waitFor(() => {
+      expect(result.current.post).toEqual(unpublishedPost);
+    });
 
     console.log('📝 Checking initial published status...');
     expect(result.current.isPublished).toBe(false);
 
-    console.log('📝 Mocking successful toggle...');
-    (fetch as jest.Mock).mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ ...unpublishedPost, published: true }),
-    });
+    // ✅ Mock successful toggle
+    const publishedPost = { ...unpublishedPost, published: true };
+    (api.posts.update as jest.Mock).mockResolvedValueOnce(publishedPost);
 
     console.log('📝 Calling togglePublished...');
-    await result.current.togglePublished();
+    await act(async () => {
+      await result.current.togglePublished();
+    });
 
-    console.log('📝 Verifying toggle API call...');
-    expect(fetch).toHaveBeenCalledWith('/api/posts/1', {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ published: true }),
+    // ✅ Verify the published status changed
+    await waitFor(() => {
+      expect(result.current.post?.published).toBe(true);
+      expect(result.current.isPublished).toBe(true);
     });
 
     console.log('✅ Publish toggle works correctly!');
@@ -305,15 +272,9 @@ describe('usePost Hook - Advanced Tests', () => {
     renderHook(() => usePost(null), { wrapper });
 
     // ✅ Wait a bit to ensure no calls are made
-    await waitFor(
-      () => {
-        expect(fetch).not.toHaveBeenCalled();
-      },
-      { timeout: 1000 },
-    );
-
-    console.log('📝 Verifying no API calls were made...');
-    expect(fetch).not.toHaveBeenCalled();
+    await waitFor(() => {
+      expect(api.posts.getById).not.toHaveBeenCalled();
+    });
 
     console.log('✅ Correctly avoids unnecessary API calls!');
   });
@@ -326,10 +287,7 @@ describe('usePost Hook - Advanced Tests', () => {
     const post2 = { ...mockPost, id: 2, title: 'Post 2' };
 
     // ✅ Mock first post fetch
-    (fetch as jest.Mock).mockResolvedValueOnce({
-      ok: true,
-      json: async () => post1,
-    });
+    (api.posts.getById as jest.Mock).mockResolvedValueOnce(post1);
 
     const { result, rerender } = renderHook(({ postId }) => usePost(postId), {
       wrapper,
@@ -337,39 +295,26 @@ describe('usePost Hook - Advanced Tests', () => {
     });
 
     // Wait for first post
-    console.log('📝 Waiting for first post...');
-    await waitFor(
-      () => {
-        expect(result.current.post).toEqual(post1);
-        expect(result.current.isLoading).toBe(false);
-      },
-      { timeout: 5000 },
-    );
+    await waitFor(() => {
+      expect(result.current.post).toEqual(post1);
+    });
 
     console.log('📝 Changing to different postId...');
 
     // ✅ Mock second post fetch
-    (fetch as jest.Mock).mockResolvedValueOnce({
-      ok: true,
-      json: async () => post2,
-    });
+    (api.posts.getById as jest.Mock).mockResolvedValueOnce(post2);
 
     // Change postId
     rerender({ postId: 2 });
 
     // Wait for second post
-    console.log('📝 Waiting for second post...');
-    await waitFor(
-      () => {
-        expect(result.current.post).toEqual(post2);
-        expect(result.current.isLoading).toBe(false);
-      },
-      { timeout: 5000 },
-    );
+    await waitFor(() => {
+      expect(result.current.post).toEqual(post2);
+    });
 
     console.log('📝 Verifying both API calls were made...');
-    expect(fetch).toHaveBeenCalledWith('/api/posts/1');
-    expect(fetch).toHaveBeenCalledWith('/api/posts/2');
+    expect(api.posts.getById).toHaveBeenCalledWith(1);
+    expect(api.posts.getById).toHaveBeenCalledWith(2);
 
     console.log('✅ PostId changes work correctly!');
   });

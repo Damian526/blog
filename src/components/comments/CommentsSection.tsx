@@ -163,7 +163,7 @@ export default function CommentsSection({ postId }: CommentsSectionProps) {
 
   const currentUserEmail = currentUser?.email || null;
 
-  console.log('CommentsSection:', { postId, comments, error, isLoading });
+
 
   if (isLoading) return <LoadingMessage>Loading comments...</LoadingMessage>;
   if (error) {

@@ -7,7 +7,8 @@ import { useCurrentUser } from '@/hooks/useCurrentUser';
 jest.mock('@/server/api', () => ({
   api: {
     users: {
-      getCurrentUser: jest.fn(),
+      getCurrent: jest.fn(),
+      update: jest.fn(),
     },
   },
 }));
@@ -16,6 +17,15 @@ jest.mock('@/server/api', () => ({
 jest.mock('swr');
 
 const mockUseSWR = useSWR as jest.MockedFunction<typeof useSWR>;
+
+// Helper function to create complete SWR mock
+const createSWRMock = (data: any, error: any = null, isLoading: boolean = false) => ({
+  data,
+  error,
+  isLoading,
+  isValidating: false,
+  mutate: jest.fn(),
+});
 
 describe('useCurrentUser Hook', () => {
   beforeEach(() => {
@@ -31,12 +41,7 @@ describe('useCurrentUser Hook', () => {
       },
     };
 
-    mockUseSWR.mockReturnValue({
-      data: mockUserData,
-      error: null,
-      isLoading: false,
-      mutate: jest.fn(),
-    });
+    mockUseSWR.mockReturnValue(createSWRMock(mockUserData));
 
     const { result } = renderHook(() => useCurrentUser());
 
@@ -47,12 +52,7 @@ describe('useCurrentUser Hook', () => {
   });
 
   it('returns null user when not authenticated', () => {
-    mockUseSWR.mockReturnValue({
-      data: null,
-      error: null,
-      isLoading: false,
-      mutate: jest.fn(),
-    });
+    mockUseSWR.mockReturnValue(createSWRMock(null));
 
     const { result } = renderHook(() => useCurrentUser());
 
@@ -63,12 +63,7 @@ describe('useCurrentUser Hook', () => {
   });
 
   it('returns loading state correctly', () => {
-    mockUseSWR.mockReturnValue({
-      data: undefined,
-      error: null,
-      isLoading: true,
-      mutate: jest.fn(),
-    });
+    mockUseSWR.mockReturnValue(createSWRMock(undefined, null, true));
 
     const { result } = renderHook(() => useCurrentUser());
 
@@ -80,12 +75,7 @@ describe('useCurrentUser Hook', () => {
   it('returns error state correctly', () => {
     const mockError = new Error('Session fetch failed');
     
-    mockUseSWR.mockReturnValue({
-      data: undefined,
-      error: mockError,
-      isLoading: false,
-      mutate: jest.fn(),
-    });
+    mockUseSWR.mockReturnValue(createSWRMock(undefined, mockError));
 
     const { result } = renderHook(() => useCurrentUser());
 
@@ -95,34 +85,26 @@ describe('useCurrentUser Hook', () => {
     expect(result.current.isLoading).toBe(false);
   });
 
-  it('provides refetch functionality', () => {
+  it('provides mutate functionality', () => {
     const mockMutate = jest.fn();
+    const mockData = createSWRMock(null);
+    mockData.mutate = mockMutate;
     
-    mockUseSWR.mockReturnValue({
-      data: null,
-      error: null,
-      isLoading: false,
-      mutate: mockMutate,
-    });
+    mockUseSWR.mockReturnValue(mockData);
 
     const { result } = renderHook(() => useCurrentUser());
 
-    result.current.refetch();
+    result.current.mutate();
 
     expect(mockMutate).toHaveBeenCalledTimes(1);
   });
 
   it('calls SWR with correct configuration', () => {
-    mockUseSWR.mockReturnValue({
-      data: null,
-      error: null,
-      isLoading: false,
-      mutate: jest.fn(),
-    });
+    mockUseSWR.mockReturnValue(createSWRMock(null));
 
     renderHook(() => useCurrentUser());
 
-    expect(mockUseSWR).toHaveBeenCalledWith('/api/auth/session', {
+    expect(mockUseSWR).toHaveBeenCalledWith('current-user', expect.any(Function), {
       revalidateOnFocus: false,
       revalidateOnReconnect: true,
       shouldRetryOnError: false,
@@ -139,12 +121,7 @@ describe('useCurrentUser Hook', () => {
       },
     };
 
-    mockUseSWR.mockReturnValue({
-      data: mockAdminData,
-      error: null,
-      isLoading: false,
-      mutate: jest.fn(),
-    });
+    mockUseSWR.mockReturnValue(createSWRMock(mockAdminData));
 
     const { result } = renderHook(() => useCurrentUser());
 
@@ -161,12 +138,7 @@ describe('useCurrentUser Hook', () => {
       },
     };
 
-    mockUseSWR.mockReturnValue({
-      data: mockUserData,
-      error: null,
-      isLoading: false,
-      mutate: jest.fn(),
-    });
+    mockUseSWR.mockReturnValue(createSWRMock(mockUserData));
 
     const { result } = renderHook(() => useCurrentUser());
 
@@ -176,12 +148,7 @@ describe('useCurrentUser Hook', () => {
   });
 
   it('handles empty session data correctly', () => {
-    mockUseSWR.mockReturnValue({
-      data: {},
-      error: null,
-      isLoading: false,
-      mutate: jest.fn(),
-    });
+    mockUseSWR.mockReturnValue(createSWRMock({}));
 
     const { result } = renderHook(() => useCurrentUser());
 

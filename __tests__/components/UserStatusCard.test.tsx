@@ -2,8 +2,8 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { useSession } from 'next-auth/react';
-import useSWR from 'swr';
 import UserStatusCard from '@/components/ui/UserStatusCard';
+import { useCurrentUser } from '@/hooks/useCurrentUser';
 
 // Mock the API
 jest.mock('@/server/api', () => ({
@@ -16,7 +16,7 @@ jest.mock('@/server/api', () => ({
 
 // Mock dependencies
 jest.mock('next-auth/react');
-jest.mock('swr');
+jest.mock('@/hooks/useCurrentUser');
 jest.mock('@/components/ui/forms/ExpertApplicationForm', () => {
   return function MockExpertApplicationForm({ onSuccess }: any) {
     return (
@@ -29,7 +29,7 @@ jest.mock('@/components/ui/forms/ExpertApplicationForm', () => {
 });
 
 const mockUseSession = useSession as jest.MockedFunction<typeof useSession>;
-const mockUseSWR = useSWR as jest.MockedFunction<typeof useSWR>;
+const mockUseCurrentUser = useCurrentUser as jest.MockedFunction<typeof useCurrentUser>;
 
 describe('UserStatusCard Component', () => {
   const mockUser = {
@@ -50,13 +50,13 @@ describe('UserStatusCard Component', () => {
       data: mockSession,
       status: 'authenticated',
       update: jest.fn(),
-    });
+    } as any);
   });
 
   describe('User Status Display', () => {
     it('displays pending approval status for unverified user', () => {
-      mockUseSWR.mockReturnValue({
-        data: { 
+      mockUseCurrentUser.mockReturnValue({
+        user: { 
           id: 1,
           name: 'John Doe',
           email: 'john@example.com',
@@ -67,7 +67,10 @@ describe('UserStatusCard Component', () => {
         },
         error: null,
         isLoading: false,
-        mutate: jest.fn(),
+        isAuthenticated: true,
+        updateProfile: jest.fn(),
+        isUpdating: false,
+        refetch: jest.fn(),
       });
 
       render(<UserStatusCard />);
@@ -78,8 +81,8 @@ describe('UserStatusCard Component', () => {
     });
 
     it('displays community member status for verified user', () => {
-      mockUseSWR.mockReturnValue({
-        data: { 
+      mockUseCurrentUser.mockReturnValue({
+        user: { 
           id: 1,
           name: 'John Doe',
           email: 'john@example.com',
@@ -90,7 +93,10 @@ describe('UserStatusCard Component', () => {
         },
         error: null,
         isLoading: false,
-        mutate: jest.fn(),
+        isAuthenticated: true,
+        updateProfile: jest.fn(),
+        isUpdating: false,
+        refetch: jest.fn(),
       });
 
       render(<UserStatusCard />);
@@ -100,19 +106,22 @@ describe('UserStatusCard Component', () => {
     });
 
     it('displays verified expert status for expert user', () => {
-      mockUseSWR.mockReturnValue({
-        data: { 
+      mockUseCurrentUser.mockReturnValue({
+        user: { 
           id: 1,
           name: 'John Doe',
           email: 'john@example.com',
           verified: true,
           isExpert: true,
-          role: 'EXPERT',
+          role: 'USER',
           createdAt: '2024-01-01T00:00:00Z'
         },
         error: null,
         isLoading: false,
-        mutate: jest.fn(),
+        isAuthenticated: true,
+        updateProfile: jest.fn(),
+        isUpdating: false,
+        refetch: jest.fn(),
       });
 
       render(<UserStatusCard />);
@@ -122,8 +131,8 @@ describe('UserStatusCard Component', () => {
     });
 
     it('displays admin privileges for admin user', () => {
-      mockUseSWR.mockReturnValue({
-        data: { 
+      mockUseCurrentUser.mockReturnValue({
+        user: { 
           id: 1,
           name: 'John Doe',
           email: 'john@example.com',
@@ -134,7 +143,10 @@ describe('UserStatusCard Component', () => {
         },
         error: null,
         isLoading: false,
-        mutate: jest.fn(),
+        isAuthenticated: true,
+        updateProfile: jest.fn(),
+        isUpdating: false,
+        refetch: jest.fn(),
       });
 
       render(<UserStatusCard />);
@@ -145,8 +157,8 @@ describe('UserStatusCard Component', () => {
 
   describe('Expert Application', () => {
     it('shows apply for expert button for verified community members', () => {
-      mockUseSWR.mockReturnValue({
-        data: { 
+      mockUseCurrentUser.mockReturnValue({
+        user: { 
           id: 1,
           name: 'John Doe',
           email: 'john@example.com',
@@ -157,7 +169,10 @@ describe('UserStatusCard Component', () => {
         },
         error: null,
         isLoading: false,
-        mutate: jest.fn(),
+        isAuthenticated: true,
+        updateProfile: jest.fn(),
+        isUpdating: false,
+        refetch: jest.fn(),
       });
 
       render(<UserStatusCard />);
@@ -167,8 +182,8 @@ describe('UserStatusCard Component', () => {
     });
 
     it('does not show apply button for unverified users', () => {
-      mockUseSWR.mockReturnValue({
-        data: { 
+      mockUseCurrentUser.mockReturnValue({
+        user: { 
           id: 1,
           name: 'John Doe',
           email: 'john@example.com',
@@ -179,7 +194,10 @@ describe('UserStatusCard Component', () => {
         },
         error: null,
         isLoading: false,
-        mutate: jest.fn(),
+        isAuthenticated: true,
+        updateProfile: jest.fn(),
+        isUpdating: false,
+        refetch: jest.fn(),
       });
 
       render(<UserStatusCard />);
@@ -188,19 +206,22 @@ describe('UserStatusCard Component', () => {
     });
 
     it('does not show apply button for experts or admins', () => {
-      mockUseSWR.mockReturnValue({
-        data: { 
+      mockUseCurrentUser.mockReturnValue({
+        user: { 
           id: 1,
           name: 'John Doe',
           email: 'john@example.com',
           verified: true,
           isExpert: true,
-          role: 'EXPERT',
+          role: 'USER',
           createdAt: '2024-01-01T00:00:00Z'
         },
         error: null,
         isLoading: false,
-        mutate: jest.fn(),
+        isAuthenticated: true,
+        updateProfile: jest.fn(),
+        isUpdating: false,
+        refetch: jest.fn(),
       });
 
       render(<UserStatusCard />);
@@ -209,8 +230,8 @@ describe('UserStatusCard Component', () => {
     });
 
     it('opens expert application form when apply button is clicked', async () => {
-      mockUseSWR.mockReturnValue({
-        data: { 
+      mockUseCurrentUser.mockReturnValue({
+        user: { 
           id: 1,
           name: 'John Doe',
           email: 'john@example.com',
@@ -221,7 +242,10 @@ describe('UserStatusCard Component', () => {
         },
         error: null,
         isLoading: false,
-        mutate: jest.fn(),
+        isAuthenticated: true,
+        updateProfile: jest.fn(),
+        isUpdating: false,
+        refetch: jest.fn(),
       });
 
       render(<UserStatusCard />);
@@ -235,8 +259,8 @@ describe('UserStatusCard Component', () => {
     });
 
     it('shows application status when user has applied', () => {
-      mockUseSWR.mockReturnValue({
-        data: { 
+      mockUseCurrentUser.mockReturnValue({
+        user: { 
           id: 1,
           name: 'John Doe',
           email: 'john@example.com',
@@ -248,7 +272,10 @@ describe('UserStatusCard Component', () => {
         },
         error: null,
         isLoading: false,
-        mutate: jest.fn(),
+        isAuthenticated: true,
+        updateProfile: jest.fn(),
+        isUpdating: false,
+        refetch: jest.fn(),
       });
 
       render(<UserStatusCard />);
@@ -260,11 +287,14 @@ describe('UserStatusCard Component', () => {
 
   describe('Loading and Error States', () => {
     it('shows loading state', () => {
-      mockUseSWR.mockReturnValue({
-        data: undefined,
+      mockUseCurrentUser.mockReturnValue({
+        user: undefined,
         error: null,
         isLoading: true,
-        mutate: jest.fn(),
+        isAuthenticated: true,
+        updateProfile: jest.fn(),
+        isUpdating: false,
+        refetch: jest.fn(),
       });
 
       render(<UserStatusCard />);
@@ -273,11 +303,14 @@ describe('UserStatusCard Component', () => {
     });
 
     it('shows error state', () => {
-      mockUseSWR.mockReturnValue({
-        data: undefined,
+      mockUseCurrentUser.mockReturnValue({
+        user: undefined,
         error: new Error('Failed to fetch'),
         isLoading: false,
-        mutate: jest.fn(),
+        isAuthenticated: true,
+        updateProfile: jest.fn(),
+        isUpdating: false,
+        refetch: jest.fn(),
       });
 
       render(<UserStatusCard />);
@@ -292,7 +325,7 @@ describe('UserStatusCard Component', () => {
         data: null,
         status: 'unauthenticated',
         update: jest.fn(),
-      });
+      } as any);
 
       const { container } = render(<UserStatusCard />);
 
@@ -302,8 +335,8 @@ describe('UserStatusCard Component', () => {
 
   describe('Accessibility', () => {
     it('has proper account status display', () => {
-      mockUseSWR.mockReturnValue({
-        data: { 
+      mockUseCurrentUser.mockReturnValue({
+        user: { 
           id: 1,
           name: 'John Doe',
           email: 'john@example.com',
@@ -314,7 +347,10 @@ describe('UserStatusCard Component', () => {
         },
         error: null,
         isLoading: false,
-        mutate: jest.fn(),
+        isAuthenticated: true,
+        updateProfile: jest.fn(),
+        isUpdating: false,
+        refetch: jest.fn(),
       });
 
       render(<UserStatusCard />);
@@ -324,8 +360,8 @@ describe('UserStatusCard Component', () => {
     });
 
     it('has proper apply button when applicable', () => {
-      mockUseSWR.mockReturnValue({
-        data: { 
+      mockUseCurrentUser.mockReturnValue({
+        user: { 
           id: 1,
           name: 'John Doe',
           email: 'john@example.com',
@@ -336,7 +372,10 @@ describe('UserStatusCard Component', () => {
         },
         error: null,
         isLoading: false,
-        mutate: jest.fn(),
+        isAuthenticated: true,
+        updateProfile: jest.fn(),
+        isUpdating: false,
+        refetch: jest.fn(),
       });
 
       render(<UserStatusCard />);
