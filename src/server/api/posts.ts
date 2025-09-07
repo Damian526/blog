@@ -13,12 +13,7 @@ import {
 } from './types';
 import { z } from 'zod';
 
-// ============================================
-// POSTS API FUNCTIONS
-// ============================================
-
 export async function getPosts(filters: Partial<PostFilters> = {}) {
-  // Validate and sanitize filters
   const validatedFilters = PostFiltersSchema.parse(filters);
   
   const searchParams = new URLSearchParams();
@@ -143,14 +138,6 @@ export async function getPostStats(id: number) {
   );
 }
 
-
-// ============================================
-// CACHE INVALIDATION HELPERS
-// ============================================
-
-/**
- * Revalidate posts cache
- */
 export async function revalidatePosts() {
   const { revalidateTag } = await import('next/cache');
   revalidateTag(CACHE_TAGS.POSTS);

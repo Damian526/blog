@@ -9,10 +9,6 @@ import {
 } from './types';
 import { z } from 'zod';
 
-// ============================================
-// COMMENTS API FUNCTIONS
-// ============================================
-
 export async function getPostComments(
   postId: number,
   includeReplies: boolean = true,
@@ -153,10 +149,6 @@ export async function getCommentStats(commentId: number) {
     }),
   );
 }
-
-// ============================================
-// CACHE INVALIDATION HELPERS
-// ============================================
 
 export async function revalidatePostComments(postId: number) {
   const { revalidateTag } = await import('next/cache');

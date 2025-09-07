@@ -2,10 +2,6 @@ import { apiClient, CACHE_TAGS, CACHE_TIMES } from './client';
 import { User, UserSchema } from './types';
 import { z } from 'zod';
 
-// ============================================
-// USERS API FUNCTIONS
-// ============================================
-
 export async function getCurrentUser() {
   return apiClient.get(
     '/api/auth/session',

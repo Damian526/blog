@@ -13,10 +13,6 @@ export class ApiError extends Error {
   }
 }
 
-// ============================================
-// BASE API CLIENT WITH NEXT.JS CACHING
-// ============================================
-
 interface ApiClientOptions {
   cache?: RequestCache;
   revalidate?: number | false;
@@ -64,7 +60,6 @@ class ApiClient {
         ...headers,
       },
       cache,
-      // Next.js specific caching options
       next: {
         revalidate,
         tags,
@@ -151,10 +146,6 @@ class ApiClient {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
 
-  // ============================================
-  // HTTP METHODS WITH CACHING SUPPORT
-  // ============================================
-
   async get<T>(
     endpoint: string,
     options: ApiClientOptions = {},
@@ -238,15 +229,7 @@ class ApiClient {
   }
 }
 
-// ============================================
-// SINGLETON API CLIENT INSTANCE
-// ============================================
-
 export const apiClient = new ApiClient();
-
-// ============================================
-// CACHE UTILITIES FOR NEXT.JS
-// ============================================
 
 export const CACHE_TAGS = {
   POSTS: 'posts',

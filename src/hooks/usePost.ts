@@ -1,7 +1,3 @@
-// ============================================
-// SINGLE POST HOOKS
-// ============================================
-
 import useSWR from 'swr';
 import { api } from '@/server/api';
 import { useMutation } from './useMutation';
@@ -47,10 +43,6 @@ export function usePost(postId: number | null) {
     togglePublished: () => updatePost.mutate({ published: !data?.published }),
   };
 }
-
-// ============================================
-// COMPOUND HOOKS FOR COMPLEX SCENARIOS
-// ============================================
 
 export function usePostWithComments(postId: number | null) {
   const postData = usePost(postId);

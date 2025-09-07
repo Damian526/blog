@@ -1,7 +1,3 @@
-// ============================================
-// CORE MUTATION HOOK - SHARED UTILITY
-// ============================================
-
 import { useState, useCallback } from 'react';
 
 interface MutationOptions<T, P> {

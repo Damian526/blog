@@ -1,7 +1,3 @@
-// ============================================
-// COMMENTS HOOKS
-// ============================================
-
 import useSWR from 'swr';
 import { api } from '@/server/api';
 import { useMutation } from './useMutation';

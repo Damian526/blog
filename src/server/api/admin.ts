@@ -2,13 +2,6 @@ import { apiClient, CACHE_TAGS, CACHE_TIMES } from './client';
 import { User, UserSchema, Post, PostSchema } from './types';
 import { z } from 'zod';
 
-// ============================================
-// ADMIN API FUNCTIONS
-// ============================================
-
-/**
- * Get admin statistics
- */
 export async function getAdminStats() {
   return apiClient.get(
     '/api/admin/stats',

@@ -1,7 +1,3 @@
-// ============================================
-// USER HOOKS
-// ============================================
-
 import useSWR from 'swr';
 import { api } from '@/server/api';
 import { useMutation } from './useMutation';
@@ -56,5 +52,4 @@ export function useUser(userId: number | null) {
   };
 }
 
-// Legacy alias for backward compatibility
 export { useCurrentUser as useAuth };

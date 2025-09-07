@@ -1,7 +1,3 @@
-// ============================================
-// POSTS HOOKS
-// ============================================
-
 import useSWR from 'swr';
 import { api } from '@/server/api';
 import { useMutation } from './useMutation';
@@ -40,6 +36,5 @@ export function usePosts(filters: Partial<PostFilters> = {}) {
   };
 }
 
-// Specialized post hooks
 export const usePublishedPosts = () => usePosts({ published: true });
 export const usePostsByAuthor = (authorId: number) => usePosts({ authorId });

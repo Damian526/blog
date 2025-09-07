@@ -1,10 +1,6 @@
 import { apiClient } from './client';
 import { z } from 'zod';
 
-// ============================================
-// AUTH API FUNCTIONS
-// ============================================
-
 export async function register(data: {
   name: string;
   email: string;

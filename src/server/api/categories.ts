@@ -2,10 +2,6 @@ import { apiClient, CACHE_TAGS, CACHE_TIMES } from './client';
 import { Category, CategorySchema, Subcategory, SubcategorySchema } from './types';
 import { z } from 'zod';
 
-// ============================================
-// CATEGORIES API FUNCTIONS
-// ============================================
-
 const CategoryWithSubcategoriesSchema = CategorySchema.extend({
   subcategories: z.array(SubcategorySchema),
 });

@@ -35,7 +35,6 @@ export default function Header() {
   const { data: session, status } = useSession();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  // Get user profile data using our hook
   const { user: userProfile, error: profileError } = useCurrentUser();
 
   if (status === 'loading') {

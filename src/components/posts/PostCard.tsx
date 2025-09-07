@@ -68,11 +68,9 @@ export default function PostCard({
     '#f39c12',
   ];
 
-  // Calculate estimated reading time
   const wordCount = stripHtml(post.content || '').result.split(/\s+/).length;
-  const readingTime = Math.max(1, Math.ceil(wordCount / 200)); // 200 words per minute
+  const readingTime = Math.max(1, Math.ceil(wordCount / 200));
 
-  // Get initials for avatar fallback
   const getInitials = (name: string) => {
     return name
       .split(' ')

@@ -1,11 +1,7 @@
-// ============================================
-// ADMIN HOOKS
-// ============================================
-
 import useSWR from 'swr';
 import { api } from '@/server/api';
 import { useMutation } from './useMutation';
-import type { User } from '@/server/api/types';
+import type { User, Post } from '@/server/api/types';
 
 export function useAdminUsers() {
   const { data, error, isLoading, mutate } = useSWR(

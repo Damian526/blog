@@ -1,9 +1,5 @@
 import { z } from 'zod';
 
-// ============================================
-// CLEAN, SIMPLE SCHEMAS
-// ============================================
-
 export const UserSchema = z.object({
   id: z.number(),
   name: z.string(), 
@@ -103,9 +99,6 @@ export const PostSummarySchema = z.object({
     comments: z.number(),
   }),
 });
-// ============================================
-// TYPESCRIPT TYPES (INFERRED FROM SCHEMAS)
-// ============================================
 
 export type User = z.infer<typeof UserSchema>;
 export type Category = z.infer<typeof CategorySchema>;
@@ -113,10 +106,6 @@ export type Subcategory = z.infer<typeof SubcategorySchema>;
 export type Comment = z.infer<typeof CommentSchema>;
 export type Post = z.infer<typeof PostSchema>;
 export type PostSummary = z.infer<typeof PostSummarySchema>;
-
-// ============================================
-// API RESPONSE WRAPPERS
-// ============================================
 
 export const ApiResponseSchema = <T extends z.ZodTypeAny>(dataSchema: T) =>
   z.object({
@@ -138,10 +127,6 @@ export const PaginatedResponseSchema = <T extends z.ZodTypeAny>(itemSchema: T) =
     error: z.string().optional(),
   });
 
-// ============================================
-// REQUEST/MUTATION SCHEMAS
-// ============================================
-
 export const CreatePostSchema = z.object({
   title: z.string().min(1, 'Title is required'),
   content: z.string().min(1, 'Content is required'),
@@ -160,10 +145,6 @@ export const CreateCommentSchema = z.object({
 export const UpdateCommentSchema = z.object({
   content: z.string().min(1, 'Comment content is required'),
 });
-
-// ============================================
-// FILTER/QUERY SCHEMAS
-// ============================================
 
 export const PostFiltersSchema = z.object({
   published: z.boolean().optional(),
