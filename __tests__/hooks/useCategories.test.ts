@@ -187,6 +187,7 @@ describe('useCategories Hook', () => {
       data: complexCategories,
       error: null,
       isLoading: false,
+      isValidating: false,
       mutate: jest.fn(),
     });
 

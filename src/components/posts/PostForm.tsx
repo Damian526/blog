@@ -79,6 +79,7 @@ export default function PostForm({
       const postData = {
         title,
         content: html,
+        published: false, // New posts start as drafts
         subcategoryIds: selectedSubcategories, // Only send subcategories as backend expects
       };
 

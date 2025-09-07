@@ -84,8 +84,9 @@ export default function PostCard({
 
   return (
     <Card as={Link} href={`/posts/${post.id}`}>
-      {post.coverImageUrl ? (
-        <Header imgUrl={post.coverImageUrl}>
+      {/* TODO: Add coverImageUrl to Post schema when image upload is implemented */}
+      {false ? (
+        <Header imgUrl={''}>
           {subcategories.length > 0 && (
             <TagsContainer $overlay>
               {subcategories.slice(0, 2).map((sub, i) => (

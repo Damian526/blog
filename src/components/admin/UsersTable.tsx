@@ -4,6 +4,7 @@ import { useState } from 'react';
 import styled from 'styled-components';
 import { useAdminUsers } from '@/hooks/useAdmin';
 import { User } from '@/server/api';
+import { api } from '@/server/api';
 import {
   Container,
   Title,
