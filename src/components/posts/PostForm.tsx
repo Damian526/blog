@@ -109,7 +109,6 @@ export default function PostForm({
           title={title}
           setTitle={setTitle}
           editor={editor}
-          handleAddImage={handleAddImage}
         />
         <CategorySelector
           categories={categories}
