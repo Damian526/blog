@@ -57,7 +57,6 @@ export const PostSchema = z.object({
   published: z.boolean(),
   declineReason: z.string().nullable(),
   createdAt: z.string(), 
-  authorId: z.number(),
   author: z.object({
     id: z.number().optional(),
     name: z.string().nullable(), 
@@ -78,7 +77,6 @@ export const PostSummarySchema = z.object({
   content: z.string(),
   published: z.boolean(),
   createdAt: z.string(),
-  authorId: z.number(),
   author: z.object({
     id: z.number().optional(),
     name: z.string().nullable(),

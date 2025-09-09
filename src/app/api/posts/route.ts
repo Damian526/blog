@@ -178,7 +178,6 @@ export async function POST(request: Request) {
       published: post.published,
       declineReason: null,
       createdAt: post.createdAt.toISOString(),
-      authorId: Number(post.authorId),
       author: {
         id: Number(post.author.id),
         name: post.author.name,

@@ -54,7 +54,6 @@ export async function GET(
       title: post.title,
       content: post.content || '',
       published: post.published,
-      authorId: Number(post.authorId),
       createdAt: post.createdAt.toISOString(),
       declineReason: post.declineReason || null,
       author: post.author ? {
@@ -174,7 +173,6 @@ export async function PATCH(request: Request) {
       published: updatedPost.published,
       declineReason: updatedPost.declineReason || null,
       createdAt: updatedPost.createdAt.toISOString(),
-      authorId: Number(updatedPost.authorId),
       author: {
         id: Number(updatedPost.author.id),
         name: updatedPost.author.name,
