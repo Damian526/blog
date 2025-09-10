@@ -76,6 +76,7 @@ export const PostSummarySchema = z.object({
   title: z.string(),
   content: z.string(),
   published: z.boolean(),
+  declineReason: z.string().nullable(),
   createdAt: z.string(),
   author: z.object({
     id: z.number().optional(),
