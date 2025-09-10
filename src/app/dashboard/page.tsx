@@ -1,7 +1,7 @@
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { redirect } from 'next/navigation';
-import { getInitialDashboardPosts } from '@/lib/serverActions';
+import { getInitialDashboardPosts } from '@/serverActions';
 import DashboardClient from '@/components/dashboard/DashboardClient';
 
 export default async function Dashboard() {
