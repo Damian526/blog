@@ -8,6 +8,8 @@ export async function GET(request: Request) {
     const url = new URL(request.url, 'http://localhost');
     const catParam = url.searchParams.get('categoryIds');
     const subParam = url.searchParams.get('subcategoryIds');
+    const publishedParam = url.searchParams.get('published');
+    const authorIdParam = url.searchParams.get('authorId');
 
     const whereClauses: any[] = [];
 
@@ -31,8 +33,26 @@ export async function GET(request: Request) {
       });
     }
 
-    // OR them: posts matching any selected category _or_ subcategory
-    const where = whereClauses.length > 0 ? { OR: whereClauses } : {};
+    // Build the base where clause
+    let where: any = {};
+    
+    // Handle category/subcategory filters (OR condition)
+    if (whereClauses.length > 0) {
+      where.OR = whereClauses;
+    }
+
+    // Handle published filter (AND condition)
+    if (publishedParam !== null) {
+      where.published = publishedParam === 'true';
+    }
+
+    // Handle author filter (AND condition)
+    if (authorIdParam) {
+      const authorId = Number(authorIdParam);
+      if (!isNaN(authorId)) {
+        where.authorId = authorId;
+      }
+    }
 
     const posts = await prisma.post.findMany({
       where,
@@ -41,6 +61,7 @@ export async function GET(request: Request) {
         title: true,
         content: true,
         published: true,
+        declineReason: true,
         createdAt: true,
         author: { 
           select: { 
@@ -67,10 +88,13 @@ export async function GET(request: Request) {
       },
     });
 
-    return NextResponse.json(
+    const response = NextResponse.json(
       posts.map((post) => ({
-        ...post,
         id: Number(post.id), // Ensure ID is number
+        title: post.title,
+        content: post.content,
+        published: post.published,
+        declineReason: post.declineReason, // Explicitly include declineReason
         createdAt: post.createdAt.toISOString(),
         author: {
           id: Number(post.author.id), // Ensure author ID is number
@@ -91,6 +115,19 @@ export async function GET(request: Request) {
         _count: post._count,
       })),
     );
+
+    // Set appropriate cache headers based on request
+    if (authorIdParam) {
+      // User-specific data - no cache
+      response.headers.set('Cache-Control', 'private, no-cache, no-store, must-revalidate');
+      response.headers.set('Pragma', 'no-cache');
+      response.headers.set('Expires', '0');
+    } else {
+      // Public data - cache for 15 minutes
+      response.headers.set('Cache-Control', 'public, s-maxage=900, stale-while-revalidate=1800');
+    }
+
+    return response;
   } catch (error) {
     console.error('Error fetching posts:', error);
     return NextResponse.json(
@@ -132,18 +169,18 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    const post = await prisma.post.create({
-      data: {
-        title,
-        content,
-        published: false,
-        createdAt: new Date(),
-        authorId: user.id,
-        // Connect one or more subcategories only
-        subcategories: {
-          connect: subcategoryIds.map((id: number) => ({ id })),
+    const post = await prisma.post.create({        data: {
+          title,
+          content,
+          published: false,
+          declineReason: null,
+          createdAt: new Date(),
+          authorId: user.id,
+          // Connect one or more subcategories only
+          subcategories: {
+            connect: subcategoryIds.map((id: number) => ({ id })),
+          },
         },
-      },
       include: {
         author: {
           select: {
@@ -176,7 +213,7 @@ export async function POST(request: Request) {
       title: post.title,
       content: post.content,
       published: post.published,
-      declineReason: null,
+      declineReason: post.declineReason,
       createdAt: post.createdAt.toISOString(),
       author: {
         id: Number(post.author.id),

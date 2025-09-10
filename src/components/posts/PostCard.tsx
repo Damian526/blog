@@ -127,11 +127,9 @@ export default function PostCard({
               )}
             </TagsContainer>
           )}
-          {showActions && (
-            <StatusBadge $status={statusType} $overlay>
-              {statusText}
-            </StatusBadge>
-          )}
+          <StatusBadge $status={statusType} $overlay>
+            {statusText}
+          </StatusBadge>
         </CardHeader>
       )}
 

@@ -12,12 +12,14 @@ interface PostListProps {
   posts: PostSummary[];
   showActions?: boolean;
   onDelete?: (postId: number) => Promise<void>;
+  isDeleting?: boolean;
 }
 
 export default function PostList({
   posts,
   showActions,
   onDelete,
+  isDeleting,
 }: PostListProps) {
   if (!posts || posts.length === 0) {
     return (
@@ -39,6 +41,7 @@ export default function PostList({
             post={post}
             showActions={showActions}
             onDelete={onDelete}
+            isDeleting={isDeleting}
           />
         ))}
       </PostsGrid>

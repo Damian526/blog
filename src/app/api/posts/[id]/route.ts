@@ -55,7 +55,7 @@ export async function GET(
       content: post.content || '',
       published: post.published,
       createdAt: post.createdAt.toISOString(),
-      declineReason: post.declineReason || null,
+      declineReason: post.declineReason,
       author: post.author ? {
         id: Number(post.author.id),
         name: post.author.name,

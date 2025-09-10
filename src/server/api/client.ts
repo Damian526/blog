@@ -234,6 +234,7 @@ export const apiClient = new ApiClient();
 export const CACHE_TAGS = {
   POSTS: 'posts',
   POST: (id: number) => `post-${id}`,
+  USER_POSTS: (userId: number) => `user-${userId}-posts`,
   COMMENTS: 'comments',
   COMMENT: (id: number) => `comment-${id}`,
   POST_COMMENTS: (postId: number) => `post-${postId}-comments`,
