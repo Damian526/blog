@@ -10,22 +10,28 @@ import type {
   UpdatePost,
 } from '@/server/api/types';
 
-// Dashboard posts hook (CSR with aggressive revalidation)
+// Dashboard posts hook (NO CACHING - for testing)
 export function useDashboardPosts(
   filters: Partial<PostFilters> = {},
   initialData?: PostSummary[],
 ) {
+  // Force unique key every time to bypass SWR cache completely
+  const cacheKey = [`dashboard-posts-no-cache`, JSON.stringify(filters), Date.now()];
+  
   const { data, error, isLoading, mutate } = useSWR(
-    ['dashboard-posts', JSON.stringify(filters)],
+    cacheKey,
     () => api.posts.getAll(filters),
     {
       fallbackData: initialData,
-      revalidateOnFocus: true,
-      revalidateOnReconnect: true,
-      dedupingInterval: 0, // No deduping for user-specific data
-      refreshInterval: 30000, // 30 seconds auto refresh
-      errorRetryCount: 3,
-      errorRetryInterval: 1000,
+      // DISABLE ALL SWR CACHING
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      revalidateIfStale: false,
+      dedupingInterval: 0,
+      refreshInterval: 0,
+      errorRetryCount: 0,
+      shouldRetryOnError: false,
+      revalidateOnMount: true,
     },
   );
 
@@ -33,11 +39,8 @@ export function useDashboardPosts(
     (postData: CreatePost) => api.posts.create(postData),
     {
       revalidate: () => {
-        // Invalidate all dashboard posts cache
+        // Simple revalidation without global cache clearing
         mutate();
-        globalMutate(
-          (key) => Array.isArray(key) && key[0] === 'dashboard-posts',
-        );
       },
     },
   );
@@ -48,9 +51,6 @@ export function useDashboardPosts(
     {
       revalidate: () => {
         mutate();
-        globalMutate(
-          (key) => Array.isArray(key) && key[0] === 'dashboard-posts',
-        );
       },
     },
   );
@@ -58,7 +58,6 @@ export function useDashboardPosts(
   const deletePost = useMutation((id: number) => api.posts.delete(id), {
     revalidate: () => {
       mutate();
-      globalMutate((key) => Array.isArray(key) && key[0] === 'dashboard-posts');
     },
   });
 

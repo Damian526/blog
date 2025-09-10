@@ -89,14 +89,22 @@ export async function GET(request: Request) {
     });
 
     const response = NextResponse.json(
-      posts.map((post) => ({
-        id: Number(post.id), // Ensure ID is number
-        title: post.title,
-        content: post.content,
-        published: post.published,
-        declineReason: post.declineReason, // Explicitly include declineReason
-        createdAt: post.createdAt.toISOString(),
-        author: {
+      posts.map((post) => {
+        // Debug logging
+        console.log('Post data from DB:', {
+          id: post.id,
+          title: post.title,
+          declineReason: post.declineReason,
+          hasDeclineReason: 'declineReason' in post
+        });
+        
+        return {
+          id: Number(post.id), // Ensure ID is number
+          title: post.title,
+          content: post.content,
+          published: post.published,
+          declineReason: post.declineReason, // Explicitly include declineReason
+          createdAt: post.createdAt.toISOString(),        author: {
           id: Number(post.author.id), // Ensure author ID is number
           name: post.author.name || null, // Handle null names
           email: post.author.email,
@@ -113,7 +121,8 @@ export async function GET(request: Request) {
           } : undefined,
         })),
         _count: post._count,
-      })),
+        };
+      }),
     );
 
     // Set appropriate cache headers based on request
