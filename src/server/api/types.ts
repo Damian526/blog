@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 export const UserSchema = z.object({
-  id: z.number(),
+  id: z.coerce.number(),
   name: z.string(), 
   email: z.string(),
   image: z.string().nullable().optional(), 
@@ -12,33 +12,33 @@ export const UserSchema = z.object({
   isExpert: z.boolean().optional(),
   verificationReason: z.string().nullable().optional(),
   portfolioUrl: z.string().nullable().optional(),
-  approvedBy: z.number().nullable().optional(),
+  approvedBy: z.coerce.number().nullable().optional(),
   approvedAt: z.string().nullable().optional(),
   createdAt: z.string(),
 });
 
 export const CategorySchema = z.object({
-  id: z.number(),
+  id: z.coerce.number(),
   name: z.string(),
 });
 
 export const SubcategorySchema = z.object({
-  id: z.number(),
+  id: z.coerce.number(),
   name: z.string(),
-  categoryId: z.number(),
+  categoryId: z.coerce.number(),
   category: CategorySchema.optional(),
 });
 
 export const CommentSchema = z.object({
-  id: z.number(),
+  id: z.coerce.number(),
   content: z.string().nullable(),
   createdAt: z.string(), 
-  authorId: z.number(),
-  postId: z.number().nullable(),
-  discussionId: z.number().nullable(),
-  parentId: z.number().nullable(),
+  authorId: z.coerce.number(),
+  postId: z.coerce.number().nullable(),
+  discussionId: z.coerce.number().nullable(),
+  parentId: z.coerce.number().nullable(),
   author: z.object({
-    id: z.number(),
+    id: z.coerce.number(),
     name: z.string().nullable(), 
     email: z.string(),
     image: z.string().nullable().optional(),
@@ -46,19 +46,19 @@ export const CommentSchema = z.object({
   }).nullable(),
   replies: z.array(z.lazy(() => CommentSchema)).optional(),
   _count: z.object({
-    replies: z.number(),
+    replies: z.coerce.number(),
   }).optional(),
 });
 
 export const PostSchema = z.object({
-  id: z.number(),
+  id: z.coerce.number(),
   title: z.string(),
   content: z.string(),
   published: z.boolean(),
   declineReason: z.string().nullable(),
   createdAt: z.string(), 
   author: z.object({
-    id: z.number().optional(),
+    id: z.coerce.number().optional(),
     name: z.string().nullable(), 
     email: z.string(),
     image: z.string().nullable().optional(),
@@ -67,35 +67,35 @@ export const PostSchema = z.object({
   subcategories: z.array(SubcategorySchema).default([]),
   comments: z.array(CommentSchema).optional(),
   _count: z.object({
-    comments: z.number(),
+    comments: z.coerce.number(),
   }),
 });
 
 export const PostSummarySchema = z.object({
-  id: z.number(),
+  id: z.coerce.number(),
   title: z.string(),
   content: z.string(),
   published: z.boolean(),
   declineReason: z.string().nullable(),
   createdAt: z.string(),
   author: z.object({
-    id: z.number().optional(),
+    id: z.coerce.number().optional(),
     name: z.string().nullable(),
     email: z.string(),
     image: z.string().nullable().optional(),
     createdAt: z.string().optional(), 
   }).nullable(),
   subcategories: z.array(z.object({
-    id: z.number(),
+    id: z.coerce.number(),
     name: z.string(),
-    categoryId: z.number(),
+    categoryId: z.coerce.number(),
     category: z.object({
-      id: z.number(),
+      id: z.coerce.number(),
       name: z.string(),
     }).optional(),
   })).default([]),
   _count: z.object({
-    comments: z.number(),
+    comments: z.coerce.number(),
   }),
 });
 

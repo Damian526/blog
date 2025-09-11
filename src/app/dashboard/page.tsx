@@ -1,7 +1,7 @@
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { redirect } from 'next/navigation';
-import { getInitialDashboardPosts } from '@/serverActions';
+import { getDashboardPosts } from '@/lib/queries/posts';
 import DashboardClient from '@/components/dashboard/DashboardClient';
 
 export default async function Dashboard() {
@@ -17,7 +17,7 @@ export default async function Dashboard() {
   }
 
   // Get initial posts data on the server
-  const initialPosts = await getInitialDashboardPosts();
+  const initialPosts = await getDashboardPosts();
 
   return <DashboardClient initialPosts={initialPosts} />;
 }

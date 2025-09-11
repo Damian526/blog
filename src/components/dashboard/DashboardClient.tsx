@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useTransition } from 'react';
 import PostList from '@/components/posts/PostList';
 import PostStatusFilter from '@/components/posts/PostStatusFilter';
 import UserStatusCard from '@/components/ui/UserStatusCard';
 import DashboardContent from '@/components/ui/DashboardContent';
-import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { useDashboardPosts } from '@/hooks/usePosts';
+import { deletePost } from '@/lib/actions/posts';
 import { useSession } from 'next-auth/react';
 import type { PostSummary } from '@/server/api/types';
 import {
@@ -23,19 +23,20 @@ interface DashboardClientProps {
 
 export default function DashboardClient({ initialPosts }: DashboardClientProps) {
   const { data: session } = useSession();
-  const { user } = useCurrentUser();
   const [statusFilter, setStatusFilter] = useState<'all' | 'published' | 'unpublished'>('all');
+  const [isPending, startTransition] = useTransition();
   
-  // Use dashboard-specific hook with initial data
+  // Extract user ID from session - don't call hook that might fail
+  const userId = session?.user?.id ? parseInt(session.user.id) : null;
+  
+  // Use dashboard-specific hook with initial data - only fetch if we have a user ID
   const { 
     posts, 
     error, 
     isLoading, 
-    refetch, 
-    deletePost, 
-    isDeleting 
+    refetch
   } = useDashboardPosts(
-    { authorId: user?.id || 0 }, 
+    userId ? { authorId: userId } : {}, 
     initialPosts
   );
 
@@ -68,12 +69,19 @@ export default function DashboardClient({ initialPosts }: DashboardClientProps) 
   }, [posts]);
 
   const handleDelete = async (postId: number) => {
-    try {
-      await deletePost(postId);
-    } catch (error) {
-      console.error('Error deleting post:', error);
-      alert('Failed to delete the post. Please try again.');
-    }
+    startTransition(async () => {
+      try {
+        const result = await deletePost(postId);
+        if (result.success) {
+          refetch(); // Refresh the posts list
+        } else {
+          alert(result.error || 'Failed to delete the post. Please try again.');
+        }
+      } catch (error) {
+        console.error('Error deleting post:', error);
+        alert('Failed to delete the post. Please try again.');
+      }
+    });
   };
 
   if (!session) {
@@ -122,7 +130,7 @@ export default function DashboardClient({ initialPosts }: DashboardClientProps) 
                 posts={filteredPosts}
                 showActions={true}
                 onDelete={handleDelete}
-                isDeleting={isDeleting}
+                isDeleting={isPending}
               />
             )}
           </>

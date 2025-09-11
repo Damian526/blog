@@ -1,6 +1,5 @@
 import useSWR from 'swr';
 import { api } from '@/server/api';
-import { useMutation } from './useMutation';
 import type { Category } from '@/server/api/types';
 
 export function useCategories() {
@@ -14,19 +13,10 @@ export function useCategories() {
     }
   );
 
-  const createCategory = useMutation(
-    (name: string) => api.categories.create(name),
-    {
-      revalidate: () => mutate(),
-    }
-  );
-
   return {
     categories: data || [],
     error,
     isLoading,
-    createCategory: createCategory.mutate,
-    isCreating: createCategory.isLoading,
     refetch: mutate,
   };
 }

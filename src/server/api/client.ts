@@ -44,7 +44,7 @@ class ApiClient {
     retryOptions: RetryOptions = {}
   ): Promise<T> {
     const {
-      cache = 'force-cache',
+      cache = 'no-store', // ✅ NO server-side caching - let SWR handle it!
       revalidate,
       tags = [],
       headers = {},
@@ -231,21 +231,5 @@ class ApiClient {
 
 export const apiClient = new ApiClient();
 
-export const CACHE_TAGS = {
-  POSTS: 'posts',
-  POST: (id: number) => `post-${id}`,
-  USER_POSTS: (userId: number) => `user-${userId}-posts`,
-  COMMENTS: 'comments',
-  COMMENT: (id: number) => `comment-${id}`,
-  POST_COMMENTS: (postId: number) => `post-${postId}-comments`,
-  CATEGORIES: 'categories',
-  USERS: 'users',
-  USER: (id: number) => `user-${id}`,
-} as const;
-
-export const CACHE_TIMES = {
-  SHORT: 60, // 1 minute
-  MEDIUM: 300, // 5 minutes
-  LONG: 3600, // 1 hour
-  VERY_LONG: 86400, // 24 hours
-} as const;
+// ✅ Removed CACHE_TAGS and CACHE_TIMES 
+// SWR handles all caching for CSR endpoints!

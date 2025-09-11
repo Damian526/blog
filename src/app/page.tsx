@@ -1,5 +1,5 @@
 import HomePageContent from '@/components/pages/HomePageContent';
-import { api } from '@/server/api';
+import { getPublishedPosts } from '@/lib/queries/posts';
 
 export const dynamic = 'force-dynamic';
 
@@ -34,13 +34,12 @@ export default async function Home({
   let error = null;
 
   try {
-    posts = await api.posts.getPublished({
+    posts = await getPublishedPosts({
       categoryIds: catIds.length ? catIds : undefined,
       subcategoryIds: subIds.length ? subIds : undefined,
-      published: true,
     });
   } catch (e) {
-    console.error('API error', e);
+    console.error('Query error', e);
     error = 'Failed to load posts. Please try again later.';
   }
 

@@ -1,4 +1,4 @@
-import { apiClient, CACHE_TAGS, CACHE_TIMES } from './client';
+import { apiClient } from './client';
 import {
   Post,
   PostSchema,
@@ -44,16 +44,15 @@ export async function getPosts(filters: Partial<PostFilters> = {}) {
 
   const endpoint = `/api/posts?${searchParams.toString()}`;
 
-  return apiClient.get(endpoint, undefined, z.array(PostSummarySchema));
+  // ✅ NO server-side caching - let SWR handle everything!
+  return apiClient.get(endpoint, { cache: 'no-store' }, z.array(PostSummarySchema));
 }
 
 export async function getPost(id: number) {
+  // ✅ NO server-side caching - let SWR handle everything!
   return apiClient.get(
     `/api/posts/${id}`,
-    {
-      tags: [CACHE_TAGS.POST(id), CACHE_TAGS.POSTS],
-      revalidate: CACHE_TIMES.MEDIUM,
-    },
+    { cache: 'no-store' },
     PostSchema,
   );
 }
@@ -85,49 +84,14 @@ export async function searchPosts(
   });
 }
 
-export async function createPost(data: CreatePost) {
-  const validatedData = CreatePostSchema.parse(data);
-
-  return apiClient.post(
-    '/api/posts',
-    validatedData,
-    {
-      tags: [CACHE_TAGS.POSTS],
-    },
-    PostSchema,
-  );
-}
-
-export async function updatePost(id: number, data: UpdatePost) {
-  const validatedData = UpdatePostSchema.parse(data);
-
-  return apiClient.patch(
-    `/api/posts/${id}`,
-    validatedData,
-    {
-      tags: [CACHE_TAGS.POST(id), CACHE_TAGS.POSTS],
-    },
-    PostSchema,
-  );
-}
-
-export async function deletePost(id: number) {
-  return apiClient.delete(`/api/posts/${id}`, {
-    tags: [CACHE_TAGS.POST(id), CACHE_TAGS.POSTS],
-  });
-}
-
-export async function togglePublished(id: number, published: boolean) {
-  return updatePost(id, { published });
-}
+// Note: createPost, updatePost, deletePost are now server actions in /lib/actions/posts.ts
+// Use those for mutations instead of API calls
 
 export async function getPostStats(id: number) {
+  // ✅ NO server-side caching - let SWR handle everything!
   return apiClient.get(
     `/api/posts/${id}/stats`,
-    {
-      tags: [CACHE_TAGS.POST(id)],
-      revalidate: CACHE_TIMES.SHORT,
-    },
+    { cache: 'no-store' },
     z.object({
       views: z.number(),
       likes: z.number(),
@@ -137,24 +101,8 @@ export async function getPostStats(id: number) {
   );
 }
 
-export async function revalidatePosts() {
-  const { revalidateTag } = await import('next/cache');
-  revalidateTag(CACHE_TAGS.POSTS);
-}
+// ✅ Removed revalidatePosts - SWR handles revalidation automatically
+// Use mutate() from SWR hooks instead
 
-/**
- * Revalidate specific post cache
- */
-export async function revalidatePost(id: number) {
-  const { revalidateTag } = await import('next/cache');
-  revalidateTag(CACHE_TAGS.POST(id));
-  revalidateTag(CACHE_TAGS.POSTS);
-}
-
-/**
- * Revalidate all post-related caches
- */
-export async function revalidateAllPosts() {
-  const { revalidateTag } = await import('next/cache');
-  revalidateTag(CACHE_TAGS.POSTS);
-}
+// ✅ Removed all revalidation functions - SWR handles this automatically
+// Use mutate() from individual SWR hooks for manual revalidation

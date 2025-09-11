@@ -1,10 +1,8 @@
 import useSWR from 'swr';
 import { api } from '@/server/api';
-import { useMutation } from './useMutation';
 import { useComments } from './useComments';
 import type { 
   Post, 
-  UpdatePost 
 } from '@/server/api/types';
 
 export function usePost(postId: number | null) {
@@ -17,30 +15,14 @@ export function usePost(postId: number | null) {
     }
   );
 
-  const updatePost = useMutation(
-    (updateData: UpdatePost) => api.posts.update(postId!, updateData),
-    {
-      revalidate: () => mutate(),
-    }
-  );
-
-  const deletePost = useMutation(
-    () => api.posts.delete(postId!),
-    {
-      onSuccess: () => mutate(undefined, false),
-    }
-  );
+  // Note: updatePost, deletePost are now server actions
+  // Import and use them directly from /lib/actions/posts.ts
 
   return {
     post: data || null,
     error,
     isLoading,
-    updatePost: updatePost.mutate,
-    isUpdating: updatePost.isLoading,
-    deletePost: deletePost.mutate,
-    isDeleting: deletePost.isLoading,
     refetch: mutate,
-    togglePublished: () => updatePost.mutate({ published: !data?.published }),
   };
 }
 

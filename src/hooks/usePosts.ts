@@ -1,13 +1,10 @@
 import useSWR from 'swr';
 import { api } from '@/server/api';
-import { useMutation } from './useMutation';
 import { mutate as globalMutate } from 'swr';
 import type {
   Post,
   PostSummary,
   PostFilters,
-  CreatePost,
-  UpdatePost,
 } from '@/server/api/types';
 
 // Dashboard posts hook (NO CACHING - for testing)
@@ -37,43 +34,14 @@ export function useDashboardPosts(
     },
   );
 
-  const createPost = useMutation(
-    (postData: CreatePost) => api.posts.create(postData),
-    {
-      revalidate: () => {
-        // Simple revalidation without global cache clearing
-        mutate();
-      },
-    },
-  );
-
-  const updatePost = useMutation(
-    ({ id, data: updateData }: { id: number; data: UpdatePost }) =>
-      api.posts.update(id, updateData),
-    {
-      revalidate: () => {
-        mutate();
-      },
-    },
-  );
-
-  const deletePost = useMutation((id: number) => api.posts.delete(id), {
-    revalidate: () => {
-      mutate();
-    },
-  });
+  // Note: createPost, updatePost, deletePost are now server actions
+  // Import and use them directly from /lib/actions/posts.ts
 
   return {
     posts: data || [],
     error,
     isLoading,
     refetch: mutate,
-    createPost: createPost.mutate,
-    updatePost: updatePost.mutate,
-    deletePost: deletePost.mutate,
-    isCreating: createPost.isLoading,
-    isUpdating: updatePost.isLoading,
-    isDeleting: deletePost.isLoading,
   };
 }
 

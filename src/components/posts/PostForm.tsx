@@ -1,12 +1,12 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import ImageExtension from '@tiptap/extension-image';
 import Placeholder from '@tiptap/extension-placeholder';
 import { uploadImage } from '@/lib/supabase';
-import { api } from '@/server/api';
+import { createPost, updatePost } from '@/lib/actions/posts';
 
 import EditorSection from '@/components/posts/EditorSection';
 import CategorySelector from './CategorySelector';
@@ -33,6 +33,7 @@ export default function PostForm({
     [],
   );
   const [error, setError] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
   const router = useRouter();
 
   const editor = useEditor({
@@ -73,30 +74,36 @@ export default function PostForm({
       return;
     }
 
-    try {
-      const html = editor.getHTML();
-      
-      const postData = {
-        title,
-        content: html,
-        published: false, // New posts start as drafts
-        subcategoryIds: selectedSubcategories, // Only send subcategories as backend expects
-      };
+    startTransition(async () => {
+      try {
+        const html = editor.getHTML();
+        
+        const postData = {
+          title,
+          content: html,
+          subcategoryIds: selectedSubcategories,
+        };
 
-      if (post?.id) {
-        // Update existing post
-        await api.posts.update(post.id, postData);
-      } else {
-        // Create new post
-        await api.posts.create(postData);
+        let result;
+        if (post?.id) {
+          // Update existing post
+          result = await updatePost(post.id, postData);
+        } else {
+          // Create new post
+          result = await createPost(postData);
+        }
+
+        if (result.success) {
+          router.push(onSuccessRedirect);
+        } else {
+          setError(result.error || 'An error occurred');
+        }
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : 'An unknown error occurred.',
+        );
       }
-
-      router.push(onSuccessRedirect);
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : 'An unknown error occurred.',
-      );
-    }
+    });
   }; // ← make sure to close handleSubmit here!
 
   // Now the component’s return lives here, not inside handleSubmit
@@ -127,7 +134,14 @@ export default function PostForm({
             )
           }
         />
-        <Button type="submit">{post ? 'Update Post' : 'Create Post'}</Button>
+        <Button type="submit" disabled={isPending}>
+          {isPending 
+            ? 'Saving...' 
+            : post 
+              ? 'Update Post' 
+              : 'Create Post'
+          }
+        </Button>
       </Form>
     </Container>
   );

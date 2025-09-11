@@ -1,26 +1,33 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { api } from '@/server/api';
+import { rejectPost } from '@/lib/actions/admin';
 
 export default function RejectButton({ postId }: { postId: number }) {
   const router = useRouter();
   const [showModal, setShowModal] = useState(false);
   const [reason, setReason] = useState('');
+  const [isPending, startTransition] = useTransition();
 
   async function handleReject() {
-    try {
-      await api.admin.rejectPost(postId, reason);
+    startTransition(async () => {
+      try {
+        const result = await rejectPost(postId, reason);
 
-      // Refresh the page so we see updated status
-      router.refresh();
-      setShowModal(false);
-      setReason('');
-    } catch (error) {
-      console.error(error);
-      alert('Error declining post');
-    }
+        if (result.success) {
+          // Refresh the page so we see updated status
+          router.refresh();
+          setShowModal(false);
+          setReason('');
+        } else {
+          alert(result.error || 'Error declining post');
+        }
+      } catch (error) {
+        console.error(error);
+        alert('Error declining post');
+      }
+    });
   }
 
   return (
