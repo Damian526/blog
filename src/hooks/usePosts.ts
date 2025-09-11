@@ -15,23 +15,25 @@ export function useDashboardPosts(
   filters: Partial<PostFilters> = {},
   initialData?: PostSummary[],
 ) {
-  // Force unique key every time to bypass SWR cache completely
-  const cacheKey = [`dashboard-posts-no-cache`, JSON.stringify(filters), Date.now()];
-  
+
+
+  const cacheKey = ['dashboard-posts-v3', JSON.stringify(filters)];
+
   const { data, error, isLoading, mutate } = useSWR(
     cacheKey,
     () => api.posts.getAll(filters),
     {
       fallbackData: initialData,
-      // DISABLE ALL SWR CACHING
-      revalidateOnFocus: false,
-      revalidateOnReconnect: false,
-      revalidateIfStale: false,
-      dedupingInterval: 0,
-      refreshInterval: 0,
-      errorRetryCount: 0,
-      shouldRetryOnError: false,
-      revalidateOnMount: true,
+      // Smart caching for dashboard
+      revalidateOnFocus: true, // Refresh when user returns to tab
+      revalidateOnReconnect: true, // Refresh when internet reconnects
+      dedupingInterval: 30000, // 30 seconds - short cache for real-time feel
+      refreshInterval: 0, // No auto refresh - manual only
+      errorRetryCount: 2, // Retry on error but not too much
+      errorRetryInterval: 1000,
+      revalidateIfStale: true, // Always get fresh data if cache is stale
+      // Keep cache fresh
+      keepPreviousData: false, // Don't show old data while loading new
     },
   );
 

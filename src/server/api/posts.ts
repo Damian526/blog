@@ -44,15 +44,7 @@ export async function getPosts(filters: Partial<PostFilters> = {}) {
 
   const endpoint = `/api/posts?${searchParams.toString()}`;
 
-  return apiClient.get(
-    endpoint,
-    {
-      // DISABLE ALL CACHING FOR TESTING
-      cache: 'no-store',
-      revalidate: 0
-    },
-    z.array(PostSummarySchema),
-  );
+  return apiClient.get(endpoint, undefined, z.array(PostSummarySchema));
 }
 
 export async function getPost(id: number) {
