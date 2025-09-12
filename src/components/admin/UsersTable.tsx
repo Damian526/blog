@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import styled from 'styled-components';
 import { useAdminUsers } from '@/hooks/useAdmin';
-import { User } from '@/server/api';
+import type { AdminUser } from '@/server/api/types';
 import { deleteUser } from '@/lib/actions/admin';
 import {
   Container,
@@ -151,6 +151,9 @@ export default function UsersTable() {
     refetch 
   } = useAdminUsers();
 
+  // Type assertion to ensure users has the correct type
+  const typedUsers = users as AdminUser[];
+
   const [filter, setFilter] = useState<
     'all' | 'pending' | 'verification-requests'
   >('all');
@@ -175,15 +178,15 @@ export default function UsersTable() {
   };
 
   const getFilteredUsers = () => {
-    if (!users) return [];
+    if (!typedUsers) return [];
     
     if (filter === 'pending') {
-      return users.filter((user) => !user.verified && !user.verificationReason);
+      return typedUsers.filter((user) => !user.verified && !user.verificationReason);
     }
     if (filter === 'verification-requests') {
-      return users.filter((user) => user.verificationReason && !user.verified);
+      return typedUsers.filter((user) => user.verificationReason && !user.verified);
     }
-    return users;
+    return typedUsers;
   };
 
   async function handleUserAction(

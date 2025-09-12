@@ -1,29 +1,61 @@
-// Admin hooks - these should be replaced with SSR queries in admin pages
-// For now, returning placeholder data to prevent errors
+import useSWR from 'swr';
+import { api } from '@/server/api';
+import type { AdminUser, AdminStats, AdminPostsResponse } from '@/server/api/types';
 
-export function useAdminUsers() {
+export function useAdminUsers(filter: 'all' | 'pending' | 'verification-requests' = 'all') {
+  const { data, error, isLoading, mutate } = useSWR<AdminUser[]>(
+    ['admin/users', filter],
+    () => api.get(`/api/admin/users?filter=${filter}`) as Promise<AdminUser[]>,
+    {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: true,
+      dedupingInterval: 30000, // 30 seconds
+    }
+  );
+
   return {
-    users: [],
-    error: new Error('Admin users should be fetched via SSR queries'),
-    isLoading: false,
-    refetch: () => {},
+    users: data || [],
+    error,
+    isLoading,
+    refetch: mutate,
   };
 }
 
-export function useAdminPosts() {
+export function useAdminPosts(filter: 'all' | 'pending' | 'published' | 'rejected' = 'all', page: number = 1, limit: number = 10) {
+  const { data, error, isLoading, mutate } = useSWR<AdminPostsResponse>(
+    ['admin/posts', filter, page, limit],
+    () => api.get(`/api/admin/posts?filter=${filter}&page=${page}&limit=${limit}`) as Promise<AdminPostsResponse>,
+    {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: true,
+      dedupingInterval: 30000, // 30 seconds
+    }
+  );
+
   return {
-    posts: [],
-    error: new Error('Admin posts should be fetched via SSR queries'),
-    isLoading: false,
-    refetch: () => {},
+    posts: data?.posts || [],
+    pagination: data?.pagination,
+    error,
+    isLoading,
+    refetch: mutate,
   };
 }
 
 export function useAdminStats() {
+  const { data, error, isLoading, mutate } = useSWR<AdminStats>(
+    'admin/stats',
+    () => api.get('/api/admin/stats') as Promise<AdminStats>,
+    {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: true,
+      dedupingInterval: 60000, // 1 minute
+    }
+  );
+
   return {
-    stats: null,
-    error: new Error('Admin stats should be fetched via SSR queries'),
-    isLoading: false,
-    refetch: () => {},
+    stats: data,
+    error,
+    isLoading,
+    refetch: mutate,
   };
 }

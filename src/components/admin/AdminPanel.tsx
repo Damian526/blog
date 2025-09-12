@@ -3,6 +3,7 @@
 import styled from 'styled-components';
 import Link from 'next/link';
 import { useAdminStats } from '@/hooks/useAdmin';
+import type { AdminStats } from '@/server/api/types';
 
 const AdminContainer = styled.div`
   max-width: 800px;
@@ -106,6 +107,9 @@ export default function AdminPanel() {
     isLoading,
   } = useAdminStats();
 
+  // Type guard to ensure stats has the correct type
+  const typedStats = stats as AdminStats | undefined;
+
   return (
     <AdminContainer>
       <AdminTitle>🛡️ Admin Dashboard</AdminTitle>
@@ -124,7 +128,7 @@ export default function AdminPanel() {
             <Badge>Loading...</Badge>
           ) : error ? (
             <Badge>Error loading stats</Badge>
-          ) : stats ? (
+          ) : typedStats ? (
             <div
               style={{
                 display: 'flex',
@@ -133,12 +137,12 @@ export default function AdminPanel() {
                 flexWrap: 'wrap',
               }}
             >
-              <Badge>{stats.users.total} Total Users</Badge>
-              {stats.users.pending > 0 && (
-                <Badge>⏳ {stats.users.pending} Pending</Badge>
+              <Badge>{typedStats.users.total} Total Users</Badge>
+              {typedStats.users.pending > 0 && (
+                <Badge>⏳ {typedStats.users.pending} Pending</Badge>
               )}
-              {stats.users.applications > 0 && (
-                <Badge>🎯 {stats.users.applications} Applications</Badge>
+              {typedStats.users.verificationRequests > 0 && (
+                <Badge>🎯 {typedStats.users.verificationRequests} Applications</Badge>
               )}
             </div>
           ) : null}

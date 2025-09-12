@@ -99,13 +99,60 @@ export const PostSummarySchema = z.object({
   }),
 });
 
-export type User = z.infer<typeof UserSchema>;
-export type Category = z.infer<typeof CategorySchema>;
-export type Subcategory = z.infer<typeof SubcategorySchema>;
-export type Comment = z.infer<typeof CommentSchema>;
-export type Post = z.infer<typeof PostSchema>;
-export type PostSummary = z.infer<typeof PostSummarySchema>;
+// Admin API Types
+export const AdminUserSchema = z.object({
+  id: z.coerce.number(),
+  name: z.string(),
+  email: z.string(),
+  role: z.enum(['ADMIN', 'USER']),
+  verified: z.boolean(),
+  isExpert: z.boolean(),
+  verificationReason: z.string().nullable(),
+  portfolioUrl: z.string().nullable(),
+  profilePicture: z.string().nullable(),
+  createdAt: z.string(),
+  _count: z.object({
+    posts: z.number(),
+    comments: z.number(),
+  }),
+});
 
+export const AdminStatsSchema = z.object({
+  users: z.object({
+    total: z.number(),
+    verified: z.number(),
+    pending: z.number(),
+    experts: z.number(),
+    verificationRequests: z.number(),
+  }),
+  posts: z.object({
+    total: z.number(),
+    published: z.number(),
+    pending: z.number(),
+    rejected: z.number(),
+  }),
+  comments: z.object({
+    total: z.number(),
+  }),
+  overview: z.object({
+    totalUsers: z.number(),
+    totalPosts: z.number(),
+    totalComments: z.number(),
+    pendingApprovals: z.number(),
+  }),
+});
+
+export const AdminPostsResponseSchema = z.object({
+  posts: z.array(PostSchema),
+  pagination: z.object({
+    page: z.number(),
+    limit: z.number(),
+    total: z.number(),
+    totalPages: z.number(),
+  }),
+});
+
+// Schema functions
 export const ApiResponseSchema = <T extends z.ZodTypeAny>(dataSchema: T) =>
   z.object({
     data: dataSchema,
@@ -126,6 +173,7 @@ export const PaginatedResponseSchema = <T extends z.ZodTypeAny>(itemSchema: T) =
     error: z.string().optional(),
   });
 
+// Form schemas
 export const CreatePostSchema = z.object({
   title: z.string().min(1, 'Title is required'),
   content: z.string().min(1, 'Content is required'),
@@ -157,8 +205,20 @@ export const PostFiltersSchema = z.object({
   sortOrder: z.enum(['asc', 'desc']).default('desc'),
 });
 
-export type PostFilters = z.infer<typeof PostFiltersSchema>;
+// Type exports
+export type User = z.infer<typeof UserSchema>;
+export type Category = z.infer<typeof CategorySchema>;
+export type Subcategory = z.infer<typeof SubcategorySchema>;
+export type Comment = z.infer<typeof CommentSchema>;
+export type Post = z.infer<typeof PostSchema>;
+export type PostSummary = z.infer<typeof PostSummarySchema>;
+export type AdminUser = z.infer<typeof AdminUserSchema>;
+export type AdminStats = z.infer<typeof AdminStatsSchema>;
+export type AdminPostsResponse = z.infer<typeof AdminPostsResponseSchema>;
+
+// Form and request types
 export type CreatePost = z.infer<typeof CreatePostSchema>;
 export type UpdatePost = z.infer<typeof UpdatePostSchema>;
 export type CreateComment = z.infer<typeof CreateCommentSchema>;
 export type UpdateComment = z.infer<typeof UpdateCommentSchema>;
+export type PostFilters = z.infer<typeof PostFiltersSchema>;

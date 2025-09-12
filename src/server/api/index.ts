@@ -11,6 +11,12 @@ export * from './comments';
 import * as postsApi from './posts';
 import * as categoriesApi from './categories';
 import * as commentsApi from './comments';
+import { apiClient } from './client';
+
+// Simple fetcher for admin endpoints
+const adminFetcher = {
+  get: (url: string) => apiClient.get(url, { cache: 'no-store' }),
+};
 
 // Simplified API object - only for SWR client-side caching
 export const api = {
@@ -38,4 +44,12 @@ export const api = {
     delete: commentsApi.deleteComment,
     getReplies: commentsApi.getCommentReplies,
   },
+
+  // Admin - for SWR client-side caching only
+  admin: {
+    get: adminFetcher.get,
+  },
+
+  // Generic fetcher for custom endpoints
+  get: adminFetcher.get,
 };

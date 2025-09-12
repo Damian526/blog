@@ -3,9 +3,9 @@ import { api } from '@/server/api';
 import type { Category } from '@/server/api/types';
 
 /**
- * DEPRECATED: Use SSG (getCategories from queries/categories.ts) instead!
- * Categories rarely change and should be fetched at build time for optimal performance.
- * This hook should only be used as a fallback for client-side updates if absolutely necessary.
+ * Hook for fetching categories using SWR (Client-Side Rendering)
+ * Use this hook in client components that need categories with interactivity.
+ * For server components, use getCategories() from @/lib/queries/categories
  */
 export function useCategories() {
   const { data, error, isLoading, mutate } = useSWR(
@@ -15,7 +15,7 @@ export function useCategories() {
       revalidateOnFocus: false,
       revalidateOnReconnect: true,
       dedupingInterval: 3600000, // 1 hour - categories don't change often
-    }
+    },
   );
 
   return {
