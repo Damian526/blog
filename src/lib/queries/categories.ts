@@ -1,8 +1,9 @@
 import prisma from '@/lib/prisma';
 
 /**
- * SSR Query: Get all categories with subcategories
- * Used for server-side rendering when categories are needed for forms/filters
+ * SSG Query: Get all categories with subcategories
+ * Used for Static Site Generation - categories rarely change so perfect for SSG
+ * This will be cached at build time for optimal performance
  */
 export async function getCategories() {
   try {

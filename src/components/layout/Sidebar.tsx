@@ -1,15 +1,15 @@
 // Sidebar.tsx (Server Component)
 import SidebarClient from './CategoriesList';
-import { api } from '@/server/api';
+import { getCategories } from '@/lib/queries/categories';
 
-// SSG fetch on the server
-async function getCategories() {
-  return await api.categories.getAll();
+// SSG fetch on the server - categories rarely change, perfect for SSG
+async function getCategoriesSSG() {
+  return await getCategories();
 }
 
 export default async function Sidebar() {
-  const categories = await getCategories();
-  // We get our categories at build time (SSG) or at runtime (SSR)
+  const categories = await getCategoriesSSG();
+  // Categories fetched at build time (SSG) for optimal performance
 
   return <SidebarClient categories={categories} />;
 }

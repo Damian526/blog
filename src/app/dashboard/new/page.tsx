@@ -1,10 +1,9 @@
 import PostForm from '@/components/posts/PostForm';
-import prisma from '@/lib/prisma';
+import { getCategories } from '@/lib/queries/categories';
 
 export default async function CreatePostPage() {
-  const categories = await prisma.category.findMany({
-    include: { subcategories: true },
-  });
+  // Use consistent SSG query for categories
+  const categories = await getCategories();
 
   return (
     <div>

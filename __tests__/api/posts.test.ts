@@ -3,9 +3,9 @@ import { mockDeep, DeepMockProxy } from 'jest-mock-extended';
 import { PrismaClient } from '@prisma/client';
 import request from 'supertest';
 import { createServer } from 'http';
-import { GET, POST } from '@/app/api/posts/route';
-import prisma from '@/lib/prisma';
+import { GET } from '@/app/api/posts/route';
 import { getServerSession } from 'next-auth';
+import prisma from '@/lib/prisma';
 
 jest.mock('next-auth', () => ({
   getServerSession: jest.fn(),
@@ -45,36 +45,18 @@ describe('API /posts endpoint', () => {
           return res.end();
         }
 
-        if (req.method === 'POST') {
-          // Parse request body for POST
-          let body = '';
-          req.on('data', chunk => {
-            body += chunk.toString();
-          });
-          
-          req.on('end', async () => {
-            const mockRequest = {
-              json: jest.fn().mockResolvedValue(JSON.parse(body)),
-            };
-            const response = await POST(mockRequest as any);
-            res.statusCode = response.status ?? 200;
-            res.setHeader('Content-Type', 'application/json');
-            const responseData = await response.json();
-            res.write(JSON.stringify(responseData));
-            res.end();
-          });
-          return;
-        }
-
-        res.statusCode = 404;
+        // Only GET is supported - POST moved to server actions
+        res.statusCode = 405;
+        res.setHeader('Content-Type', 'application/json');
+        res.write(JSON.stringify({ error: 'Method not allowed' }));
         return res.end();
-      } catch (err) {
+      } catch (error) {
         res.statusCode = 500;
-        res.end(JSON.stringify({ error: 'Server error' }));
+        res.setHeader('Content-Type', 'application/json');
+        res.write(JSON.stringify({ error: 'Internal server error' }));
+        return res.end();
       }
     });
-
-    server.listen(4001);
   });
 
   afterAll(() => {
@@ -86,119 +68,105 @@ describe('API /posts endpoint', () => {
   });
 
   describe('GET /api/posts', () => {
-    it('should fetch posts successfully', async () => {
-      // Mock Prisma to return posts with proper structure
-      prismaMock.post.findMany.mockResolvedValue([
+    it('should return a list of posts', async () => {
+      const mockPosts = [
         {
           id: 1,
           title: 'Post 1',
-          content: 'Hello world',
-          excerpt: 'Hello world excerpt',
+          content: 'Content 1',
           published: true,
-          publishedAt: new Date('2023-01-01T00:00:00Z'),
-          createdAt: new Date('2023-01-01T00:00:00Z'),
-          updatedAt: new Date('2023-01-01T00:00:00Z'),
-          authorId: 1,
-          author: { 
+          declineReason: null,
+          createdAt: new Date('2024-01-01'),
+          author: {
             id: 1,
-            name: 'Alice', 
-            email: 'alice@example.com',
-            createdAt: new Date('2023-01-01T00:00:00Z'),
+            name: 'Author 1',
+            email: 'author1@example.com',
+            profilePicture: null,
+            createdAt: new Date('2024-01-01'),
           },
           subcategories: [],
-          mainCategories: [],
-          _count: {
-            comments: 0,
-          },
+          _count: { comments: 0 },
         },
-      ] as any);
+      ];
 
-      const response = await request(server).get('/api/posts');
-      expect(response.status).toBe(200);
-      expect(Array.isArray(response.body)).toBe(true);
-      expect(response.body[0].title).toBe('Post 1');
-      expect(response.body[0].author.name).toBe('Alice');
+      prismaMock.post.findMany.mockResolvedValue(mockPosts as any);
+
+      const response = await request(server).get('/').expect(200);
+
+      expect(response.body).toHaveLength(1);
+      expect(response.body[0]).toMatchObject({
+        id: 1,
+        title: 'Post 1',
+        content: 'Content 1',
+        published: true,
+      });
     });
 
-    it('should handle errors when fetching posts', async () => {
+    it('should handle database errors gracefully', async () => {
       prismaMock.post.findMany.mockRejectedValue(new Error('DB error'));
 
-      const response = await request(server).get('/api/posts');
-      expect(response.status).toBe(500);
-      expect(response.body.error).toBe('Failed to fetch posts');
+      const response = await request(server).get('/').expect(500);
+
+      expect(response.body).toEqual({ error: 'Failed to fetch posts' });
+    });
+
+    it('should filter posts by published status', async () => {
+      const mockPosts = [
+        {
+          id: 1,
+          title: 'Published Post',
+          content: 'Content',
+          published: true,
+          declineReason: null,
+          createdAt: new Date('2024-01-01'),
+          author: {
+            id: 1,
+            name: 'Author',
+            email: 'author@example.com',
+            profilePicture: null,
+            createdAt: new Date('2024-01-01'),
+          },
+          subcategories: [],
+          _count: { comments: 0 },
+        },
+      ];
+
+      prismaMock.post.findMany.mockResolvedValue(mockPosts as any);
+
+      const response = await request(server)
+        .get('/?published=true')
+        .expect(200);
+
+      expect(prismaMock.post.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            published: true,
+          }),
+        })
+      );
+    });
+
+    it('should handle category filters', async () => {
+      prismaMock.post.findMany.mockResolvedValue([]);
+
+      await request(server)
+        .get('/?categoryIds=1,2')
+        .expect(200);
+
+      expect(prismaMock.post.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            OR: expect.arrayContaining([
+              {
+                subcategories: { some: { categoryId: { in: [1, 2] } } }
+              }
+            ])
+          }),
+        })
+      );
     });
   });
 
-  describe('POST /api/posts', () => {
-    it('should return 401 if the user is not authenticated', async () => {
-      (getServerSession as jest.Mock).mockResolvedValue(null);
-
-      const response = await request(server)
-        .post('/api/posts')
-        .send({
-          title: 'A new post',
-          content: 'Some content',
-          mainCategoryIds: [1],
-          subcategoryIds: [101],
-        })
-        .set('Accept', 'application/json');
-
-      expect(response.status).toBe(401);
-      expect(response.body.error).toBe('Unauthorized');
-    });
-
-    it('should create a post when data is valid', async () => {
-      (getServerSession as jest.Mock).mockResolvedValue({
-        user: { email: 'user@example.com' },
-      });
-
-      // Mock user lookup
-      prismaMock.user.findUnique.mockResolvedValue({
-        id: 42,
-        name: 'Test User',
-        email: 'user@example.com',
-        verified: true,
-        isExpert: true,
-      } as any);
-
-      // Mock post creation
-      prismaMock.post.create.mockResolvedValue({
-        id: 101,
-        title: 'A new post',
-        content: 'Some content',
-        excerpt: 'Some content excerpt',
-        published: false,
-        createdAt: new Date('2023-01-01T00:00:00Z'),
-        updatedAt: new Date('2023-01-01T00:00:00Z'),
-        authorId: 42,
-        author: {
-          id: 42,
-          name: 'Test User',
-          email: 'user@example.com',
-          createdAt: new Date('2023-01-01T00:00:00Z'),
-        },
-        mainCategories: [{ id: 1, name: 'Frontend' }],
-        subcategories: [
-          { id: 101, name: 'React', category: { id: 1, name: 'Frontend' } },
-        ],
-        _count: {
-          comments: 0,
-        },
-      } as any);
-
-      const response = await request(server)
-        .post('/api/posts')
-        .send({
-          title: 'A new post',
-          content: 'Some content',
-          mainCategoryIds: [1],
-          subcategoryIds: [101],
-        })
-        .set('Accept', 'application/json');
-
-      expect(response.status).toBe(201);
-      expect(response.body.title).toBe('A new post');
-      expect(response.body.author.name).toBe('Test User');
-    });
-  });
+  // Note: POST endpoint was removed - posts are now created via server actions
+  // See /lib/actions/posts.ts for createPost server action
 });

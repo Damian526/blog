@@ -5,6 +5,20 @@ import { useSession } from 'next-auth/react';
 import UserStatusCard from '@/components/ui/UserStatusCard';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 
+// Mock NextAuth server actions and related modules
+jest.mock('next-auth', () => ({
+  getServerSession: jest.fn(),
+}));
+
+jest.mock('@/lib/auth', () => ({
+  authOptions: {},
+}));
+
+jest.mock('@/lib/actions/users', () => ({
+  updateUserProfile: jest.fn(),
+  requestExpertVerification: jest.fn(),
+}));
+
 // Mock the API
 jest.mock('@/server/api', () => ({
   api: {

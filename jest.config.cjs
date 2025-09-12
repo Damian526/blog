@@ -18,6 +18,9 @@ module.exports = {
       },
     ],
   },
+  transformIgnorePatterns: [
+    'node_modules/(?!(jose|openid-client|oauth|@auth|next-auth)/)',
+  ],
   setupFiles: ['<rootDir>/jest.polyfills.js'],
   collectCoverageFrom: [
     'src/**/*.{ts,tsx}',

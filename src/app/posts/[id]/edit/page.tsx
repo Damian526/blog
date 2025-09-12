@@ -1,45 +1,10 @@
-'use client';
+import { getCategories } from '@/lib/queries/categories';
+import EditPostClient from '@/components/posts/EditPostClient';
 
-import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
-import PostForm from '@/components/posts/PostForm';
-import { useCategories } from '@/hooks/useCategories';
-import { usePost } from '@/hooks/usePost';
+// Server Component - uses SSG for categories (optimal since categories rarely change)
+export default async function EditPostPage() {
+  // Fetch categories at build time (SSG) for best performance
+  const categories = await getCategories();
 
-export default function EditPostPage() {
-  const params = useParams();
-  const [isClient, setIsClient] = useState(false);
-  const [postId, setPostId] = useState<number | null>(null);
-
-  useEffect(() => {
-    setIsClient(true);
-    if (params.id) {
-      const id = parseInt(params.id as string);
-      if (!isNaN(id)) {
-        setPostId(id);
-      }
-    }
-  }, [params.id]);
-
-  const {
-    post,
-    error: postError,
-    isLoading: postLoading,
-  } = usePost(isClient ? postId : null);
-
-  const {
-    categories,
-    error: categoriesError,
-    isLoading: categoriesLoading,
-  } = useCategories();
-
-  const isLoading = postLoading || categoriesLoading;
-  const error = postError || categoriesError;
-
-  if (!isClient || isLoading) return <p>Loading…</p>;
-  if (error) return <p style={{ color: 'red' }}>Error: {error.message}</p>;
-  if (!post) return <p>Post not found.</p>;
-  if (!categories.length) return <p>Categories not found.</p>;
-
-  return <PostForm post={post} categories={categories} />;
+  return <EditPostClient categories={categories} />;
 }

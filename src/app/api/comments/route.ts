@@ -69,10 +69,8 @@ export async function POST(request: Request) {
       },
     };
 
-    // Invalidate cache for this post's comments
-    revalidateTag(`post-${postId}-comments`);
-    revalidateTag('comments');
-
+    // Note: No cache invalidation needed for API routes - SWR handles caching
+    
     return NextResponse.json(formattedComment, { status: 201 });
   } catch (error) {
     console.error('Error creating comment:', error);
