@@ -6,6 +6,11 @@ declare module 'next-auth' {
     role: string;
     verified: boolean;
     rememberMe?: boolean;
+    profilePicture?: string | null;
+    isExpert?: boolean;
+    verificationReason?: string | null;
+    portfolioUrl?: string | null;
+    createdAt?: string;
   }
 
   interface Session {

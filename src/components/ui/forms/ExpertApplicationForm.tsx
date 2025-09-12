@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useSession } from 'next-auth/react';
-import { api } from '@/server/api';
+import { requestExpertVerification } from '@/lib/actions/users';
 import {
   FormContainer,
   FormHeader,
@@ -65,16 +65,20 @@ export default function ExpertApplicationForm({
     }
 
     try {
-      await api.auth.requestVerification({
+      const result = await requestExpertVerification({
         verificationReason: formData.reason.trim(),
         portfolioUrl: formData.portfolioUrl.trim() || undefined,
       });
 
-      setSuccess(
-        'Your expert application has been submitted successfully! Our team will review it soon.',
-      );
-      setFormData({ reason: '', portfolioUrl: '' });
-      onSuccess?.();
+      if (result.success) {
+        setSuccess(
+          'Your expert application has been submitted successfully! Our team will review it soon.',
+        );
+        setFormData({ reason: '', portfolioUrl: '' });
+        onSuccess?.();
+      } else {
+        setError(result.error || 'Failed to submit application');
+      }
     } catch (err: any) {
       setError(err.message);
     } finally {

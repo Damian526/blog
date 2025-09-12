@@ -35,7 +35,6 @@ export function usePostWithComments(postId: number | null) {
     comments: commentsData.comments,
     isLoading: postData.isLoading || commentsData.isLoading,
     error: postData.error || commentsData.error,
-    updatePost: postData.updatePost,
     createComment: commentsData.createComment,
     refetch: () => {
       postData.refetch();

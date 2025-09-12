@@ -4,7 +4,16 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import PostForm from '@/components/posts/PostForm';
 import { usePost } from '@/hooks/usePost';
-import type { Category } from '@/server/api/types';
+
+interface Category {
+  id: number;
+  name: string;
+  subcategories: Array<{
+    id: number;
+    name: string;
+    categoryId: number;
+  }>;
+}
 
 interface EditPostClientProps {
   categories: Category[];

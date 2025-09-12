@@ -150,11 +150,8 @@ export default function CommentsSection({ postId }: CommentsSectionProps) {
     error,
     isLoading,
     createComment,
-    isCreating,
     updateComment,
-    isUpdating,
     deleteComment,
-    isDeleting,
     refetch,
   } = useComments(postId);
 

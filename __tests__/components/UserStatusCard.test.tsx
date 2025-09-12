@@ -51,6 +51,12 @@ describe('UserStatusCard Component', () => {
     name: 'John Doe',
     email: 'john@example.com',
     role: 'USER' as const,
+    verified: false,
+    isExpert: false,
+    profilePicture: null,
+    verificationReason: null,
+    portfolioUrl: null,
+    createdAt: '2024-01-01T00:00:00Z',
   };
 
   const mockSession = {
@@ -71,18 +77,22 @@ describe('UserStatusCard Component', () => {
     it('displays pending approval status for unverified user', () => {
       mockUseCurrentUser.mockReturnValue({
         user: { 
-          id: 1,
+          id: '1',
           name: 'John Doe',
           email: 'john@example.com',
           verified: false,
           isExpert: false,
           role: 'USER',
-          createdAt: '2024-01-01T00:00:00Z'
+          createdAt: '2024-01-01T00:00:00Z',
+          profilePicture: null,
+          verificationReason: null,
+          portfolioUrl: null,
         },
         error: null,
         isLoading: false,
         isAuthenticated: true,
         updateProfile: jest.fn(),
+        requestVerification: jest.fn(),
         isUpdating: false,
         refetch: jest.fn(),
       });
@@ -97,18 +107,22 @@ describe('UserStatusCard Component', () => {
     it('displays community member status for verified user', () => {
       mockUseCurrentUser.mockReturnValue({
         user: { 
-          id: 1,
+          id: '1',
           name: 'John Doe',
           email: 'john@example.com',
           verified: true,
           isExpert: false,
           role: 'USER',
-          createdAt: '2024-01-01T00:00:00Z'
+          createdAt: '2024-01-01T00:00:00Z',
+          profilePicture: null,
+          verificationReason: null,
+          portfolioUrl: null,
         },
         error: null,
         isLoading: false,
         isAuthenticated: true,
         updateProfile: jest.fn(),
+        requestVerification: jest.fn(),
         isUpdating: false,
         refetch: jest.fn(),
       });
@@ -122,18 +136,22 @@ describe('UserStatusCard Component', () => {
     it('displays verified expert status for expert user', () => {
       mockUseCurrentUser.mockReturnValue({
         user: { 
-          id: 1,
+          id: '1',
           name: 'John Doe',
           email: 'john@example.com',
           verified: true,
           isExpert: true,
           role: 'USER',
-          createdAt: '2024-01-01T00:00:00Z'
+          createdAt: '2024-01-01T00:00:00Z',
+          profilePicture: null,
+          verificationReason: null,
+          portfolioUrl: null,
         },
         error: null,
         isLoading: false,
         isAuthenticated: true,
         updateProfile: jest.fn(),
+        requestVerification: jest.fn(),
         isUpdating: false,
         refetch: jest.fn(),
       });
@@ -147,18 +165,22 @@ describe('UserStatusCard Component', () => {
     it('displays admin privileges for admin user', () => {
       mockUseCurrentUser.mockReturnValue({
         user: { 
-          id: 1,
+          id: '1',
           name: 'John Doe',
           email: 'john@example.com',
           verified: true,
           isExpert: true,
           role: 'ADMIN',
-          createdAt: '2024-01-01T00:00:00Z'
+          createdAt: '2024-01-01T00:00:00Z',
+          profilePicture: null,
+          verificationReason: null,
+          portfolioUrl: null,
         },
         error: null,
         isLoading: false,
         isAuthenticated: true,
         updateProfile: jest.fn(),
+        requestVerification: jest.fn(),
         isUpdating: false,
         refetch: jest.fn(),
       });
@@ -173,18 +195,22 @@ describe('UserStatusCard Component', () => {
     it('shows apply for expert button for verified community members', () => {
       mockUseCurrentUser.mockReturnValue({
         user: { 
-          id: 1,
+          id: '1',
           name: 'John Doe',
           email: 'john@example.com',
           verified: true,
           isExpert: false,
           role: 'USER',
-          createdAt: '2024-01-01T00:00:00Z'
+          createdAt: '2024-01-01T00:00:00Z',
+          profilePicture: null,
+          verificationReason: null,
+          portfolioUrl: null,
         },
         error: null,
         isLoading: false,
         isAuthenticated: true,
         updateProfile: jest.fn(),
+        requestVerification: jest.fn(),
         isUpdating: false,
         refetch: jest.fn(),
       });
@@ -198,18 +224,22 @@ describe('UserStatusCard Component', () => {
     it('does not show apply button for unverified users', () => {
       mockUseCurrentUser.mockReturnValue({
         user: { 
-          id: 1,
+          id: '1',
           name: 'John Doe',
           email: 'john@example.com',
           verified: false,
           isExpert: false,
           role: 'USER',
-          createdAt: '2024-01-01T00:00:00Z'
+          createdAt: '2024-01-01T00:00:00Z',
+          profilePicture: null,
+          verificationReason: null,
+          portfolioUrl: null,
         },
         error: null,
         isLoading: false,
         isAuthenticated: true,
         updateProfile: jest.fn(),
+        requestVerification: jest.fn(),
         isUpdating: false,
         refetch: jest.fn(),
       });
@@ -222,18 +252,22 @@ describe('UserStatusCard Component', () => {
     it('does not show apply button for experts or admins', () => {
       mockUseCurrentUser.mockReturnValue({
         user: { 
-          id: 1,
+          id: '1',
           name: 'John Doe',
           email: 'john@example.com',
           verified: true,
           isExpert: true,
           role: 'USER',
-          createdAt: '2024-01-01T00:00:00Z'
+          createdAt: '2024-01-01T00:00:00Z',
+          profilePicture: null,
+          verificationReason: null,
+          portfolioUrl: null,
         },
         error: null,
         isLoading: false,
         isAuthenticated: true,
         updateProfile: jest.fn(),
+        requestVerification: jest.fn(),
         isUpdating: false,
         refetch: jest.fn(),
       });
@@ -246,18 +280,22 @@ describe('UserStatusCard Component', () => {
     it('opens expert application form when apply button is clicked', async () => {
       mockUseCurrentUser.mockReturnValue({
         user: { 
-          id: 1,
+          id: '1',
           name: 'John Doe',
           email: 'john@example.com',
           verified: true,
           isExpert: false,
           role: 'USER',
-          createdAt: '2024-01-01T00:00:00Z'
+          createdAt: '2024-01-01T00:00:00Z',
+          profilePicture: null,
+          verificationReason: null,
+          portfolioUrl: null,
         },
         error: null,
         isLoading: false,
         isAuthenticated: true,
         updateProfile: jest.fn(),
+        requestVerification: jest.fn(),
         isUpdating: false,
         refetch: jest.fn(),
       });
@@ -275,19 +313,22 @@ describe('UserStatusCard Component', () => {
     it('shows application status when user has applied', () => {
       mockUseCurrentUser.mockReturnValue({
         user: { 
-          id: 1,
+          id: '1',
           name: 'John Doe',
           email: 'john@example.com',
           verified: false,
           isExpert: false,
           verificationReason: 'I am a software engineer',
           role: 'USER',
-          createdAt: '2024-01-01T00:00:00Z'
+          createdAt: '2024-01-01T00:00:00Z',
+          profilePicture: null,
+          portfolioUrl: null,
         },
         error: null,
         isLoading: false,
         isAuthenticated: true,
         updateProfile: jest.fn(),
+        requestVerification: jest.fn(),
         isUpdating: false,
         refetch: jest.fn(),
       });
@@ -307,6 +348,7 @@ describe('UserStatusCard Component', () => {
         isLoading: true,
         isAuthenticated: true,
         updateProfile: jest.fn(),
+        requestVerification: jest.fn(),
         isUpdating: false,
         refetch: jest.fn(),
       });
@@ -323,6 +365,7 @@ describe('UserStatusCard Component', () => {
         isLoading: false,
         isAuthenticated: true,
         updateProfile: jest.fn(),
+        requestVerification: jest.fn(),
         isUpdating: false,
         refetch: jest.fn(),
       });
@@ -351,18 +394,22 @@ describe('UserStatusCard Component', () => {
     it('has proper account status display', () => {
       mockUseCurrentUser.mockReturnValue({
         user: { 
-          id: 1,
+          id: '1',
           name: 'John Doe',
           email: 'john@example.com',
           verified: true,
           isExpert: false,
           role: 'USER',
-          createdAt: '2024-01-01T00:00:00Z'
+          createdAt: '2024-01-01T00:00:00Z',
+          profilePicture: null,
+          verificationReason: null,
+          portfolioUrl: null,
         },
         error: null,
         isLoading: false,
         isAuthenticated: true,
         updateProfile: jest.fn(),
+        requestVerification: jest.fn(),
         isUpdating: false,
         refetch: jest.fn(),
       });
@@ -376,18 +423,22 @@ describe('UserStatusCard Component', () => {
     it('has proper apply button when applicable', () => {
       mockUseCurrentUser.mockReturnValue({
         user: { 
-          id: 1,
+          id: '1',
           name: 'John Doe',
           email: 'john@example.com',
           verified: true,
           isExpert: false,
           role: 'USER',
-          createdAt: '2024-01-01T00:00:00Z'
+          createdAt: '2024-01-01T00:00:00Z',
+          profilePicture: null,
+          verificationReason: null,
+          portfolioUrl: null,
         },
         error: null,
         isLoading: false,
         isAuthenticated: true,
         updateProfile: jest.fn(),
+        requestVerification: jest.fn(),
         isUpdating: false,
         refetch: jest.fn(),
       });

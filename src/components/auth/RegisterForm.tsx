@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { api } from '@/server/api';
+import { registerUser } from '@/lib/actions/auth';
 import {
   Title,
   FormContainer,
@@ -165,11 +165,15 @@ export default function RegisterForm() {
     }
 
     try {
-      const result = await api.auth.register({ name, email, password });
+      const result = await registerUser({ name, email, password });
       
-      setSuccess(
-        'Registration successful! Check your email to verify your account.',
-      );
+      if (result.success) {
+        setSuccess(
+          'Registration successful! Check your email to verify your account.',
+        );
+      } else {
+        setError(result.error || 'An error occurred while registering.');
+      }
     } catch (err: any) {
       console.error('Registration error:', err);
       setError(err.message || 'An error occurred while registering.');

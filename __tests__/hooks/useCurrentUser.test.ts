@@ -26,11 +26,16 @@ describe('useCurrentUser Hook', () => {
 
   it('returns user data when authenticated', async () => {
     const mockUserData = {
-      id: 1,
+      id: '1',
       name: 'John Doe',
       email: 'john@example.com',
       role: 'USER' as const,
       createdAt: '2024-01-15T00:00:00Z',
+      verified: true,
+      isExpert: false,
+      profilePicture: null,
+      verificationReason: null,
+      portfolioUrl: null,
     };
 
     mockUseCurrentUser.mockReturnValue({
@@ -38,6 +43,7 @@ describe('useCurrentUser Hook', () => {
       error: null,
       isLoading: false,
       updateProfile: jest.fn(),
+      requestVerification: jest.fn(),
       isUpdating: false,
       refetch: jest.fn(),
       isAuthenticated: true,
@@ -57,6 +63,7 @@ describe('useCurrentUser Hook', () => {
       error: null,
       isLoading: false,
       updateProfile: jest.fn(),
+      requestVerification: jest.fn(),
       isUpdating: false,
       refetch: jest.fn(),
       isAuthenticated: false,
@@ -76,6 +83,7 @@ describe('useCurrentUser Hook', () => {
       error: null,
       isLoading: true,
       updateProfile: jest.fn(),
+      requestVerification: jest.fn(),
       isUpdating: false,
       refetch: jest.fn(),
       isAuthenticated: false,
@@ -96,6 +104,7 @@ describe('useCurrentUser Hook', () => {
       error: mockError,
       isLoading: false,
       updateProfile: jest.fn(),
+      requestVerification: jest.fn(),
       isUpdating: false,
       refetch: jest.fn(),
       isAuthenticated: false,
@@ -117,6 +126,7 @@ describe('useCurrentUser Hook', () => {
       error: null,
       isLoading: false,
       updateProfile: jest.fn(),
+      requestVerification: jest.fn(),
       isUpdating: false,
       refetch: mockRefetch,
       isAuthenticated: false,
@@ -137,11 +147,16 @@ describe('useCurrentUser Hook', () => {
 
   it('handles admin user correctly', () => {
     const mockAdminData = {
-      id: 2,
+      id: '2',
       name: 'Admin User',
       email: 'admin@example.com',
       role: 'ADMIN' as const,
       createdAt: '2024-01-15T00:00:00Z',
+      verified: true,
+      isExpert: true,
+      profilePicture: null,
+      verificationReason: null,
+      portfolioUrl: null,
     };
 
     mockUseCurrentUser.mockReturnValue({
@@ -149,6 +164,7 @@ describe('useCurrentUser Hook', () => {
       error: null,
       isLoading: false,
       updateProfile: jest.fn(),
+      requestVerification: jest.fn(),
       isUpdating: false,
       refetch: jest.fn(),
       isAuthenticated: true,
@@ -163,11 +179,16 @@ describe('useCurrentUser Hook', () => {
 
   it('handles user without name correctly', () => {
     const mockUserData = {
-      id: 3,
+      id: '3',
       name: 'User Name', // name is required in the type, so include it
       email: 'user@example.com',
       role: 'USER' as const,
       createdAt: '2024-01-15T00:00:00Z',
+      verified: false,
+      isExpert: false,
+      profilePicture: null,
+      verificationReason: null,
+      portfolioUrl: null,
     };
 
     mockUseCurrentUser.mockReturnValue({
@@ -175,6 +196,7 @@ describe('useCurrentUser Hook', () => {
       error: null,
       isLoading: false,
       updateProfile: jest.fn(),
+      requestVerification: jest.fn(),
       isUpdating: false,
       refetch: jest.fn(),
       isAuthenticated: true,
@@ -193,6 +215,7 @@ describe('useCurrentUser Hook', () => {
       error: null,
       isLoading: false,
       updateProfile: jest.fn(),
+      requestVerification: jest.fn(),
       isUpdating: false,
       refetch: jest.fn(),
       isAuthenticated: false,

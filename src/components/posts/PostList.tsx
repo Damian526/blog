@@ -41,7 +41,6 @@ export default function PostList({
             post={post}
             showActions={showActions}
             onDelete={onDelete}
-            isDeleting={isDeleting}
           />
         ))}
       </PostsGrid>

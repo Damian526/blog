@@ -59,7 +59,11 @@ export default function ReplyForm({
     }
 
     try {
-      await api.comments.reply(parentId, postId, replyContent.trim());
+      await api.comments.create({
+        content: replyContent.trim(),
+        postId,
+        parentId
+      });
 
       setReplyContent('');
       onReplyAdded();

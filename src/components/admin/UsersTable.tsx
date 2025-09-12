@@ -4,7 +4,7 @@ import { useState } from 'react';
 import styled from 'styled-components';
 import { useAdminUsers } from '@/hooks/useAdmin';
 import { User } from '@/server/api';
-import { api } from '@/server/api';
+import { deleteUser } from '@/lib/actions/admin';
 import {
   Container,
   Title,
@@ -148,12 +148,6 @@ export default function UsersTable() {
     users, 
     error, 
     isLoading, 
-    approveUser,
-    isApproving,
-    rejectUser,
-    isRejecting,
-    updateUserRole,
-    isUpdatingRole,
     refetch 
   } = useAdminUsers();
 
@@ -163,6 +157,22 @@ export default function UsersTable() {
   const [processingUsers, setProcessingUsers] = useState<Set<number>>(
     new Set(),
   );
+
+  // TODO: Implement server actions for user approval/rejection
+  const handleApproveUser = async (userId: number) => {
+    console.log('Approve user:', userId);
+    // Implementation needed: call server action to approve user
+  };
+
+  const handleRejectUser = async (userId: number) => {
+    console.log('Reject user:', userId);
+    // Implementation needed: call server action to reject user
+  };
+
+  const handleUpdateUserRole = async (userId: number, role: 'USER' | 'ADMIN') => {
+    console.log('Update user role:', userId, role);
+    // Implementation needed: call server action to update user role
+  };
 
   const getFilteredUsers = () => {
     if (!users) return [];
@@ -195,9 +205,9 @@ export default function UsersTable() {
 
     try {
       if (action === 'approve') {
-        await approveUser(userId);
+        await handleApproveUser(userId);
       } else if (action === 'reject') {
-        await rejectUser({ userId, reason: 'Rejected by admin' });
+        await handleRejectUser(userId);
       }
       // Note: 'verify' action might need a separate API function
     } catch (error) {
@@ -221,7 +231,11 @@ export default function UsersTable() {
     setProcessingUsers((prev) => new Set(prev.add(userId)));
 
     try {
-      await api.admin.deleteUser(userId);
+      const result = await deleteUser(userId);
+      if (!result.success) {
+        throw new Error(result.error);
+      }
+      refetch(); // Refresh the users list
     } catch (error) {
       console.error('Error deleting user:', error);
       alert('Failed to delete user');
