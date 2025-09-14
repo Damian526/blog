@@ -1,22 +1,26 @@
-name: CI + Deploy to Vercel
+name: CI
 
 on:
-  push:
-    branches: [main]
   pull_request:
-    branches: [main]
+    branches: [main] # run on PRs to gate merges
+  push:
+    branches: [main] # optional: keeps CI green on main
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   test:
     name: CI (Install → Prisma Generate → Build → Test)
-    runs-on: ubuntu-latest # ← change here
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: '20.x'
           cache: 'yarn'
@@ -29,25 +33,13 @@ jobs:
 
       - name: Type-check (TypeScript)
         run: yarn type-check
+        env:
+          NEXT_TELEMETRY_DISABLED: 1
 
       - name: Build Next.js
         run: yarn build
+        env:
+          NEXT_TELEMETRY_DISABLED: 1
 
       - name: Run tests
         run: yarn test
-
-  deploy:
-    name: Trigger Vercel production deploy
-    runs-on: ubuntu-latest # ← stays on Ubuntu
-    needs: test
-    if: ${{ needs.test.result == 'success' }}
-
-    steps:
-      - name: Call Vercel deploy hook (force rebuild)
-        run: |
-          echo "✅ CI passed on main; now forcing a new Vercel build…"
-          curl -s -X POST "$VERCEL_DEPLOY_HOOK" \
-          -H "Content-Type: application/json" \
-          --data '{"forceNew": true}'
-        env:
-          VERCEL_DEPLOY_HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK }}
