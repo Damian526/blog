@@ -51,7 +51,9 @@ class ApiClient {
       ...fetchOptions
     } = options;
 
-    const url = `${this.baseUrl}${endpoint}`;
+    // For internal Next.js API routes, use relative URLs to avoid malformed URLs in production
+    const isInternalApiRoute = endpoint.startsWith('/api/');
+    const url = isInternalApiRoute ? endpoint : `${this.baseUrl}${endpoint}`;
     
     const config: RequestInit = {
       ...fetchOptions,
