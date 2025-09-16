@@ -1,103 +1,290 @@
-Open [http://localhost:4006](http://localhost:4006) with your browser to see the result or see deployed version - [blog-six-omega-22.vercel.app](blog-six-omega-22.vercel.app).
+# WebDevSphere 🌐
 
-Credantials for admin:
-Email: admin@admin.pl
-Password: !1234567
+A modern, full-stack blog platform focused on web development articles, built with Next.js 14, TypeScript, and Prisma.
 
+## 🚀 Live Demo
 
-## Getting Started
+- **Production**: [blog-six-omega-22.vercel.app](https://blog-six-omega-22.vercel.app)
+- **Local Development**: [http://localhost:4006](http://localhost:4006)
 
-First, install dependencies:
+### Demo Credentials
+- **Admin Access**: `admin@admin.pl` / `!1234567`
 
-```bash
-npm install
-# or
-yarn install
-# or
-pnpm install
-# or
-bun install
+## 🛠️ Getting Started
+
+### Prerequisites
+- Node.js 18+ 
+- PostgreSQL database
+- npm/yarn/pnpm/bun
+
+### Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone [repository-url]
+   cd blog
+   ```
+
+2. **Install dependencies**
+   ```bash
+   npm install
+   # or
+   yarn install
+   # or
+   pnpm install
+   # or
+   bun install
+   ```
+
+3. **Set up environment variables**
+   ```bash
+   cp .env.example .env.local
+   # Configure your database and other environment variables
+   ```
+
+4. **Run database migrations**
+   ```bash
+   npx prisma migrate dev
+   npx prisma db seed
+   ```
+
+5. **Start the development server**
+   ```bash
+   npm run dev
+   # or
+   yarn dev
+   # or
+   pnpm dev
+   # or
+   bun dev
+   ```
+
+## ✨ Features
+
+### 🛡️ Authentication & Security
+- **NextAuth Integration**: Secure authentication with session management
+- **Email Verification**: Account activation system to prevent spam
+- **Role-Based Access**: Admin and user roles with proper permissions
+- **Modal UI**: Seamless login & registration experience
+- **Password Security**: Encrypted password storage
+
+### 📝 Content Management
+- **Post Creation**: Rich text editor with markdown support
+- **Admin Moderation**: Review system for all user submissions
+- **Status Tracking**: Real-time status updates (Published/Pending/Rejected)
+- **Rejection Feedback**: Admins can provide detailed rejection reasons
+- **Draft System**: Save and edit posts before submission
+- **Category Organization**: Comprehensive category and subcategory system
+
+### � User Experience
+- **Personal Dashboard**: Track all your posts and their status
+- **Profile Management**: Customizable user profiles with avatars
+- **Responsive Design**: Mobile-first, responsive UI
+- **Real-time Updates**: SWR-powered live data synchronization
+- **Interactive Filtering**: Filter posts by categories and subcategories
+
+### 💬 Advanced Comment System
+- **Threaded Comments**: Reply to comments with nested structure
+- **Real-time Updates**: Live comment updates without page refresh
+- **Comment Management**: Edit and delete your own comments
+- **User Attribution**: Comments linked to authenticated users
+- **Moderation Tools**: Admin oversight of comment content
+
+### 🎯 Admin Panel
+- **User Management**: 
+  - View all registered users
+  - Manage user roles and permissions
+  - Delete inactive or problematic accounts
+- **Content Moderation**:
+  - Approve/reject submitted posts
+  - Provide detailed feedback for rejections
+  - Bulk actions for efficient moderation
+- **Analytics Dashboard**: 
+  - User registration trends
+  - Post submission statistics
+  - Engagement metrics
+
+### 🔍 Advanced Search & Filtering
+- **Category-based Search**: Filter posts by main categories
+- **Subcategory Refinement**: Drill down with subcategory filters
+- **URL Parameter Support**: Bookmarkable search results
+- **API Integration**: Efficient backend filtering
+- **Empty State Handling**: Informative messages when no results found
+
+### 🚀 Technical Excellence
+- **Modern Stack**: Next.js 14 with App Router
+- **Type Safety**: Full TypeScript implementation
+- **Database**: PostgreSQL with Prisma ORM
+- **API Design**: RESTful APIs with proper error handling
+- **Caching Strategy**: SWR for client-side data management
+- **Testing**: Jest unit and integration tests
+- **CI/CD**: GitHub Actions workflow
+- **Deployment**: Optimized for Vercel
+
+### ⚡ Performance & Reliability
+- **Client-Side Rendering**: SWR for dynamic content
+- **Optimistic Updates**: Immediate UI feedback
+- **Error Boundaries**: Graceful error handling
+- **Loading States**: Smooth user experience during data fetching
+- **Cache Management**: Intelligent data invalidation
+- **SEO Optimized**: Proper meta tags and structured data
+
+## 🏗️ Technology Stack
+
+### Frontend
+- **Framework**: Next.js 14 with App Router
+- **Language**: TypeScript
+- **Styling**: Styled Components with CSS-in-JS
+- **State Management**: SWR for server state
+- **Authentication**: NextAuth.js
+- **Forms**: React Hook Form with Zod validation
+- **Rich Text**: ProseMirror editor
+
+### Backend
+- **Runtime**: Node.js
+- **Database**: PostgreSQL
+- **ORM**: Prisma
+- **API**: Next.js API Routes
+- **Authentication**: NextAuth with JWT
+- **Email**: Nodemailer integration
+
+### DevOps & Tools
+- **Testing**: Jest + React Testing Library
+- **Linting**: ESLint + Prettier
+- **Type Checking**: TypeScript strict mode
+- **CI/CD**: GitHub Actions
+- **Deployment**: Vercel
+- **Database Hosting**: Supabase/Neon
+
+## 📚 API Documentation
+
+### Authentication Endpoints
+- `POST /api/auth/register` - User registration
+- `POST /api/auth/login` - User login
+- `POST /api/auth/logout` - User logout
+- `GET /api/auth/verify` - Email verification
+
+### Posts Endpoints
+- `GET /api/posts` - Get all published posts
+- `POST /api/posts` - Create new post (authenticated)
+- `GET /api/posts/[id]` - Get specific post
+- `PATCH /api/posts/[id]` - Update post (author/admin)
+- `DELETE /api/posts/[id]` - Delete post (author/admin)
+
+### Comments Endpoints
+- `GET /api/comments?postId={id}` - Get post comments
+- `POST /api/comments` - Create comment (authenticated)
+- `PATCH /api/comments/[id]` - Update comment (author)
+- `DELETE /api/comments/[id]` - Delete comment (author/admin)
+
+### Admin Endpoints
+- `GET /api/admin/users` - Get all users (admin)
+- `GET /api/admin/posts` - Get all posts for moderation (admin)
+- `PATCH /api/admin/posts/[id]` - Approve/reject posts (admin)
+- `GET /api/admin/stats` - Get dashboard statistics (admin)
+
+### Categories Endpoints
+- `GET /api/categories` - Get all categories and subcategories
+
+## 📁 Project Structure
+
+```
+src/
+├── app/                    # Next.js App Router pages
+│   ├── api/               # API routes
+│   ├── admin/             # Admin panel pages
+│   ├── dashboard/         # User dashboard
+│   └── posts/             # Post-related pages
+├── components/            # React components
+│   ├── admin/             # Admin-specific components
+│   ├── auth/              # Authentication components
+│   ├── comments/          # Comment system components
+│   ├── layout/            # Layout components
+│   ├── posts/             # Post-related components
+│   └── ui/                # Reusable UI components
+├── hooks/                 # Custom React hooks
+├── lib/                   # Utility libraries
+├── server/                # Server-side logic
+│   └── api/               # API client and types
+├── styles/                # Styled components
+└── types/                 # TypeScript type definitions
 ```
 
-Secondly, run the development server:
+## 🧪 Testing
+
+Run the test suite:
 
 ```bash
-npm run dev
+npm test
 # or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+yarn test
 ```
 
-## Features
+Run tests in watch mode:
+```bash
+npm run test:watch
+```
 
-### 🛡️ Authentication
-- Secure NextAuth-based user authentication with session management.
-- Email-based account activation to prevent spam registrations.
-- Modal-based login & registration UI for a seamless experience.
- 
-### 📝 Blog Post Management
-- Users can create and submit posts, which are reviewed by admins before publishing.
-- Published & Unpublished Status: Users see whether their posts are approved, rejected (with reason), or pending review.
-- Admin Panel for Post Management: Admins can approve, reject (with a reason), or delete posts.
-- Rich Text Support: Write engaging articles with markdown support.
-- Real-Time Updates: Changes reflect instantly without page refresh using SWR.
+Run tests with coverage:
+```bash
+npm run test:coverage
+```
 
-### 👤 User Dashboard
-- Personalized dashboard for authenticated users.
-- Displays all user-created blog posts with their current status:
-    - ✅ Published (Live on the site)
-    - ❌ Rejected (With admin-provided reason)
-    - ⏳ Pending Review (Awaiting approval)
-- Interactive tools to edit or delete posts before publishing.
+## 🚀 Deployment
 
-### 💬 Comment System
-- Users can add, edit, delete, and reply to comments on blog posts.
-- Comments are linked to authenticated users for accountability.
-- Real-time comment updates for a seamless discussion experience.
+### Environment Variables
 
-### 🛠️ Admin Panel
-- Manage Users:
-    - View all registered users.
-    - Delete non-admin users if necessary.
-- Manage Blog Posts:
-    - Approve or reject posts submitted by users.
-    - If rejecting a post, admins can provide a reason, which will be visible to the user.
-    - Ensure only high-quality and relevant web development articles are published.
+Create a `.env.local` file with the following variables:
 
-### 🌐 API Integration
-- RESTful APIs powered by Prisma and Next.js App Router.
-- Authentication-protected APIs ensuring secure access.
-- Fetch and manage blog posts with efficient querying.
+```env
+# Database
+DATABASE_URL="postgresql://..."
 
-### ⚡ Real-Time Updates
+# NextAuth
+NEXTAUTH_URL="http://localhost:3000"
+NEXTAUTH_SECRET="your-secret-here"
 
-- SWR-powered dynamic data fetching for blog posts, comments, and user dashboards.
-- Automatic revalidation ensures users always see the latest content.   
+# Email (optional)
+EMAIL_SERVER_HOST="smtp.gmail.com"
+EMAIL_SERVER_PORT=587
+EMAIL_SERVER_USER="your-email@gmail.com"
+EMAIL_SERVER_PASSWORD="your-app-password"
+EMAIL_FROM="noreply@yourapp.com"
+```
 
-### 🗄️ Backend & Database
+### Vercel Deployment
 
-- PostgreSQL as the database, managed using Prisma ORM.
-- Relational models for Users, Posts, and Comments.
-- Secure backend implementation for authentication, post moderation, and data access control.
+1. Push your code to GitHub
+2. Connect your repository to Vercel
+3. Configure environment variables in Vercel dashboard
+4. Deploy automatically on every push to main branch
 
-### Testing (Jest)
+### Manual Build
 
-- Unit and integration tests with Jest ensure system reliability.
-- Basic test coverage for authentication, blog posts, and comment system.
+```bash
+npm run build
+npm start
+```
 
-### 🔍 Search Posts by Category & Subcategory
-- **Overview:**  
-  Users can now search for blog posts by selecting a specific category and/or subcategory.  
-- **Usage:**  
-  Append query parameters to the search URL. For example:  
-  ```
-  /search?category=2&subcategory=5
-  ```  
-  This will display a list of posts filtered by the specified category and subcategory.
-- **API Integration:**  
-  The client component uses these query parameters to hit a dedicated API endpoint, which returns the matching posts.
-- **User Experience:**  
-  If no posts are found matching the criteria, an informative message is displayed.
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 📝 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- Next.js team for the amazing framework
+- Prisma team for the excellent ORM
+- Vercel for seamless deployment
+- All contributors who helped improve this project
+
+---
+
+**Made with ❤️ for the web development community**
