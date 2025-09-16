@@ -2,7 +2,7 @@ name: CI + Vercel Deploy
 
 on:
   pull_request:
-    branches: [main, development]     
+    branches: [main, development]
   push:
     branches: [main, development]
 
@@ -28,39 +28,27 @@ jobs:
         env: { NEXT_TELEMETRY_DISABLED: 1 }
       - run: yarn test
 
-  deploy-preview:
-    name: Deploy Preview (development)
-    needs: test
-    if: github.ref == 'refs/heads/development'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - run: rm -rf .vercel                     # nuke stale local link
-      - run: npm i -g vercel@latest
+deploy-preview:
+  name: Deploy Preview (development)
+  needs: test
+  if: github.event_name == 'push' && github.ref == 'refs/heads/development'
+  runs-on: ubuntu-latest
+  env:
+    VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+    VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }} # team_...
+    VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }} # prj_...
+  steps:
+    - uses: actions/checkout@v4
+    - run: rm -rf .vercel
+    - run: npm i -g vercel@latest
 
-      # (optional) one-time debug to verify scope & visibility
-      - name: Debug Vercel auth
-        run: |
-          vercel whoami --token ${{ secrets.VERCEL_TOKEN }}
-          vercel projects ls --scope ${{ secrets.VERCEL_ORG_ID }} --token ${{ secrets.VERCEL_TOKEN }} | head -n 20
+    # optional 1x: verify token + scope
+    - run: vercel whoami --token "$VERCEL_TOKEN"
+    - run: vercel projects ls --scope "$VERCEL_ORG_ID" --token "$VERCEL_TOKEN" | head -n 20
 
-      - name: Pull env (preview)
-        run: vercel pull --yes --environment=preview \
-               --scope ${{ secrets.VERCEL_ORG_ID }} \
-               --project ${{ secrets.VERCEL_PROJECT_ID }} \
-               --token ${{ secrets.VERCEL_TOKEN }}
-
-      - name: Build (preview)
-        run: vercel build \
-               --scope ${{ secrets.VERCEL_ORG_ID }} \
-               --project ${{ secrets.VERCEL_PROJECT_ID }} \
-               --token ${{ secrets.VERCEL_TOKEN }}
-
-      - name: Deploy (preview)
-        run: vercel deploy --prebuilt \
-               --scope ${{ secrets.VERCEL_ORG_ID }} \
-               --project ${{ secrets.VERCEL_PROJECT_ID }} \
-               --token ${{ secrets.VERCEL_TOKEN }}
+    - run: vercel pull --yes --environment=preview --scope "$VERCEL_ORG_ID" --project "$VERCEL_PROJECT_ID" --token "$VERCEL_TOKEN"
+    - run: vercel build --scope "$VERCEL_ORG_ID" --project "$VERCEL_PROJECT_ID" --token "$VERCEL_TOKEN"
+    - run: vercel deploy --prebuilt --scope "$VERCEL_ORG_ID" --project "$VERCEL_PROJECT_ID" --token "$VERCEL_TOKEN"
 
   deploy-production:
     name: Deploy Production (main)
@@ -74,18 +62,18 @@ jobs:
 
       - name: Pull env (production)
         run: vercel pull --yes --environment=production \
-               --scope ${{ secrets.VERCEL_ORG_ID }} \
-               --project ${{ secrets.VERCEL_PROJECT_ID }} \
-               --token ${{ secrets.VERCEL_TOKEN }}
+          --scope ${{ secrets.VERCEL_ORG_ID }} \
+          --project ${{ secrets.VERCEL_PROJECT_ID }} \
+          --token ${{ secrets.VERCEL_TOKEN }}
 
       - name: Build (production)
         run: vercel build --prod \
-               --scope ${{ secrets.VERCEL_ORG_ID }} \
-               --project ${{ secrets.VERCEL_PROJECT_ID }} \
-               --token ${{ secrets.VERCEL_TOKEN }}
+          --scope ${{ secrets.VERCEL_ORG_ID }} \
+          --project ${{ secrets.VERCEL_PROJECT_ID }} \
+          --token ${{ secrets.VERCEL_TOKEN }}
 
       - name: Deploy (production)
         run: vercel deploy --prebuilt --prod \
-               --scope ${{ secrets.VERCEL_ORG_ID }} \
-               --project ${{ secrets.VERCEL_PROJECT_ID }} \
-               --token ${{ secrets.VERCEL_TOKEN }}
+          --scope ${{ secrets.VERCEL_ORG_ID }} \
+          --project ${{ secrets.VERCEL_PROJECT_ID }} \
+          --token ${{ secrets.VERCEL_TOKEN }}
