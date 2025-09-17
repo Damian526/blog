@@ -47,6 +47,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'yarn'
+
+      # Install dependencies and generate Prisma client
+      - run: yarn install --frozen-lockfile
+      - run: yarn prisma generate
+
       # ensure no stale link, then create a fresh one
       - run: rm -rf .vercel && mkdir -p .vercel
       - name: Validate Vercel IDs
@@ -84,7 +93,25 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'yarn'
+
+      # Install dependencies and generate Prisma client
+      - run: yarn install --frozen-lockfile
+      - run: yarn prisma generate
+
+      # ensure no stale link, then create a fresh one
       - run: rm -rf .vercel && mkdir -p .vercel
+      - name: Validate Vercel IDs
+        run: |
+          case "$VERCEL_PROJECT_ID" in prj_*) ;; *) echo "❌ VERCEL_PROJECT_ID must start with prj_"; exit 1;; esac
+          case "$VERCEL_ORG_ID" in team_*|user_*) ;; *) echo "❌ VERCEL_ORG_ID must start with team_ or user_"; exit 1;; esac
+          if printf %s "$VERCEL_PROJECT_ID" | grep -q '[#[:space:]]'; then
+            echo "❌ VERCEL_PROJECT_ID contains spaces or # characters"; exit 1
+          fi
+
       - name: Link to Vercel project
         run: |
           printf '{"projectId":"%s","orgId":"%s"}' "$VERCEL_PROJECT_ID" "$VERCEL_ORG_ID" > .vercel/project.json
