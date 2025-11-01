@@ -2,11 +2,47 @@
 
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import prisma from '@/lib/prisma';
+import { prisma } from '@/lib/prisma';
+import { Prisma } from '@prisma/client';
 import { revalidatePath } from 'next/cache';
 import bcrypt from 'bcrypt';
 import { v4 as uuidv4 } from 'uuid';
 import sendVerificationEmail from '@/lib/sendVerificationEmail';
+import { z } from 'zod';
+import { checkRateLimit, rateLimitConfigs } from '@/lib/ratelimit';
+
+// Validation schemas
+const registerUserSchema = z.object({
+  name: z.string()
+    .min(2, 'Name must be at least 2 characters')
+    .max(100, 'Name is too long')
+    .trim(),
+  email: z.string()
+    .email('Invalid email address')
+    .toLowerCase()
+    .trim(),
+  password: z.string()
+    .min(8, 'Password must be at least 8 characters')
+    .max(100, 'Password is too long')
+    .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
+    .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
+    .regex(/[0-9]/, 'Password must contain at least one number'),
+});
+
+const updateProfileSchema = z.object({
+  name: z.string()
+    .min(2, 'Name must be at least 2 characters')
+    .max(100, 'Name is too long')
+    .trim()
+    .optional(),
+  profilePicture: z.string()
+    .url('Invalid profile picture URL')
+    .optional(),
+});
+
+const verifyEmailSchema = z.string()
+  .min(1, 'Verification token is required')
+  .uuid('Invalid verification token');
 
 /**
  * Server Action: Register a new user
@@ -18,11 +54,24 @@ export async function registerUser(formData: {
   password: string;
 }): Promise<{ success: boolean; error?: string }> {
   try {
-    const { name, email, password } = formData;
+    // Validate input
+    const validationResult = registerUserSchema.safeParse(formData);
+    if (!validationResult.success) {
+      return { 
+        success: false, 
+        error: validationResult.error.errors[0].message 
+      };
+    }
 
-    // Basic validation
-    if (!name || !email || !password) {
-      return { success: false, error: 'All fields are required' };
+    const { name, email, password } = validationResult.data;
+
+    // Check rate limit (use email as identifier for registration)
+    const rateLimitResult = await checkRateLimit(
+      email,
+      rateLimitConfigs.register
+    );
+    if (!rateLimitResult.success) {
+      return { success: false, error: rateLimitResult.error };
     }
 
     // Check if user already exists
@@ -60,7 +109,19 @@ export async function registerUser(formData: {
     return { success: true };
   } catch (error) {
     console.error('Error registering user:', error);
-    return { success: false, error: 'Failed to register user' };
+    
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code === 'P2002') {
+        return { success: false, error: 'User with this email already exists' };
+      }
+    }
+    
+    return { 
+      success: false, 
+      error: process.env.NODE_ENV === 'development' 
+        ? (error as Error).message 
+        : 'Failed to register user' 
+    };
   }
 }
 
@@ -73,6 +134,15 @@ export async function updateProfile(formData: {
   profilePicture?: string;
 }): Promise<{ success: boolean; error?: string }> {
   try {
+    // Validate input
+    const validationResult = updateProfileSchema.safeParse(formData);
+    if (!validationResult.success) {
+      return { 
+        success: false, 
+        error: validationResult.error.errors[0].message 
+      };
+    }
+
     const session = await getServerSession(authOptions);
 
     if (!session || !session.user?.email) {
@@ -88,8 +158,13 @@ export async function updateProfile(formData: {
     }
 
     const updateData: any = {};
-    if (formData.name !== undefined) updateData.name = formData.name;
-    if (formData.profilePicture !== undefined) updateData.profilePicture = formData.profilePicture;
+    const validatedData = validationResult.data;
+    if (validatedData.name !== undefined) updateData.name = validatedData.name;
+    if (validatedData.profilePicture !== undefined) updateData.profilePicture = validatedData.profilePicture;
+    
+    if (Object.keys(updateData).length === 0) {
+      return { success: false, error: 'No data to update' };
+    }
 
     await prisma.user.update({
       where: { id: user.id },
@@ -103,7 +178,19 @@ export async function updateProfile(formData: {
     return { success: true };
   } catch (error) {
     console.error('Error updating profile:', error);
-    return { success: false, error: 'Failed to update profile' };
+    
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code === 'P2025') {
+        return { success: false, error: 'User not found' };
+      }
+    }
+    
+    return { 
+      success: false, 
+      error: process.env.NODE_ENV === 'development' 
+        ? (error as Error).message 
+        : 'Failed to update profile' 
+    };
   }
 }
 
@@ -159,8 +246,13 @@ export async function requestVerification(): Promise<{ success: boolean; error?:
  */
 export async function verifyEmail(token: string): Promise<{ success: boolean; error?: string }> {
   try {
-    if (!token) {
-      return { success: false, error: 'Verification token is required' };
+    // Validate input
+    const validationResult = verifyEmailSchema.safeParse(token);
+    if (!validationResult.success) {
+      return { 
+        success: false, 
+        error: validationResult.error.errors[0].message 
+      };
     }
 
     const user = await prisma.user.findFirst({
@@ -186,6 +278,19 @@ export async function verifyEmail(token: string): Promise<{ success: boolean; er
     return { success: true };
   } catch (error) {
     console.error('Error verifying email:', error);
-    return { success: false, error: 'Failed to verify email' };
+    
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code === 'P2025') {
+        return { success: false, error: 'User not found' };
+      }
+    }
+    
+    return { 
+      success: false, 
+      error: process.env.NODE_ENV === 'development' 
+        ? (error as Error).message 
+        : 'Failed to verify email' 
+    };
   }
 }
+

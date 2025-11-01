@@ -1,11 +1,9 @@
 import { redirect } from 'next/navigation';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/prisma';
 import PublishButton from '@/components/admin/PublishButton';
 import RejectButton from '@/components/admin/RejectButton';
-
-const prisma = new PrismaClient();
 
 export default async function AdminPostsPage() {
   // Ensure only admins can access
