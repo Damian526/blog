@@ -2,9 +2,30 @@
 
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import prisma from '@/lib/prisma';
+import { prisma } from '@/lib/prisma';
+import { Prisma } from '@prisma/client';
 import { revalidatePath } from 'next/cache';
+import { z } from 'zod';
+import { checkRateLimit, rateLimitConfigs } from '@/lib/ratelimit';
 import type { PostSummary } from '@/server/api/types';
+
+// Validation schemas
+const createPostSchema = z.object({
+  title: z.string()
+    .min(1, 'Title is required')
+    .max(200, 'Title must be less than 200 characters')
+    .trim(),
+  content: z.string()
+    .min(10, 'Content must be at least 10 characters')
+    .max(50000, 'Content is too long'),
+  subcategoryIds: z.array(z.number().positive())
+    .min(1, 'At least one category is required')
+    .max(5, 'Maximum 5 categories allowed'),
+});
+
+const updatePostSchema = createPostSchema.extend({
+  postId: z.number().positive('Invalid post ID'),
+});
 
 /**
  * Server Action: Create a new post
@@ -21,15 +42,25 @@ export async function createPost(formData: {
       return { success: false, error: 'Unauthorized' };
     }
 
-    const { title, content, subcategoryIds } = formData;
-
-    if (!title || !content) {
-      return { success: false, error: 'Title and Content are required.' };
+    // Check rate limit
+    const rateLimitResult = await checkRateLimit(
+      session.user.email as string,
+      rateLimitConfigs.createPost
+    );
+    if (!rateLimitResult.success) {
+      return { success: false, error: rateLimitResult.error };
     }
 
-    if (!Array.isArray(subcategoryIds) || subcategoryIds.length === 0) {
-      return { success: false, error: 'At least one subcategory is required.' };
+    // Validate input
+    const validationResult = createPostSchema.safeParse(formData);
+    if (!validationResult.success) {
+      return { 
+        success: false, 
+        error: validationResult.error.issues[0].message 
+      };
     }
+
+    const { title, content, subcategoryIds } = validationResult.data;
 
     const user = await prisma.user.findUnique({
       where: { email: session.user.email as string },
@@ -79,25 +110,25 @@ export async function createPost(formData: {
 
     // Format the response to match our type
     const formattedPost: PostSummary = {
-      id: Number(post.id),
+      id: post.id as number,
       title: post.title,
       content: post.content,
       published: post.published,
       declineReason: post.declineReason,
       createdAt: post.createdAt.toISOString(),
       author: {
-        id: Number(post.author.id),
+        id: post.author.id as number,
         name: post.author.name,
         email: post.author.email,
         image: post.author.profilePicture || null,
         createdAt: post.author.createdAt.toISOString(),
       },
       subcategories: post.subcategories.map(subcat => ({
-        id: Number(subcat.id),
+        id: subcat.id as number,
         name: subcat.name,
-        categoryId: Number(subcat.categoryId),
+        categoryId: subcat.categoryId as number,
         category: subcat.category ? {
-          id: Number(subcat.category.id),
+          id: subcat.category.id as number,
           name: subcat.category.name,
         } : undefined,
       })),
@@ -111,7 +142,22 @@ export async function createPost(formData: {
     return { success: true, post: formattedPost };
   } catch (error) {
     console.error('Error creating post:', error);
-    return { success: false, error: 'Failed to create post.' };
+    
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code === 'P2002') {
+        return { success: false, error: 'A post with this title already exists' };
+      }
+      if (error.code === 'P2025') {
+        return { success: false, error: 'One or more categories not found' };
+      }
+    }
+    
+    return { 
+      success: false, 
+      error: process.env.NODE_ENV === 'development' 
+        ? (error as Error).message 
+        : 'Failed to create post.' 
+    };
   }
 }
 
@@ -133,15 +179,25 @@ export async function updatePost(
       return { success: false, error: 'Unauthorized' };
     }
 
-    const { title, content, subcategoryIds } = formData;
-
-    if (!title || !content) {
-      return { success: false, error: 'Title and Content are required.' };
+    // Check rate limit
+    const rateLimitResult = await checkRateLimit(
+      session.user.email as string,
+      rateLimitConfigs.updatePost
+    );
+    if (!rateLimitResult.success) {
+      return { success: false, error: rateLimitResult.error };
     }
 
-    if (!Array.isArray(subcategoryIds) || subcategoryIds.length === 0) {
-      return { success: false, error: 'At least one subcategory is required.' };
+    // Validate input
+    const validationResult = updatePostSchema.safeParse({ ...formData, postId });
+    if (!validationResult.success) {
+      return { 
+        success: false, 
+        error: validationResult.error.issues[0].message 
+      };
     }
+
+    const { title, content, subcategoryIds } = validationResult.data;
 
     const user = await prisma.user.findUnique({
       where: { email: session.user.email as string },
@@ -198,25 +254,25 @@ export async function updatePost(
 
     // Format the response to match our type
     const formattedPost: PostSummary = {
-      id: Number(post.id),
+      id: post.id as number,
       title: post.title,
       content: post.content,
       published: post.published,
       declineReason: post.declineReason,
       createdAt: post.createdAt.toISOString(),
       author: {
-        id: Number(post.author.id),
+        id: post.author.id as number,
         name: post.author.name,
         email: post.author.email,
         image: post.author.profilePicture || null,
         createdAt: post.author.createdAt.toISOString(),
       },
       subcategories: post.subcategories.map(subcat => ({
-        id: Number(subcat.id),
+        id: subcat.id as number,
         name: subcat.name,
-        categoryId: Number(subcat.categoryId),
+        categoryId: subcat.categoryId as number,
         category: subcat.category ? {
-          id: Number(subcat.category.id),
+          id: subcat.category.id as number,
           name: subcat.category.name,
         } : undefined,
       })),
@@ -231,7 +287,22 @@ export async function updatePost(
     return { success: true, post: formattedPost };
   } catch (error) {
     console.error('Error updating post:', error);
-    return { success: false, error: 'Failed to update post.' };
+    
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code === 'P2025') {
+        return { success: false, error: 'Post not found' };
+      }
+      if (error.code === 'P2002') {
+        return { success: false, error: 'A post with this title already exists' };
+      }
+    }
+    
+    return { 
+      success: false, 
+      error: process.env.NODE_ENV === 'development' 
+        ? (error as Error).message 
+        : 'Failed to update post.' 
+    };
   }
 }
 
@@ -241,9 +312,29 @@ export async function updatePost(
  */
 export async function deletePost(postId: number): Promise<{ success: boolean; error?: string }> {
   try {
+    // Validate input
+    const postIdSchema = z.number().positive('Invalid post ID');
+    const validationResult = postIdSchema.safeParse(postId);
+    
+    if (!validationResult.success) {
+      return { 
+        success: false, 
+        error: validationResult.error.issues[0].message 
+      };
+    }
+
     const session = await getServerSession(authOptions);
     if (!session || !session.user) {
       return { success: false, error: 'Unauthorized' };
+    }
+
+    // Check rate limit
+    const rateLimitResult = await checkRateLimit(
+      session.user.email as string,
+      rateLimitConfigs.deletePost
+    );
+    if (!rateLimitResult.success) {
+      return { success: false, error: rateLimitResult.error };
     }
 
     const user = await prisma.user.findUnique({
@@ -281,6 +372,22 @@ export async function deletePost(postId: number): Promise<{ success: boolean; er
     return { success: true };
   } catch (error) {
     console.error('Error deleting post:', error);
-    return { success: false, error: 'Failed to delete post.' };
+    
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code === 'P2025') {
+        return { success: false, error: 'Post not found' };
+      }
+      if (error.code === 'P2003') {
+        return { success: false, error: 'Cannot delete post with existing comments' };
+      }
+    }
+    
+    return { 
+      success: false, 
+      error: process.env.NODE_ENV === 'development' 
+        ? (error as Error).message 
+        : 'Failed to delete post.' 
+    };
   }
 }
+

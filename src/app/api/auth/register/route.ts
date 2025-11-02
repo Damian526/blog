@@ -1,10 +1,8 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcrypt';
 import { v4 as uuidv4 } from 'uuid'; // or any library for generating tokens
 import sendVerificationEmail from '@/lib/sendVerificationEmail'; // utility function
-
-const prisma = new PrismaClient();
 
 export async function POST(req: Request) {
   try {

@@ -1,8 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { PrismaClient } from '@prisma/client';
-
-const prismaClient = new PrismaClient();
 
 export async function GET(
   request: Request,
@@ -16,7 +13,7 @@ export async function GET(
       return NextResponse.json({ error: 'Invalid post ID' }, { status: 400 });
     }
 
-    const post = await prismaClient.post.findUnique({
+    const post = await prisma.post.findUnique({
       where: { id: postId },
       include: {
         author: {
