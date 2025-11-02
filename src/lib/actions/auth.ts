@@ -59,7 +59,7 @@ export async function registerUser(formData: {
     if (!validationResult.success) {
       return { 
         success: false, 
-        error: validationResult.error.errors[0].message 
+        error: validationResult.error.issues[0].message 
       };
     }
 
@@ -139,7 +139,7 @@ export async function updateProfile(formData: {
     if (!validationResult.success) {
       return { 
         success: false, 
-        error: validationResult.error.errors[0].message 
+        error: validationResult.error.issues[0].message 
       };
     }
 
@@ -251,7 +251,7 @@ export async function verifyEmail(token: string): Promise<{ success: boolean; er
     if (!validationResult.success) {
       return { 
         success: false, 
-        error: validationResult.error.errors[0].message 
+        error: validationResult.error.issues[0].message 
       };
     }
 

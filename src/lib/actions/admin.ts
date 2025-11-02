@@ -20,8 +20,8 @@ const rejectPostSchema = z.object({
 
 const updateUserRoleSchema = z.object({
   userId: z.number().positive('Invalid user ID'),
-  role: z.enum(['USER', 'ADMIN'], { 
-    errorMap: () => ({ message: 'Role must be either USER or ADMIN' }) 
+  role: z.enum(['USER', 'ADMIN'], {
+    message: 'Role must be either USER or ADMIN'
   }),
 });
 
@@ -38,7 +38,7 @@ export async function publishPost(postId: number): Promise<{ success: boolean; e
     if (!validationResult.success) {
       return { 
         success: false, 
-        error: validationResult.error.errors[0].message 
+        error: validationResult.error.issues[0].message 
       };
     }
 
@@ -99,7 +99,7 @@ export async function rejectPost(
     if (!validationResult.success) {
       return { 
         success: false, 
-        error: validationResult.error.errors[0].message 
+        error: validationResult.error.issues[0].message 
       };
     }
 
@@ -161,7 +161,7 @@ export async function updateUserRole(
     if (!validationResult.success) {
       return { 
         success: false, 
-        error: validationResult.error.errors[0].message 
+        error: validationResult.error.issues[0].message 
       };
     }
 
@@ -214,7 +214,7 @@ export async function deleteUser(userId: number): Promise<{ success: boolean; er
     if (!validationResult.success) {
       return { 
         success: false, 
-        error: validationResult.error.errors[0].message 
+        error: validationResult.error.issues[0].message 
       };
     }
 

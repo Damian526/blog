@@ -13,7 +13,7 @@ export async function GET(
       return NextResponse.json({ error: 'Invalid post ID' }, { status: 400 });
     }
 
-    const post = await prismaClient.post.findUnique({
+    const post = await prisma.post.findUnique({
       where: { id: postId },
       include: {
         author: {
