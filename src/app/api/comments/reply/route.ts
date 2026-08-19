@@ -81,9 +81,9 @@ export async function POST(request: Request) {
     };
 
     // Invalidate cache for parent comment, post comments, and general comments
-    revalidateTag(`comment-${parentId}`);
-    revalidateTag(`post-${postId}-comments`);
-    revalidateTag('comments');
+    revalidateTag(`comment-${parentId}`, 'max');
+    revalidateTag(`post-${postId}-comments`, 'max');
+    revalidateTag('comments', 'max');
 
     return NextResponse.json(formattedReply, { status: 201 });
   } catch (error) {

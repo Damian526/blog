@@ -89,11 +89,11 @@ export async function PATCH(
     };
 
     // Invalidate cache for this comment and post comments
-    revalidateTag(`comment-${commentId}`);
+    revalidateTag(`comment-${commentId}`, 'max');
     if (updatedComment.postId) {
-      revalidateTag(`post-${updatedComment.postId}-comments`);
+      revalidateTag(`post-${updatedComment.postId}-comments`, 'max');
     }
-    revalidateTag('comments');
+    revalidateTag('comments', 'max');
 
     return NextResponse.json(formattedComment, { status: 200 });
   } catch (error) {
@@ -251,11 +251,11 @@ export async function DELETE(
     });
 
     // Invalidate cache for this comment and post comments
-    revalidateTag(`comment-${commentId}`);
+    revalidateTag(`comment-${commentId}`, 'max');
     if (comment.postId) {
-      revalidateTag(`post-${comment.postId}-comments`);
+      revalidateTag(`post-${comment.postId}-comments`, 'max');
     }
-    revalidateTag('comments');
+    revalidateTag('comments', 'max');
 
     return NextResponse.json(
       { message: 'Comment deleted successfully' },
